@@ -1,76 +1,29 @@
-# 大阪冬旅｜旅行規劃 APP v2.0
+# 大阪冬旅｜旅行規劃
 
-React + Vite 版本。
+一個幫你整理大阪旅程的網站，行程、待辦、地圖和旅行靈感都集中在同一個地方。支援手機與電腦瀏覽。
 
-- 手機版（< 900px）：底部選單、單欄版面
-- 網站版（≥ 900px）：左側選單、寬版多欄、表單改為置中對話框
-- 主視覺：**紅（`--red`）× 深藏青（`--navy`）雙色**，白底。其他顏色都只用這兩色的淡／深色，定義在 `src/styles/style.css` 最上方
+## 功能
 
-## 開發
-```bash
-npm install
-npm run dev       # 開發伺服器
-npm run build     # 打包到 dist/
-npm run preview   # 預覽打包結果
-```
-部署：把 `dist/` 放上任何靜態網站空間。使用 Hash 路由，不需要伺服器 rewrite 設定。
+### 行程
+- 依天數切換每日行程，以時間軸呈現
+- 每筆行程可記錄時間、類別（交通、景點、餐廳、住宿、購物）、地點與備註
+- 可自訂旅程名稱、出發日期與天數
 
-## 路由
-| 路徑 | 頁面 |
-| --- | --- |
-| `#/itinerary` | 行程 |
-| `#/todo` | 待辦與清單（行前待辦） |
-| `#/todo/flight`、`/entry`、`/stay`、`/bag` | 班機、入國登記、住宿、行李 |
-| `#/map` | 地圖 |
-| `#/ideas` | 收集箱 |
+### 待辦與清單
+- **行前待辦**：出發前要完成的事項，附完成進度
+- **班機**：去程、回程的航班、時間、座位與電子機票連結
+- **入國登記**：Visit Japan Web 登錄步驟與入境 QR Code 保存
+- **住宿**：飯店資訊、入住／退房時間，一鍵導航或撥打電話
+- **行李**：分類打包清單，附打包進度
 
-路由設定在 `src/router.jsx`，各頁面按需載入（lazy）。
+### 地圖
+- 大阪主要區域插畫地圖，點選地點查看最近車站
+- 一鍵開啟 Google 地圖導航
 
-## 檔案結構
-```
-src/
-  main.jsx / router.jsx
-  stores/
-    tripStore.js    旅程資料（Zustand + Immer，自動存 localStorage）
-    uiStore.js      Toast、全局 Loading
-    modalStore.js   彈出視窗（可堆疊）、確認對話框
-  components/
-    layout/         AppLayout、TabBar
-    modal/          ModalRoot、useModalContext
-    form/           FormModal、openForm（依欄位設定產生表單）
-    common/         Button、Icon、GlobalLoading、Toast、CheckRow、ProgressCard、KV
-  pages/            itinerary / todo / map / ideas
-  data/             常數、預設資料
-  utils/            日期、檔案、工具函式
-legacy/             舊版純 HTML/JS（僅供對照，可刪除）
-```
+### 收集箱
+- 收集想去的地方與想吃的美食，可附圖片與參考連結
+- 隨時把想法加入行程
 
-## 共用 API 速查
-```js
-// 狀態
-const trip = useTripStore((s) => s.trip);
-updateTrip((s) => { s.trip.name = '京都行'; });
-
-// 彈出視窗
-modal.open({ title: '標題', content: <MyContent /> });   // 內容元件用 useModalContext().close()
-openForm({ title, fields, onSave, onDelete });            // 表單彈窗
-if (await modal.confirm({ message: '確定刪除？' })) { … }
-
-// Loading
-loading.show('處理中…'); loading.hide();
-await loading.run(asyncTask, '上傳中…');                 // 全局遮罩
-<Button onClick={async () => { … }}>儲存</Button>          // onClick 回傳 Promise 會自動顯示 loading
-<Button loading={isSaving}>儲存</Button>
-
-// 提示
-toast('已儲存');
-```
-
-## 圖示
-- 既有圖示維持不變：`<Icon name="plane" />`（`src/components/common/icons.js`）
-- **之後新增的圖示請用 Bootstrap Icons**：`<Icon bi="airplane" />`（名稱查 https://icons.getbootstrap.com/ ，去掉 `bi-` 前綴）
-
-## 資料儲存
-- 資料存在瀏覽器 localStorage（key：`travel-planner:v1`），與舊版相容，舊資料會直接沿用。
-- 點行程頁左上角的旅程名稱 →「資料管理」可以匯出／匯入 JSON 備份，或恢復範例資料。
-- 上傳的圖片會先壓縮再存；localStorage 約 5MB 上限，圖片不要放太多。
+## 資料與隱私
+- 所有資料只存在你自己的瀏覽器，不會上傳到任何伺服器
+- 可以匯出／匯入備份檔，換裝置時也能帶著走
