@@ -2,8 +2,11 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router/dom';
 import { router } from './router';
+import { startTripSync } from './stores/tripStore';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './styles/style.css';
+
+startTripSync();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

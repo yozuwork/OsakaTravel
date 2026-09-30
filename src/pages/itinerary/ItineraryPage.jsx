@@ -1,13 +1,12 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
-import { toast } from '../../stores/uiStore';
 import Icon from '../../components/common/Icon';
 import Button from '../../components/common/Button';
-import { catIcon } from '../../data/constants';
-import { addDays, md, mdw, period, tripRangeText } from '../../utils/date';
+import TripHeader from '../../components/layout/TripHeader';
+import { mapsUrl } from '../../utils/helpers';
+import { addDays, md, mdw, period } from '../../utils/date';
 import { openItemForm } from './itemForm';
-import { openTripForm } from './tripForm';
+import { openItemDetail } from './itemDetail';
 
 export default function ItineraryPage() {
   const trip = useTripStore((s) => s.trip);
@@ -24,23 +23,7 @@ export default function ItineraryPage() {
 
   return (
     <>
-      <header className="page-head page-head--flush">
-        <div className="page-head__row">
-          <div>
-            <button className="trip-title" onClick={openTripForm} aria-label="編輯旅程資訊">
-              <Icon name="plane" />
-              <span><span className="trip-title__name">{trip.name}</span><span className="trip-title__en">{trip.en}</span></span>
-            </button>
-            <div className="page-sub">{tripRangeText(trip)}</div>
-          </div>
-          <nav className="tools" aria-label="行程工具">
-            <a className="tools__btn" href="https://translate.google.com/?sl=zh-TW&tl=ja&op=translate" target="_blank" rel="noopener" aria-label="翻譯（開新分頁）"><Icon name="translate" /></a>
-            <Link className="tools__btn" to="/todo" aria-label="行前待辦"><Icon name="calendar" /></Link>
-            <Link className="tools__btn" to="/map" aria-label="地圖"><Icon name="map" /></Link>
-            <button className="tools__btn" onClick={() => toast('記帳功能規劃中')} aria-label="記帳"><Icon name="dollar" /></button>
-          </nav>
-        </div>
-      </header>
+      <TripHeader />
 
       <div className="day-tabs" role="tablist" aria-label="選擇日期">
         {Array.from({ length: trip.days }, (_, i) => (
@@ -62,20 +45,25 @@ export default function ItineraryPage() {
             {items.map((it) => (
               <div className="tl-row" key={it.id}>
                 <span className="tl-dot" />
-                <button className="tl-card" onClick={() => openItemForm(it.id)} aria-label={`編輯：${it.title}`}>
+                <div className="tl-card" role="button" tabIndex={0} aria-label={`查看：${it.title}`}
+                  onClick={() => openItemDetail(it.id)}
+                  onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openItemDetail(it.id); } }}>
                   <span className="tl-left">
                     <span className="tl-time">
                       <span className="tl-time__period">{period(it.time)}</span>
                       <span className="tl-time__clock">{it.time || '--:--'}</span>
                     </span>
-                    <span className="chip"><Icon name={catIcon(it.category)} />{it.category}</span>
+                    <a className="chip" href={mapsUrl(it.place || it.title)} target="_blank" rel="noopener"
+                      onClick={(e) => e.stopPropagation()} aria-label={`在 Google 地圖查看：${it.place || it.title}`}>
+                      <Icon name="map" />地圖
+                    </a>
                   </span>
                   <span className="tl-right">
                     <span className="tl-title">{it.title}</span>
                     {it.place && <span className="tl-meta"><Icon name="pin" /><span>{it.place}</span></span>}
                     {it.note && <span className="tl-meta"><Icon name="alert" /><span>{it.note}</span></span>}
                   </span>
-                </button>
+                </div>
               </div>
             ))}
           </div>

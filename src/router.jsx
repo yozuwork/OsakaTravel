@@ -12,6 +12,10 @@ const StayTab = lazy(() => import('./pages/todo/StayTab'));
 const BagTab = lazy(() => import('./pages/todo/BagTab'));
 const MapPage = lazy(() => import('./pages/map/MapPage'));
 const IdeasPage = lazy(() => import('./pages/ideas/IdeasPage'));
+const TransitLayout = lazy(() => import('./pages/transit/TransitLayout'));
+const RouteTab = lazy(() => import('./pages/transit/RouteTab'));
+const AirportTab = lazy(() => import('./pages/transit/AirportTab'));
+const LinesTab = lazy(() => import('./pages/transit/LinesTab'));
 
 // 使用 Hash 路由（#/itinerary）：靜態空間直接部署、不需要伺服器設定
 export const router = createHashRouter([
@@ -35,6 +39,16 @@ export const router = createHashRouter([
       },
       { path: 'map', element: <MapPage />, handle: { title: '地圖' } },
       { path: 'ideas', element: <IdeasPage />, handle: { title: '收集箱' } },
+      {
+        path: 'transit',
+        element: <TransitLayout />,
+        handle: { title: '交通' },
+        children: [
+          { index: true, element: <RouteTab /> },
+          { path: 'airport', element: <AirportTab /> },
+          { path: 'lines', element: <LinesTab /> }
+        ]
+      },
       { path: '*', element: <Navigate to="/itinerary" replace /> }
     ]
   }

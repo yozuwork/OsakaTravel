@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>大阪冬旅｜交通</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1F2A44; --red:#D9453A; --red-soft:#FDECEA; --paper:#FFFFFF; --hair:#ECE6E6;
+  --muted:#6B7385; --field:#F7F4F4; --shadow:#D9453A;
+  --font:"Lexend","Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ink:#EEF1F7; --red:#EF6457; --red-soft:#3A2326; --paper:#171B26; --hair:#2A3040;
+    --muted:#9AA3B5; --field:#212736; --shadow:#B83A30;
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#EEF1F7; --red:#EF6457; --red-soft:#3A2326; --paper:#171B26; --hair:#2A3040;
+  --muted:#9AA3B5; --field:#212736; --shadow:#B83A30;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--red);outline-offset:2px;border-radius:10px}
+svg{display:block}
+.app{max-width:440px;margin:0 auto;height:100%;display:flex;flex-direction:column;background:var(--paper)}
+
+/* header */
+header{padding:20px 20px 0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{margin:0;font-size:26px;line-height:1.05;font-weight:900;letter-spacing:.02em}
+.brand h1 span{display:block;font-family:Lexend,sans-serif;font-size:21px;font-weight:700}
+.tools{display:flex;gap:4px;border:2px solid var(--red);border-radius:16px;padding:8px 10px;box-shadow:3px 4px 0 var(--shadow)}
+.tools button{width:34px;height:30px;display:grid;place-items:center;border-radius:8px}
+.date{margin:8px 0 0;font-family:Lexend,sans-serif;font-size:12.5px;font-weight:600;letter-spacing:.08em;color:var(--muted)}
+
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:16px 0 14px}
+.seg button{border:2px solid var(--red);border-radius:12px;padding:10px 4px 9px;font-weight:700;font-size:15px;color:var(--ink);background:var(--paper)}
+.seg button small{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:2px}
+.seg button[aria-selected="true"]{background:var(--red);color:#fff;box-shadow:3px 4px 0 #9E2C23}
+.seg button[aria-selected="true"] small{color:#FFE3DF}
+.rule{height:2px;background:var(--red);opacity:.85;margin:0 -20px}
+
+main{flex:1;overflow-y:auto;padding:18px 20px 110px}
+.view[hidden]{display:none}
+h2{font-size:17px;margin:0 0 12px;font-weight:900}
+.card{border:2px solid var(--ink);border-radius:16px;background:var(--paper);box-shadow:4px 5px 0 var(--shadow)}
+
+/* search */
+.search{padding:14px 14px 12px;position:relative}
+.odrow{display:flex;align-items:center;gap:12px;padding:6px 0}
+.odrow + .odrow{border-top:1px dashed var(--hair)}
+.pin{width:14px;height:14px;border-radius:50%;border:3px solid var(--red);flex:none;background:var(--paper)}
+.pin.to{background:var(--red)}
+.odbtn{flex:1;text-align:left;padding:6px 0;min-height:48px}
+.odbtn .lbl{font-size:12px;color:var(--muted)}
+.odbtn .nm{font-size:18px;font-weight:700;line-height:1.3}
+.odbtn .nm.empty{color:var(--muted);font-weight:500}
+.odbtn .zh{font-size:12px;color:var(--muted);margin-left:6px;font-weight:500}
+.swap{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:12px;background:var(--red-soft);display:grid;place-items:center;color:var(--red)}
+.connector{position:absolute;left:20px;top:44px;bottom:44px;border-left:2px dotted var(--red);opacity:.5}
+.mode{display:flex;gap:8px;margin:14px 0 0}
+.mode button{border:1.5px solid var(--hair);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;color:var(--muted)}
+.mode button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--field);font-weight:700}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0}
+.chip{border:1.5px solid var(--hair);border-radius:10px;padding:6px 10px;font-size:13px;font-weight:500;background:var(--paper)}
+.chip:active{background:var(--field)}
+.hint{font-size:12.5px;color:var(--muted);margin:10px 2px 0}
+
+/* result */
+.result{margin-top:22px}
+.answer{padding:16px}
+.answer .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.answer .mins{font-family:Lexend,sans-serif;font-size:34px;font-weight:700;line-height:1}
+.answer .mins small{font-family:var(--font);font-size:14px;font-weight:700;margin-left:2px}
+.answer .xfer{font-size:14px;color:var(--muted);font-weight:500}
+.ribbon{display:flex;height:14px;border-radius:999px;overflow:hidden;margin:14px 0 12px;gap:2px;background:var(--paper)}
+.ribbon i{display:block;min-width:8px}
+.ribbon i.walk{background:repeating-linear-gradient(90deg,var(--muted) 0 3px,transparent 3px 6px);opacity:.5;flex:0 0 18px}
+.colors{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;font-weight:700}
+.colors .arrow{color:var(--muted);font-weight:400}
+
+.badge{display:inline-flex;align-items:center;gap:6px;border-radius:8px;padding:3px 9px 3px 4px;color:#fff;font-weight:700;font-size:13px;line-height:1.4;white-space:nowrap}
+.badge b{display:grid;place-items:center;min-width:24px;height:22px;padding:0 3px;border-radius:5px;background:#fff;font-family:Lexend,sans-serif;font-size:11px;font-weight:700}
+.badge.light{color:#1F2A44}
+
+.steps{margin-top:18px;padding-left:4px}
+.step{display:grid;grid-template-columns:22px 1fr;column-gap:12px}
+.rail{position:relative;display:flex;justify-content:center}
+.rail::before{content:"";position:absolute;top:0;bottom:0;width:6px;border-radius:3px;background:var(--c,var(--hair))}
+.step.walk .rail::before{width:0;border-left:3px dotted var(--muted);background:none}
+.stn{display:grid;grid-template-columns:22px 1fr;column-gap:12px;align-items:center}
+.stn .dot{width:20px;height:20px;border-radius:50%;background:var(--paper);border:5px solid var(--c,var(--ink));justify-self:center;position:relative;z-index:1}
+.stn .dot.end{background:var(--c,var(--ink))}
+.stn .nm{font-size:17px;font-weight:700;padding:4px 0}
+.stn .nm small{font-size:12px;color:var(--muted);font-weight:500;margin-left:6px}
+.ride{padding:8px 0 14px}
+.ride .dir{font-size:14px;font-weight:700;margin-top:8px}
+.ride .meta{font-size:13px;color:var(--muted);margin-top:2px}
+.ride .note{font-size:12.5px;margin-top:8px;background:var(--red-soft);border-radius:8px;padding:6px 9px;display:flex;gap:6px;color:var(--ink)}
+.ride details{margin-top:6px;font-size:13px;color:var(--muted)}
+.ride summary{cursor:pointer;width:max-content;list-style:none;text-decoration:underline;text-underline-offset:3px}
+.ride summary::-webkit-details-marker{display:none}
+.ride ol{margin:6px 0 0;padding-left:18px;line-height:1.7}
+.walkinfo{padding:10px 0 12px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.disclaim{font-size:12px;color:var(--muted);margin:16px 2px 0;line-height:1.6}
+.empty{padding:28px 18px;text-align:center;color:var(--muted);font-size:14px;line-height:1.7;border:2px dashed var(--hair);border-radius:16px}
+
+.recent{margin-top:26px}
+.recent h3{font-size:14px;margin:0 0 8px;font-weight:700}
+.recent button{display:flex;width:100%;justify-content:space-between;align-items:center;padding:11px 2px;border-bottom:1px solid var(--hair);font-size:14.5px;font-weight:500;text-align:left}
+
+/* airport */
+.apgroup{margin-bottom:26px}
+.apgroup header{padding:0;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.apgroup header h2{margin:0}
+.apgroup header button{font-size:13px;font-weight:700;color:var(--red);padding:6px 0}
+.opt{padding:14px;margin-bottom:14px;display:grid;grid-template-columns:1fr auto;gap:4px 12px}
+.opt .t{font-size:16px;font-weight:700}
+.opt .time{font-family:Lexend,sans-serif;font-weight:700;font-size:20px;text-align:right;grid-row:span 2}
+.opt .time small{display:block;font-family:var(--font);font-size:11px;color:var(--muted);font-weight:500}
+.opt .d{font-size:13px;color:var(--muted);line-height:1.6;grid-column:1/-1}
+.opt .l{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+
+/* lines */
+.linecard{border-bottom:1px solid var(--hair)}
+.linecard summary{list-style:none;display:grid;grid-template-columns:10px 1fr auto;gap:12px;align-items:center;padding:13px 0;cursor:pointer}
+.linecard summary::-webkit-details-marker{display:none}
+.linecard .bar{width:10px;height:38px;border-radius:5px}
+.linecard .n{font-weight:700;font-size:15.5px}
+.linecard .n small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.linecard .code{font-family:Lexend,sans-serif;font-weight:700;font-size:13px;border:2px solid;border-radius:8px;padding:2px 7px}
+.linecard .list{display:flex;flex-wrap:wrap;gap:6px;padding:0 0 14px 22px}
+.linecard .list span{font-size:12.5px;padding:3px 8px;border-radius:6px;background:var(--field)}
+.linecard .list span.x{font-weight:700;box-shadow:inset 0 0 0 1.5px var(--ink)}
+.legendnote{font-size:12.5px;color:var(--muted);margin:0 0 6px;line-height:1.6}
+
+/* nav */
+nav.tabs{position:fixed;bottom:0;left:0;right:0;max-width:440px;margin:0 auto;background:var(--paper);border-top:1px solid var(--hair);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 4px calc(8px + env(safe-area-inset-bottom,0px))}
+nav.tabs button{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--ink);padding:2px 0}
+nav.tabs .ico{width:56px;height:32px;border-radius:999px;display:grid;place-items:center}
+nav.tabs button[aria-current="page"]{color:var(--red);font-weight:700}
+nav.tabs button[aria-current="page"] .ico{background:var(--red);color:#fff}
+
+/* sheet */
+.sheet{position:fixed;inset:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;background:rgba(15,18,30,.45)}
+.sheet[hidden]{display:none}
+.panel{width:100%;max-width:440px;height:82%;background:var(--paper);border-radius:20px 20px 0 0;display:flex;flex-direction:column;padding:16px 18px calc(10px + env(safe-area-inset-bottom,0px));border-top:2px solid var(--ink)}
+.panel .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.panel .ph h3{margin:0;font-size:17px;font-weight:900}
+.panel .ph button{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--field)}
+.panel input{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:2px solid var(--ink);background:var(--paper);color:var(--ink)}
+.panel ul{list-style:none;margin:10px 0 0;padding:0;overflow-y:auto;flex:1}
+.panel li button{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 2px;border-bottom:1px solid var(--hair);text-align:left}
+.panel li .sn{font-size:16px;font-weight:700}
+.panel li .sn small{display:block;font-size:12px;color:var(--muted);font-weight:500}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;max-width:130px}
+.dots i{font-style:normal;min-width:22px;height:20px;padding:0 3px;border-radius:5px;color:#fff;font-family:Lexend,sans-serif;font-size:10px;font-weight:700;display:grid;place-items:center}
+@media (prefers-reduced-motion:no-preference){
+  .panel{animation:up .22s ease-out}
+  @keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="top">
+      <div class="brand">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+        <h1>大阪冬旅<span>Osaka</span></h1>
+      </div>
+      <div class="tools" aria-label="工具">
+        <button aria-label="翻譯"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg></button>
+        <button aria-label="行事曆"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 16 2 2 4-4"/></svg></button>
+        <button aria-label="地圖"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.1 6 9.9 3.9a2 2 0 0 0-1.8 0L3.6 6.1A1 1 0 0 0 3 7v12.4a1 1 0 0 0 1.4.9l3.7-1.9a2 2 0 0 1 1.8 0l4.2 2.1a2 2 0 0 0 1.8 0l4.5-2.2a1 1 0 0 0 .6-.9V5.1a1 1 0 0 0-1.4-.9l-3.7 1.9a2 2 0 0 1-1.8 0z"/><path d="M15 6v15M9 3v15"/></svg></button>
+        <button aria-label="匯率"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></button>
+      </div>
+    </div>
+    <p class="date">DEC 21 - DEC 25, 2026</p>
+    <div class="seg" role="tablist">
+      <button role="tab" aria-selected="true" data-view="route"><small>A 到 B</small>路線查詢</button>
+      <button role="tab" aria-selected="false" data-view="airport"><small>KIX / ITM</small>機場交通</button>
+      <button role="tab" aria-selected="false" data-view="lines"><small>顏色對照</small>路線圖例</button>
+    </div>
+    <div class="rule"></div>
+  </header>
+
+  <main>
+    <section class="view" id="v-route">
+      <div class="card search">
+        <div class="connector"></div>
+        <div class="odrow"><span class="pin"></span><button class="odbtn" id="fromBtn"></button></div>
+        <div class="odrow"><span class="pin to"></span><button class="odbtn" id="toBtn"></button></div>
+        <button class="swap" id="swap" aria-label="交換出發與抵達"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15-4 4 4 4" transform="translate(0 -4)"/><path d="M3 15h14" /><path d="m17 5 4 4-4 4"/><path d="M21 9H7"/></svg></button>
+      </div>
+      <div class="mode" role="group" aria-label="路線偏好">
+        <button aria-pressed="true" data-mode="fast">最快抵達</button>
+        <button aria-pressed="false" data-mode="few">少轉乘</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="result" id="result"></div>
+      <div class="recent" id="recent"></div>
+    </section>
+
+    <section class="view" id="v-airport" hidden></section>
+    <section class="view" id="v-lines" hidden></section>
+  </main>
+
+  <nav class="tabs" aria-label="主選單">
+    <button><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="15" rx="2"/><path d="M9 6V3h6v3M10 10v7M14 10v7M8 21v1M16 21v1"/></svg></span>行程</button>
+    <button><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m7 9 1.5 1.5L11 8M7 15l1.5 1.5L11 14M14 9h3M14 15h3"/></svg></span>待辦與清單</button>
+    <button><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.1 6 9.9 3.9a2 2 0 0 0-1.8 0L3.6 6.1A1 1 0 0 0 3 7v12.4a1 1 0 0 0 1.4.9l3.7-1.9a2 2 0 0 1 1.8 0l4.2 2.1a2 2 0 0 0 1.8 0l4.5-2.2a1 1 0 0 0 .6-.9V5.1a1 1 0 0 0-1.4-.9l-3.7 1.9a2 2 0 0 1-1.8 0z"/><path d="M15 6v15M9 3v15"/></svg></span>地圖</button>
+    <button><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.8 4H7.2a2 2 0 0 0-1.7 1.1z"/></svg></span>收集箱</button>
+    <button aria-current="page"><span class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M12 3v8"/><circle cx="8.5" cy="14" r=".6" fill="currentColor"/><circle cx="15.5" cy="14" r=".6" fill="currentColor"/><path d="m8 21 2-4M16 21l-2-4"/></svg></span>交通</button>
+  </nav>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="ph"><h3 id="sheetTitle">選擇車站</h3><button id="closeSheet" aria-label="關閉"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <input id="q" type="search" placeholder="輸入站名：難波、心齋橋、USJ、Umeda…" autocomplete="off">
+    <ul id="list"></ul>
+  </div>
+</div>
+
+<script>
+/* ---------- 路線資料（約略行車時間，分鐘） ---------- */
+const LINES = {
+  M:{code:'M',name:'御堂筋線',en:'Midosuji',color:'#E5171F',hop:2,
+     st:['千里中央','桃山台','緑地公園','江坂','東三国','新大阪','西中島南方','中津','梅田','淀屋橋','本町','心斎橋','なんば','大国町','動物園前','天王寺','昭和町','西田辺','長居','あびこ','北花田','新金岡','なかもず'],
+     note:'江坂以北為北大阪急行直通運轉，同一班車不用換。'},
+  T:{code:'T',name:'谷町線',en:'Tanimachi',color:'#522886',hop:2,
+     st:['大日','守口','太子橋今市','千林大宮','関目高殿','野江内代','都島','天神橋筋六丁目','中崎町','東梅田','南森町','天満橋','谷町四丁目','谷町六丁目','谷町九丁目','四天王寺前夕陽ヶ丘','天王寺','阿倍野','文の里','田辺','駒川中野','平野','喜連瓜破','出戸','長原','八尾南']},
+  Y:{code:'Y',name:'四つ橋線',en:'Yotsubashi',color:'#0078BA',hop:2,
+     st:['西梅田','肥後橋','本町','四ツ橋','なんば','大国町','花園町','岸里','玉出','北加賀屋','住之江公園']},
+  C:{code:'C',name:'中央線',en:'Chuo',color:'#019A66',hop:2,
+     st:['夢洲','コスモスクエア','大阪港','朝潮橋','弁天町','九条','阿波座','本町','堺筋本町','谷町四丁目','森ノ宮','緑橋','深江橋','高井田','長田']},
+  S:{code:'S',name:'千日前線',en:'Sennichimae',color:'#E44D93',hop:2,
+     st:['野田阪神','玉川','阿波座','西長堀','桜川','なんば','日本橋','谷町九丁目','鶴橋','今里','新深江','小路','北巽','南巽']},
+  K:{code:'K',name:'堺筋線',en:'Sakaisuji',color:'#814721',hop:2,
+     st:['天神橋筋六丁目','扇町','南森町','北浜','堺筋本町','長堀橋','日本橋','恵美須町','動物園前','天下茶屋']},
+  N:{code:'N',name:'長堀鶴見緑地線',en:'Nagahori Tsurumi-ryokuchi',color:'#A9CC51',hop:2,light:true,
+     st:['大正','ドーム前千代崎','西長堀','西大橋','心斎橋','長堀橋','松屋町','谷町六丁目','玉造','森ノ宮','大阪ビジネスパーク','京橋','蒲生四丁目','今福鶴見','横堤','鶴見緑地','門真南']},
+  I:{code:'I',name:'今里筋線',en:'Imazatosuji',color:'#EE7B1A',hop:2,
+     st:['井高野','瑞光四丁目','だいどう豊里','太子橋今市','清水','新森古市','関目成育','蒲生四丁目','鴫野','緑橋','今里']},
+  P:{code:'P',name:'南港港城線',en:'New Tram',color:'#00A3D9',hop:2,
+     st:['コスモスクエア','トレードセンター前','中ふ頭','ポートタウン西','ポートタウン東','フェリーターミナル','南港東','南港口','平林','住之江公園']},
+  O:{code:'JR-O',name:'JR 大阪環狀線',en:'Osaka Loop',color:'#E8612C',hop:2.5,cyclic:true,
+     st:['大阪','天満','桜ノ宮','京橋','大阪城公園','森ノ宮','玉造','鶴橋','桃谷','寺田町','天王寺','新今宮','今宮','芦原橋','大正','弁天町','西九条','野田','福島']},
+  A:{code:'JR-A',name:'JR 京都線',en:'JR Kyoto',color:'#0072BC',hop:4,st:['新大阪','大阪']},
+  U:{code:'JR-P',name:'JR 夢咲線',en:'JR Yumesaki',color:'#E8739C',hop:2,
+     st:['西九条','安治川口','ユニバーサルシティ','桜島'],note:'很多班次從 JR 大阪站直通，不一定要在西九条換車。'},
+  R:{code:'JR-R',name:'JR 關空快速',en:'Kansai Airport Rapid',color:'#F4A43A',light:true,
+     st:['京橋','大阪','福島','西九条','弁天町','大正','新今宮','天王寺','日根野','りんくうタウン','関西空港'],times:[7.8,2.8,5.3,2.8,2.8,7.8,2.8,34,4,7],
+     note:'列車在日根野分割車廂，請坐開往「関西空港」的車廂。'},
+  H:{code:'HA',name:'JR 特急 Haruka',en:'Haruka',color:'#5C7BB5',
+     st:['新大阪','大阪','天王寺','関西空港'],times:[4.5,23,33],
+     note:'需特急券；外國旅客可買 ICOCA & HARUKA 套票。'},
+  NK:{code:'NK',name:'南海 空港線',en:'Nankai Airport',color:'#1E4E9C',
+     st:['なんば','新今宮','天下茶屋','堺','泉佐野','りんくうタウン','関西空港'],times:[3,3,7,17,3,6],
+     note:'Rapi:t 全車指定席需加購特急券；空港急行免加價，約多 5–10 分。'},
+  MO:{code:'MO',name:'大阪單軌電車',en:'Osaka Monorail',color:'#3A9E8F',
+     st:['千里中央','少路','柴原阪大前','蛍池','大阪空港'],times:[3,2,3,3]}
+};
+
+const ALIAS = {
+ '関西空港':'關西機場 KIX Kansai Airport','大阪空港':'伊丹機場 ITM Itami Airport','なんば':'難波 Namba','梅田':'大阪站 Umeda',
+ '東梅田':'Higashi-Umeda','西梅田':'Nishi-Umeda','大阪':'JR 大阪站 Osaka Station','新大阪':'新幹線 Shin-Osaka','心斎橋':'Shinsaibashi',
+ '天王寺':'阿倍野 HARUKAS Tennoji','大阪城公園':'大阪城 Osakajo-koen','谷町四丁目':'大阪城 Tanimachi','森ノ宮':'大阪城 Morinomiya',
+ 'ユニバーサルシティ':'環球影城 USJ Universal City','大阪港':'海遊館 Osakako','恵美須町':'通天閣 新世界 Ebisucho','動物園前':'新世界 Dobutsuen-mae',
+ '新今宮':'新世界 Shin-Imamiya','日本橋':'電電城 黑門市場 Nippombashi','夢洲':'萬博 Yumeshima','ドーム前千代崎':'京瓷巨蛋 Dome-mae',
+ '大阪ビジネスパーク':'OBP','りんくうタウン':'臨空城 Outlet Rinku','天神橋筋六丁目':'天六 Tenroku','京橋':'Kyobashi','本町':'Hommachi',
+ '淀屋橋':'中之島 Yodoyabashi','北浜':'Kitahama','鶴橋':'燒肉街 Tsuruhashi','天下茶屋':'Tengachaya','千里中央':'Senri-Chuo',
+ 'コスモスクエア':'Cosmosquare','弁天町':'Bentencho','西九条':'Nishikujo','長堀橋':'Nagahoribashi','四ツ橋':'Yotsubashi',
+ '堺筋本町':'Sakaisuji-Hommachi','南森町':'天神橋商店街 Minamimorimachi','扇町':'Ogimachi','天満':'Temma','中崎町':'Nakazakicho',
+ '桜ノ宮':'Sakuranomiya','玉造':'Tamatsukuri','堺':'Sakai','住之江公園':'Suminoekoen','トレードセンター前':'ATC Trade Center',
+ '江坂':'Esaka','西中島南方':'Nishinakajima','大国町':'Daikokucho','あびこ':'Abiko','なかもず':'Nakamozu','天満橋':'Temmabashi',
+ '谷町六丁目':'Tanimachi 6','谷町九丁目':'上本町 Tanimachi 9','阿倍野':'Abeno','阿波座':'Awaza','九条':'Kujo','京セラ':'',
+ '桜川':'Sakuragawa','今里':'Imazato','松屋町':'Matsuyamachi','西大橋':'Nishi-Ohashi','大正':'Taisho','福島':'Fukushima','野田':'Noda'
+};
+/* 不同站名、可步行轉乘 */
+const WALK = [['梅田','東梅田','西梅田','大阪'],['心斎橋','四ツ橋'],['新今宮','動物園前'],['天満','扇町'],['野田','野田阪神'],['関目高殿','関目成育']];
+const T_XFER = 5, T_WALK = 8, FEW_PENALTY = 14;
+
+/* ---------- 圖建構 ---------- */
+const stationLines = {}; const adj = {};
+const node = (l,s)=>l+'|'+s;
+const addEdge=(a,b,w,type,line)=>{(adj[a]=adj[a]||[]).push({to:b,w,type,line});};
+for(const [k,L] of Object.entries(LINES)){
+  L.st.forEach((s,i)=>{(stationLines[s]=stationLines[s]||[]).includes(k)||stationLines[s].push(k); adj[node(k,s)]=adj[node(k,s)]||[];});
+  const n=L.st.length, hops=L.cyclic?n:n-1;
+  for(let i=0;i<hops;i++){
+    const a=L.st[i], b=L.st[(i+1)%n], w=L.times?L.times[i]:L.hop;
+    addEdge(node(k,a),node(k,b),w,'ride',k); addEdge(node(k,b),node(k,a),w,'ride',k);
+  }
+}
+for(const [s,ls] of Object.entries(stationLines)) for(const a of ls) for(const b of ls) if(a!==b) addEdge(node(a,s),node(b,s),T_XFER,'transfer');
+for(const g of WALK) for(const a of g) for(const b of g) if(a!==b)
+  for(const la of stationLines[a]||[]) for(const lb of stationLines[b]||[]) addEdge(node(la,a),node(lb,b),T_WALK,'walk');
+
+const STATIONS = Object.keys(stationLines);
+
+function findRoute(from,to,few){
+  const dist={}, real={}, prev={}, done=new Set(), open=new Set();
+  for(const l of stationLines[from]){const n=node(l,from); dist[n]=0; real[n]=0; open.add(n);}
+  let end=null;
+  while(open.size){
+    let u=null; for(const n of open) if(u===null||dist[n]<dist[u]) u=n;
+    open.delete(u); done.add(u);
+    if(u.split('|')[1]===to){end=u;break;}
+    for(const e of adj[u]){
+      if(done.has(e.to)) continue;
+      const w=e.w+(e.type!=='ride'&&few?FEW_PENALTY:0);
+      if(dist[e.to]===undefined||dist[u]+w<dist[e.to]){dist[e.to]=dist[u]+w; real[e.to]=real[u]+e.w; prev[e.to]={from:u,e}; open.add(e.to);}
+    }
+  }
+  if(!end) return null;
+  const chain=[]; let c=end; while(prev[c]){chain.unshift({from:prev[c].from,to:c,e:prev[c].e}); c=prev[c].from;}
+  const segs=[]; let cur=null;
+  for(const st of chain){
+    const a=st.from.split('|')[1], b=st.to.split('|')[1];
+    if(st.e.type==='ride'){
+      if(!cur||cur.line!==st.e.line){cur={kind:'ride',line:st.e.line,stops:[a],min:0}; segs.push(cur);}
+      cur.stops.push(b); cur.min+=st.e.w;
+    } else { segs.push({kind:st.e.type,from:a,to:b,min:st.e.w}); cur=null; }
+  }
+  return {segs,total:Math.round(real[end]),xfers:segs.filter(s=>s.kind!=='ride').length};
+}
+
+/* ---------- 工具 ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const zh=s=>ALIAS[s]?ALIAS[s].split(' ').filter(w=>/[\u4e00-\u9fff]/.test(w)).join(' '):'';
+const MAP={'齋':'斎','關':'関','櫻':'桜','條':'条','國':'国','綠':'緑','濱':'浜','邊':'辺','豐':'豊','內':'内','戶':'戸','惠':'恵','區':'区','機場':'空港','車站':'','站':'','駅':''};
+const norm=s=>{s=(s||'').toLowerCase().replace(/[\s\-・]/g,''); for(const [a,b] of Object.entries(MAP)) s=s.split(a).join(b); return s;};
+const badge=k=>{const L=LINES[k]; return `<span class="badge${L.light?' light':''}" style="background:${L.color}"><b style="color:${L.light?'#1F2A44':L.color}">${L.code}</b>${L.name}</span>`;};
+const store={get(){try{return JSON.parse(localStorage.getItem('osaka-transit-recent')||'[]')}catch(e){return []}},set(v){try{localStorage.setItem('osaka-transit-recent',JSON.stringify(v))}catch(e){}}};
+
+/* ---------- 狀態 ---------- */
+let state={from:'関西空港',to:'心斎橋',few:false,picking:null};
+
+function renderOD(){
+  const f=(s,lbl)=>`<div class="lbl">${lbl}</div><div class="nm${s?'':' empty'}">${s?esc(s)+(zh(s)?`<span class="zh">${esc(zh(s))}</span>`:''):'選擇車站'}</div>`;
+  $('#fromBtn').innerHTML=f(state.from,'出發');
+  $('#toBtn').innerHTML=f(state.to,'抵達');
+}
+
+function renderResult(){
+  const box=$('#result');
+  if(!state.from||!state.to){box.innerHTML='<div class="empty">選好出發站和抵達站，<br>就會告訴你要搭哪個顏色的線、在哪裡換車。</div>';return;}
+  if(state.from===state.to){box.innerHTML='<div class="empty">出發站和抵達站相同，換一個抵達站試試。</div>';return;}
+  const r=findRoute(state.from,state.to,state.few);
+  if(!r){box.innerHTML='<div class="empty">這兩站之間找不到收錄的路線。</div>';return;}
+  const rides=r.segs.filter(s=>s.kind==='ride');
+  const ribbon=r.segs.map(s=>s.kind==='ride'?`<i style="background:${LINES[s.line].color};flex:${s.min} 1 0"></i>`:'<i class="walk"></i>').join('');
+  const colors=rides.map(s=>badge(s.line)).join('<span class="arrow">›</span>');
+  let steps='';
+  r.segs.forEach((s,i)=>{
+    if(s.kind==='ride'){
+      const L=LINES[s.line];
+      let dir;
+      if(L.cyclic) dir=`經 ${s.stops[1]} 方向`;
+      else { const a=L.st.indexOf(s.stops[0]), b=L.st.indexOf(s.stops[1]); dir=`往 ${b>a?L.st[L.st.length-1]:L.st[0]} 方向`; }
+      const mid=s.stops.slice(1,-1);
+      steps+=`
+      <div class="stn" style="--c:${L.color}"><span class="dot"></span><div class="nm">${esc(s.stops[0])}${zh(s.stops[0])?`<small>${esc(zh(s.stops[0]))}</small>`:''}</div></div>
+      <div class="step" style="--c:${L.color}"><div class="rail"></div><div class="ride">
+        ${badge(s.line)}
+        <div class="dir">${esc(dir)}</div>
+        <div class="meta">搭 ${s.stops.length-1} 站，約 ${Math.round(s.min)} 分鐘</div>
+        ${mid.length?`<details><summary>看經過的 ${mid.length} 站</summary><ol>${mid.map(x=>`<li>${esc(x)}</li>`).join('')}</ol></details>`:''}
+        ${L.note?`<div class="note">💡 ${esc(L.note)}</div>`:''}
+      </div></div>`;
+      const next=r.segs[i+1];
+      if(!next) steps+=`<div class="stn" style="--c:${L.color}"><span class="dot end"></span><div class="nm">${esc(s.stops.at(-1))}${zh(s.stops.at(-1))?`<small>${esc(zh(s.stops.at(-1)))}</small>`:''}</div></div>`;
+      else if(next.kind==='walk') steps+=`<div class="stn" style="--c:${L.color}"><span class="dot"></span><div class="nm">${esc(s.stops.at(-1))}</div></div>`;
+    } else if(s.kind==='transfer'){
+      steps+=`<div class="step walk"><div class="rail"></div><div class="walkinfo">在 ${esc(s.from)} 站內轉乘，約 ${s.min} 分鐘</div></div>`;
+    } else {
+      steps+=`<div class="step walk"><div class="rail"></div><div class="walkinfo">步行到 ${esc(s.to)} 站，約 ${s.min} 分鐘</div></div>`;
+    }
+  });
+  box.innerHTML=`
+    <div class="card answer">
+      <div class="big"><span class="mins">約 ${r.total}<small>分鐘</small></span><span class="xfer">${r.xfers?`轉乘 ${r.xfers} 次`:'不用轉乘'}</span></div>
+      <div class="ribbon" aria-hidden="true">${ribbon}</div>
+      <div class="colors">${colors}</div>
+    </div>
+    <div class="steps">${steps}</div>
+    <p class="disclaim">時間為行車加轉乘的概估，不含候車；出發前請以站內時刻表或 Google 地圖為準。</p>`;
+  const rec=store.get().filter(x=>!(x[0]===state.from&&x[1]===state.to));
+  rec.unshift([state.from,state.to]); store.set(rec.slice(0,5)); renderRecent();
+}
+
+function renderRecent(){
+  const rec=store.get().filter(x=>!(x[0]===state.from&&x[1]===state.to));
+  $('#recent').innerHTML=rec.length?`<h3>最近查過</h3>${rec.map(([a,b])=>`<button data-a="${esc(a)}" data-b="${esc(b)}"><span>${esc(a)} → ${esc(b)}</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg></button>`).join('')}`:'';
+}
+
+const QUICK=['関西空港','大阪空港','新大阪','梅田','なんば','心斎橋','天王寺','大阪城公園','ユニバーサルシティ','大阪港','恵美須町','日本橋'];
+function renderChips(){
+  $('#chips').innerHTML=QUICK.map(s=>`<button class="chip" data-s="${s}">${esc(zh(s).split(' ')[0]||s)}</button>`).join('');
+  $('#chips').insertAdjacentHTML('afterend','');
+}
+
+/* ---------- 選站面板 ---------- */
+function openSheet(which){
+  state.picking=which; $('#sheetTitle').textContent=which==='from'?'從哪一站出發':'要到哪一站';
+  $('#sheet').hidden=false; $('#q').value=''; renderList(''); setTimeout(()=>$('#q').focus(),50);
+}
+function closeSheet(){$('#sheet').hidden=true; ($(state.picking==='from'?'#fromBtn':'#toBtn')).focus(); state.picking=null;}
+function renderList(q){
+  const nq=norm(q);
+  const hits=STATIONS.filter(s=>!nq||norm(s+(ALIAS[s]||'')).includes(nq));
+  hits.sort((a,b)=>(stationLines[b].length-stationLines[a].length));
+  $('#list').innerHTML=hits.length?hits.map(s=>`<li><button data-s="${esc(s)}"><span class="sn">${esc(s)}${ALIAS[s]?`<small>${esc(ALIAS[s])}</small>`:''}</span><span class="dots">${stationLines[s].map(k=>`<i style="background:${LINES[k].color};${LINES[k].light?'color:#1F2A44':''}">${LINES[k].code}</i>`).join('')}</span></button></li>`).join('')
+    :`<li class="hint" style="padding:18px 2px">找不到「${esc(q)}」。試試日文站名、中文景點或英文，例如「難波」「Umeda」。</li>`;
+}
+
+/* ---------- 機場 & 圖例 ---------- */
+function renderAirport(){
+  const opt=(t,time,sub,d,lines)=>`<div class="card opt"><div class="t">${t}</div><div class="time">約 ${time}<small>${sub}</small></div><div class="d">${d}</div><div class="l">${lines.map(badge).join('')}</div></div>`;
+  $('#v-airport').innerHTML=`
+  <div class="apgroup">
+    <header><h2>關西機場 KIX → 市區</h2><button data-from="関西空港">從 KIX 查路線</button></header>
+    ${opt('南海 Rapi:t','38 分','到難波','住難波、心齋橋、日本橋最順。全車指定席，要加購特急券。',['NK'])}
+    ${opt('南海 空港急行','45 分','到難波','同一條線，不用加價，行李多時尖峰較擠。',['NK'])}
+    ${opt('JR 特急 Haruka','35 分','到天王寺','到天王寺、大阪站、新大阪都不用換車，到大阪站約 50 分。',['H'])}
+    ${opt('JR 關空快速','65 分','到大阪站','不用特急券，沿途停天王寺、新今宮、弁天町、西九条。',['R'])}
+    ${opt('利木津巴士','60 分','到梅田','行李放車腹，直達梅田、難波等飯店區；塞車時會拉長。',[])}
+  </div>
+  <div class="apgroup">
+    <header><h2>伊丹機場 ITM → 市區</h2><button data-from="大阪空港">從 ITM 查路線</button></header>
+    ${opt('單軌電車＋御堂筋線','35 分','到梅田','大阪空港坐單軌到千里中央，轉紅色御堂筋線南下。',['MO','M'])}
+    ${opt('利木津巴士','25 分','到梅田','到梅田、難波都有直達班次，最省力。',[])}
+  </div>
+  <p class="disclaim">時間為一般情況下的概估；票價與班次請以南海、JR 西日本與機場巴士官網為準。</p>`;
+}
+function renderLines(){
+  const groups=[['大阪地鐵 Osaka Metro',['M','T','Y','C','S','K','N','I','P']],['JR 與機場線',['O','A','U','R','H','NK','MO']]];
+  $('#v-lines').innerHTML=`<p class="legendnote">車站指示牌、地面地圖都用同樣的顏色與代號；看顏色找月台最快。點一條線看全部車站，粗框是可轉乘站。</p>`+
+  groups.map(([g,ks])=>`<h2 style="margin-top:18px">${g}</h2>`+ks.map(k=>{const L=LINES[k];return `
+    <details class="linecard"><summary><span class="bar" style="background:${L.color}"></span><span class="n">${L.name}<small>${L.en}</small></span><span class="code" style="border-color:${L.color};color:${L.light?'var(--ink)':L.color}">${L.code}</span></summary>
+    <div class="list">${L.st.map(s=>`<span class="${stationLines[s].length>1?'x':''}">${esc(s)}</span>`).join('')}</div></details>`}).join('')).join('');
+}
+
+/* ---------- 事件 ---------- */
+function update(){renderOD(); renderResult();}
+$('#fromBtn').onclick=()=>openSheet('from');
+$('#toBtn').onclick=()=>openSheet('to');
+$('#swap').onclick=()=>{[state.from,state.to]=[state.to,state.from]; update();};
+$('#closeSheet').onclick=closeSheet;
+$('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet') closeSheet();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#sheet').hidden) closeSheet();});
+$('#q').addEventListener('input',e=>renderList(e.target.value));
+$('#list').addEventListener('click',e=>{const b=e.target.closest('button[data-s]'); if(!b) return; state[state.picking]=b.dataset.s; closeSheet(); update();});
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('[data-s]'); if(!b) return; const s=b.dataset.s;
+  if(s===state.from) return; state.to=s; update();});
+$('#recent').addEventListener('click',e=>{const b=e.target.closest('button[data-a]'); if(!b) return; state.from=b.dataset.a; state.to=b.dataset.b; update(); document.querySelector('main').scrollTo({top:0});});
+document.querySelectorAll('.mode button').forEach(b=>b.onclick=()=>{state.few=b.dataset.mode==='few'; document.querySelectorAll('.mode button').forEach(x=>x.setAttribute('aria-pressed',x===b)); renderResult();});
+function showView(v){
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-selected',b.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.hidden=s.id!=='v-'+v);
+  document.querySelector('main').scrollTo({top:0});
+}
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+$('#v-airport').addEventListener('click',e=>{const b=e.target.closest('[data-from]'); if(!b) return; state.from=b.dataset.from; state.to=null; showView('route'); update(); openSheet('to');});
+
+renderChips(); renderAirport(); renderLines(); renderRecent(); update();
+</script>
+</body>
+</html>

@@ -5,8 +5,10 @@
    ========================================================= */
 import { create } from 'zustand';
 import { produce } from 'immer';
+import { onValue, ref, set } from 'firebase/database';
 import { STORAGE_KEY } from '../data/constants';
 import { defaultState, SAMPLE_SEED } from '../data/defaultState';
+import { database, databasePath } from '../services/firebase';
 import { toast } from './uiStore';
 
 /* 舊版（seed 1）範例行程的標題，用來判斷使用者是否還沒改過範例 */
@@ -77,3 +79,57 @@ function save(state) {
 }
 useTripStore.subscribe(save);
 save(useTripStore.getState()); // 載入時若有升級範例資料，立即寫回
+
+/* ---------- Firebase Realtime Database 雲端同步 ---------- */
+let cloudReady = false;
+let applyingCloudState = false;
+let cloudSaveTimer;
+let stopCloudListener;
+
+function saveToCloud(state) {
+  if (!cloudReady || applyingCloudState) return;
+
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(() => {
+    set(ref(database, databasePath), state).catch(() => {
+      toast('雲端儲存失敗，資料仍已保存在此裝置');
+    });
+  }, 400);
+}
+
+useTripStore.subscribe(saveToCloud);
+
+/**
+ * 啟動 Realtime Database 同步。
+ * 雲端已有資料時以雲端為準；若節點不存在，會用目前本機資料建立節點。
+ */
+export function startTripSync() {
+  if (stopCloudListener) return stopCloudListener;
+
+  const tripRef = ref(database, databasePath);
+  let firstSnapshot = true;
+
+  stopCloudListener = onValue(
+    tripRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        applyingCloudState = true;
+        useTripStore.setState(normalize(snapshot.val()), true);
+        applyingCloudState = false;
+        cloudReady = true;
+      } else if (firstSnapshot) {
+        cloudReady = true;
+        set(tripRef, useTripStore.getState()).catch(() => {
+          toast('無法建立雲端旅程，資料仍已保存在此裝置');
+        });
+      }
+
+      firstSnapshot = false;
+    },
+    () => {
+      toast('Firebase 連線失敗，已改用此裝置的資料');
+    }
+  );
+
+  return stopCloudListener;
+}

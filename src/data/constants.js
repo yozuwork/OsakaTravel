@@ -16,7 +16,8 @@ export const NAV_ITEMS = [
   { to: '/itinerary', label: '行程', icon: 'suitcase' },
   { to: '/todo', label: '待辦與清單', icon: 'checklist' },
   { to: '/map', label: '地圖', icon: 'map' },
-  { to: '/ideas', label: '收集箱', icon: 'inbox' }
+  { to: '/ideas', label: '收集箱', icon: 'inbox' },
+  { to: '/transit', label: '交通', icon: 'train' }
 ];
 
 /** 待辦與清單的子分頁（對應 /todo/*） */
@@ -26,6 +27,13 @@ export const TODO_TABS = [
   { id: 'entry', path: '/todo/entry', label: '入國登記' },
   { id: 'stay', path: '/todo/stay', label: '住宿' },
   { id: 'bag', path: '/todo/bag', label: '行李' }
+];
+
+/** 交通的子分頁（對應 /transit/*） */
+export const TRANSIT_TABS = [
+  { id: 'route', path: '/transit', label: '路線查詢', sub: 'A 到 B' },
+  { id: 'airport', path: '/transit/airport', label: '機場交通', sub: 'KIX / ITM' },
+  { id: 'lines', path: '/transit/lines', label: '路線圖例', sub: '顏色對照' }
 ];
 
 export const ENTRY_STEPS = ['建立帳號並登入', '登錄本人（及同行家人）護照資料', '登錄入境、回國預定', '填寫入境審查與海關申報', '取得 QR Code 並截圖保存'];

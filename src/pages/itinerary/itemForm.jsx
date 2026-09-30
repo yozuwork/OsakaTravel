@@ -21,15 +21,16 @@ function itemFields(trip, it) {
  * 新增／編輯行程
  * @param {string|null} id 既有行程 id；null 為新增
  * @param {object} [preset] 預填資料（例如從收集箱加入）
+ * @param {{ copy?: boolean }} [opts] copy：從既有行程複製成新行程
  */
-export function openItemForm(id, preset) {
+export function openItemForm(id, preset, { copy = false } = {}) {
   const { trip, items, ui } = useTripStore.getState();
   const existing = id ? items.find((x) => x.id === id) : null;
   const it = existing ? { ...existing } : { day: ui.day, time: '', category: '交通', title: '', place: '', note: '', ...preset };
 
   openForm({
-    title: preset ? '加入行程' : existing ? '編輯行程' : '新增行程',
-    submitText: preset ? '加入行程' : '儲存',
+    title: copy ? '複製行程' : preset ? '加入行程' : existing ? '編輯行程' : '新增行程',
+    submitText: preset && !copy ? '加入行程' : '儲存',
     fields: itemFields(trip, it),
     onSave: (v) => {
       const data = { ...it, ...v, day: parseInt(v.day, 10) };
@@ -39,7 +40,7 @@ export function openItemForm(id, preset) {
         else s.items.push({ ...data, id: uid() });
         s.ui.day = data.day;
       });
-      toast(preset ? `已加入 D${data.day + 1} 行程` : existing ? '已更新行程' : '已新增行程');
+      toast(copy ? `已複製到 D${data.day + 1}` : preset ? `已加入 D${data.day + 1} 行程` : existing ? '已更新行程' : '已新增行程');
     },
     onDelete: existing ? () => {
       updateTrip((s) => { s.items = s.items.filter((x) => x.id !== id); });
