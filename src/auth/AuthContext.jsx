@@ -7,7 +7,7 @@ import {
   signInWithPopup,
   signOut
 } from 'firebase/auth';
-import { allowedFirebaseUid, auth } from '../services/firebase';
+import { allowedEmails, allowedFirebaseUid, auth } from '../services/firebase';
 import { startTripSync, stopTripSync } from '../stores/tripStore';
 
 const AuthContext = createContext(null);
@@ -16,8 +16,12 @@ googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 function isAllowed(user) {
   const usesGoogle = user?.providerData?.some((provider) => provider.providerId === 'google.com');
-  return Boolean(allowedFirebaseUid && user?.uid === allowedFirebaseUid && usesGoogle && user.emailVerified);
+  const uidAllowed = Boolean(allowedFirebaseUid) && user?.uid === allowedFirebaseUid;
+  const emailAllowed = allowedEmails.includes((user?.email || '').toLowerCase());
+  return Boolean((uidAllowed || emailAllowed) && usesGoogle && user.emailVerified);
 }
+
+const isConfigured = Boolean(allowedFirebaseUid || allowedEmails.length);
 
 function authErrorMessage(error) {
   if (error?.code === 'auth/popup-closed-by-user') return '登入視窗已關閉，請再試一次。';
@@ -55,7 +59,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   async function login() {
-    if (!allowedFirebaseUid) {
+    if (!isConfigured) {
       setError('登入功能尚未完成設定，請聯絡管理者。');
       return;
     }
@@ -79,7 +83,7 @@ export function AuthProvider({ children }) {
   }
 
   const value = useMemo(
-    () => ({ user, checking, error, login, logout, isConfigured: Boolean(allowedFirebaseUid) }),
+    () => ({ user, checking, error, login, logout, isConfigured }),
     [user, checking, error]
   );
 

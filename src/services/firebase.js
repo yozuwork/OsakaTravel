@@ -25,3 +25,8 @@ export const auth = getAuth(firebaseApp);
 export const database = getDatabase(firebaseApp);
 export const databasePath = import.meta.env.VITE_FIREBASE_DATABASE_PATH || 'osakaTravel';
 export const allowedFirebaseUid = (import.meta.env.VITE_ALLOWED_FIREBASE_UID || '').trim();
+/* 額外允許登入的 Google 信箱，逗號分隔 */
+export const allowedEmails = (import.meta.env.VITE_ALLOWED_EMAILS || '')
+  .split(',')
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
