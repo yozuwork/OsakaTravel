@@ -1,1 +1,0 @@
-import{o as e}from"./index-BI4RMOyv.js";var t=e();function n({k:e,v:n}){return(0,t.jsxs)(`div`,{className:`kv__item`,children:[(0,t.jsx)(`span`,{className:`kv__k`,children:e}),(0,t.jsx)(`span`,{className:`kv__v`+(n?``:` is-empty`),children:n||`尚未填寫`})]})}export{n as t};
