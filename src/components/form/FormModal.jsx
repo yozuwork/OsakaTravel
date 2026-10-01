@@ -4,6 +4,7 @@ import { toast } from '../../stores/uiStore';
 import { useModalContext } from '../modal/ModalContext';
 import Button from '../common/Button';
 import Icon from '../common/Icon';
+import TimeField from '../common/TimeField';
 import { cx } from '../../utils/helpers';
 
 /**
@@ -78,6 +79,8 @@ function Field({ id, name, label, type, value, options, placeholder, required, f
     );
   } else if (type === 'textarea') {
     control = <textarea className="field__input" id={id} name={name} placeholder={placeholder} defaultValue={value || ''} />;
+  } else if (type === 'time') {
+    control = <TimeField id={id} name={name} defaultValue={value} />;
   } else if (type === 'file') {
     control = <input className="field__input" id={id} name={name} type="file" accept="image/*" />;
   } else {

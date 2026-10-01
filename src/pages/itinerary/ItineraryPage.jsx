@@ -1,10 +1,13 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import { DndContext, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
 import Icon from '../../components/common/Icon';
 import Button from '../../components/common/Button';
 import TripHeader from '../../components/layout/TripHeader';
-import { mapsUrl } from '../../utils/helpers';
+import { cx, mapsUrl } from '../../utils/helpers';
 import { addDays, md, mdw, period } from '../../utils/date';
+import { dayItems, placeItem } from '../../utils/itinerary';
 import { openItemForm } from './itemForm';
 import { openItemDetail } from './itemDetail';
 
@@ -15,11 +18,30 @@ export default function ItineraryPage() {
   const day = Math.min(uiDay, trip.days - 1);
 
   const items = useMemo(
-    () => allItems.filter((it) => it.day === day).sort((a, b) => (a.time || '99').localeCompare(b.time || '99')),
+    () => dayItems(allItems, day),
     [allItems, day]
   );
 
   const setDay = (i) => updateTrip((s) => { s.ui.day = i; });
+
+  // 拖曳排序：滑鼠移動 6px 才算拖曳；手機要長按 250ms，避免和捲動、點擊衝突
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 6 } })
+  );
+  const dragged = useRef(false);
+
+  function dragEnd({ active, over }) {
+    // 放開後瀏覽器仍會觸發一次 click，延遲清掉旗標以略過它
+    setTimeout(() => { dragged.current = false; });
+    if (!over || active.id === over.id) return;
+    const index = items.findIndex((it) => it.id === over.id);
+    updateTrip((s) => placeItem(s, active.id, index));
+  }
+
+  function open(id) {
+    if (!dragged.current) openItemDetail(id);
+  }
 
   return (
     <>
@@ -41,32 +63,13 @@ export default function ItineraryPage() {
         </div>
 
         {items.length ? (
-          <div className="timeline">
-            {items.map((it) => (
-              <div className="tl-row" key={it.id}>
-                <span className="tl-dot" />
-                <div className="tl-card" role="button" tabIndex={0} aria-label={`查看：${it.title}`}
-                  onClick={() => openItemDetail(it.id)}
-                  onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); openItemDetail(it.id); } }}>
-                  <span className="tl-left">
-                    <span className="tl-time">
-                      <span className="tl-time__period">{period(it.time)}</span>
-                      <span className="tl-time__clock">{it.time || '--:--'}</span>
-                    </span>
-                    <a className="chip" href={mapsUrl(it.place || it.title)} target="_blank" rel="noopener"
-                      onClick={(e) => e.stopPropagation()} aria-label={`在 Google 地圖查看：${it.place || it.title}`}>
-                      <Icon name="map" />地圖
-                    </a>
-                  </span>
-                  <span className="tl-right">
-                    <span className="tl-title">{it.title}</span>
-                    {it.place && <span className="tl-meta"><Icon name="pin" /><span>{it.place}</span></span>}
-                    {it.note && <span className="tl-meta"><Icon name="alert" /><span>{it.note}</span></span>}
-                  </span>
-                </div>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={() => { dragged.current = true; }} onDragEnd={dragEnd} onDragCancel={dragEnd}>
+            <SortableContext items={items.map((it) => it.id)} strategy={verticalListSortingStrategy}>
+              <div className="timeline">
+                {items.map((it) => <TimelineRow key={it.id} it={it} onOpen={open} />)}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
         ) : (
           <div className="empty">
             <Icon name="calendar" />
@@ -78,5 +81,38 @@ export default function ItineraryPage() {
         <Button variant="dashed" onClick={() => openItemForm(null)}><Icon name="plus" />新增行程</Button>
       </main>
     </>
+  );
+}
+
+/** 時間軸上的一張行程卡（可拖曳排序） */
+function TimelineRow({ it, onOpen }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: it.id });
+  // 只允許上下移動
+  const style = { transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined, transition };
+
+  return (
+    <div className={cx('tl-row', isDragging && 'is-dragging')} ref={setNodeRef} style={style}>
+      <span className="tl-dot" />
+      <div className="tl-card" {...attributes} {...listeners} role="button" tabIndex={0} aria-label={`查看：${it.title}`}
+        aria-roledescription="可拖曳排序的行程"
+        onClick={() => onOpen(it.id)}
+        onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpen(it.id); } }}>
+        <span className="tl-left">
+          <span className="tl-time">
+            <span className="tl-time__period">{period(it.time)}</span>
+            <span className="tl-time__clock">{it.time || '--:--'}</span>
+          </span>
+          <a className="chip" href={mapsUrl(it.place || it.title)} target="_blank" rel="noopener"
+            onClick={(e) => e.stopPropagation()} aria-label={`在 Google 地圖查看：${it.place || it.title}`}>
+            <Icon name="map" />地圖
+          </a>
+        </span>
+        <span className="tl-right">
+          <span className="tl-title">{it.title}</span>
+          {it.place && <span className="tl-meta"><Icon name="pin" /><span>{it.place}</span></span>}
+          {it.note && <span className="tl-meta"><Icon name="alert" /><span>{it.note}</span></span>}
+        </span>
+      </div>
+    </div>
   );
 }

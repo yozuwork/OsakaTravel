@@ -16,6 +16,8 @@ export default function ModalRoot() {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key !== 'Escape') return;
+      if (e.target.closest?.('.MuiDialog-root')) return; // MUI 選擇器自己處理 Esc
+
       const top = useModalStore.getState().stack.at(-1);
       if (top?.dismissible) modal.close(top.id);
     };

@@ -5,9 +5,11 @@ import { toast } from '../../stores/uiStore';
 import { useModalContext } from '../../components/modal/ModalContext';
 import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
+import TimeField from '../../components/common/TimeField';
 import { CATEGORIES } from '../../data/constants';
 import { addDays, mdw } from '../../utils/date';
 import { mapsUrl } from '../../utils/helpers';
+import { dayItems, placeItem, timeIndex } from '../../utils/itinerary';
 import { openItemForm } from './itemForm';
 
 /** 行程詳情：可開啟地圖、複製成新行程或編輯 */
@@ -18,15 +20,35 @@ export function openItemDetail(id) {
 function ItemDetail({ id }) {
   const { close } = useModalContext();
   const trip = useTripStore((s) => s.trip);
-  const it = useTripStore((s) => s.items.find((x) => x.id === id));
+  const items = useTripStore((s) => s.items);
+  const it = items.find((x) => x.id === id);
   const [draft, setDraft] = useState(() => ({ ...it }));
+  const [pos, setPos] = useState(() => (it ? dayItems(items, it.day).findIndex((x) => x.id === id) : 0));
   if (!it) return <p className="muted">此行程已刪除</p>;
 
   const q = draft.place || draft.title;
+  const draftDay = Number(draft.day);
+  // 同一天可選 1…n；換到別天則多一個位置可插入
+  const posCount = dayItems(items, draftDay).filter((x) => x.id !== id).length + 1;
 
   function change(e) {
     const { name, value } = e.target;
     setDraft((current) => ({ ...current, [name]: value }));
+    if (name === 'day') {
+      const day = Number(value);
+      setPos(day === it.day ? dayItems(items, day).findIndex((x) => x.id === id) : timeIndex(items, day, draft.time, id));
+    }
+  }
+
+  async function copyPlace() {
+    const place = draft.place.trim();
+    if (!place) return toast('沒有可複製的地點');
+    try {
+      await navigator.clipboard.writeText(place);
+      toast('已複製地點');
+    } catch {
+      toast('複製失敗，請手動選取');
+    }
   }
 
   function save(e) {
@@ -48,6 +70,7 @@ function ItemDetail({ id }) {
     updateTrip((state) => {
       const target = state.items.find((item) => item.id === id);
       if (target) Object.assign(target, data);
+      placeItem(state, id, pos);
       state.ui.day = data.day;
     });
     toast('已更新行程');
@@ -75,10 +98,10 @@ function ItemDetail({ id }) {
             ))}
           </select>
         </label>
-        <label className="field">
+        <div className="field">
           <span className="field__label">時間</span>
-          <input className="field__input" name="time" type="time" value={draft.time} onChange={change} />
-        </label>
+          <TimeField value={draft.time} onChange={(time) => setDraft((current) => ({ ...current, time }))} />
+        </div>
         <label className="field">
           <span className="field__label">類別</span>
           <select className="field__input" name="category" value={draft.category} onChange={change}>
@@ -86,8 +109,20 @@ function ItemDetail({ id }) {
           </select>
         </label>
         <label className="field">
+          <span className="field__label">序號</span>
+          <select className="field__input" value={pos} onChange={(e) => setPos(Number(e.target.value))}>
+            {Array.from({ length: posCount }, (_, i) => <option key={i} value={i}>第 {i + 1} 個</option>)}
+          </select>
+        </label>
+        <label className="field field--full">
           <span className="field__label">地點</span>
-          <input className="field__input" name="place" value={draft.place} onChange={change} placeholder="例如：大阪城公園駅" />
+          <span className="place-input-row">
+            <input className="field__input" name="place" value={draft.place} onChange={change} placeholder="例如：大阪城公園駅"
+              onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }} />
+            <button type="button" className="place-input-row__copy" onClick={copyPlace} aria-label="複製地點" title="複製地點">
+              <Icon bi="copy" />
+            </button>
+          </span>
         </label>
         <label className="field field--full">
           <span className="field__label">備註</span>

@@ -4,6 +4,7 @@ import { openForm } from '../../components/form/openForm';
 import { CATEGORIES } from '../../data/constants';
 import { addDays, mdw } from '../../utils/date';
 import { uid } from '../../utils/helpers';
+import { placeItem, timeIndex } from '../../utils/itinerary';
 
 function itemFields(trip, it) {
   const dayOptions = Array.from({ length: trip.days }, (_, i) => ({ value: i, label: `D${i + 1} · ${mdw(addDays(trip.startDate, i))}` }));
@@ -36,8 +37,12 @@ export function openItemForm(id, preset, { copy = false } = {}) {
       const data = { ...it, ...v, day: parseInt(v.day, 10) };
       updateTrip((s) => {
         const target = existing && s.items.find((x) => x.id === id);
+        const itemId = target ? id : uid();
+        // 新增或換日期時，依時間插入當天順序
+        const index = !target || target.day !== data.day ? timeIndex(s.items, data.day, data.time, itemId) : null;
         if (target) Object.assign(target, data);
-        else s.items.push({ ...data, id: uid() });
+        else s.items.push({ ...data, id: itemId });
+        if (index !== null) placeItem(s, itemId, index);
         s.ui.day = data.day;
       });
       toast(copy ? `已複製到 D${data.day + 1}` : preset ? `已加入 D${data.day + 1} 行程` : existing ? '已更新行程' : '已新增行程');

@@ -17,6 +17,10 @@ export default function TodoListTab() {
 
   const toggle = (id) => updateTrip((s) => { const t = s.todos.find((x) => x.id === id); if (t) t.done = !t.done; });
   const remove = (id) => { updateTrip((s) => { s.todos = s.todos.filter((x) => x.id !== id); }); toast('已刪除待辦'); };
+  const edit = (id, text) => {
+    updateTrip((s) => { const t = s.todos.find((x) => x.id === id); if (t) t.text = text; });
+    toast('已更新待辦');
+  };
 
   function add(e) {
     e.preventDefault();
@@ -27,7 +31,7 @@ export default function TodoListTab() {
     inputRef.current?.focus();
   }
 
-  const row = (t) => <CheckRow key={t.id} text={t.text} done={t.done} onToggle={() => toggle(t.id)} onDelete={() => remove(t.id)} />;
+  const row = (t) => <CheckRow key={t.id} text={t.text} done={t.done} onToggle={() => toggle(t.id)} onDelete={() => remove(t.id)} onEdit={(text) => edit(t.id, text)} />;
 
   return (
     <>
