@@ -1,6 +1,5 @@
-import { Link } from 'react-router';
 import { useTripStore } from '../../stores/tripStore';
-import { toast } from '../../stores/uiStore';
+import { useAuth } from '../../auth/AuthContext';
 import Icon from '../common/Icon';
 import { tripRangeText } from '../../utils/date';
 import { openTripForm } from '../../pages/itinerary/tripForm';
@@ -8,6 +7,12 @@ import { openTripForm } from '../../pages/itinerary/tripForm';
 /** 旅程標題區＋工具列（行程頁、交通頁共用） */
 export default function TripHeader() {
   const trip = useTripStore((s) => s.trip);
+  const { user, logout } = useAuth();
+
+  async function confirmLogout() {
+    if (window.confirm('要登出這個 Google 帳號嗎？')) await logout();
+  }
+
   return (
     <header className="page-head page-head--flush">
       <div className="page-head__row">
@@ -18,12 +23,9 @@ export default function TripHeader() {
           </button>
           <div className="page-sub">{tripRangeText(trip)}</div>
         </div>
-        <nav className="tools" aria-label="行程工具">
-          <a className="tools__btn" href="https://translate.google.com/?sl=zh-TW&tl=ja&op=translate" target="_blank" rel="noopener" aria-label="翻譯（開新分頁）"><Icon name="translate" /></a>
-          <Link className="tools__btn" to="/todo" aria-label="行前待辦"><Icon name="calendar" /></Link>
-          <Link className="tools__btn" to="/map" aria-label="地圖"><Icon name="map" /></Link>
-          <button className="tools__btn" onClick={() => toast('記帳功能規劃中')} aria-label="記帳"><Icon name="dollar" /></button>
-        </nav>
+        <button className="avatar" onClick={confirmLogout} aria-label={`${user?.displayName || 'Google 帳號'}，按一下登出`} title="登出 Google 帳號">
+          {user?.photoURL ? <img src={user.photoURL} alt="" referrerPolicy="no-referrer" /> : <Icon bi="person-fill" />}
+        </button>
       </div>
     </header>
   );

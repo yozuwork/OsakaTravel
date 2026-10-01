@@ -1,0 +1,8 @@
+{
+  "rules": {
+    "osakaTravel": {
+      ".read": "auth != null && auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433'",
+      ".write": "auth != null && auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433'"
+    }
+  }
+}

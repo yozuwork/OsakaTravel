@@ -1,4 +1,5 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
@@ -20,5 +21,7 @@ if (missingConfig.length) {
 }
 
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+export const auth = getAuth(firebaseApp);
 export const database = getDatabase(firebaseApp);
 export const databasePath = import.meta.env.VITE_FIREBASE_DATABASE_PATH || 'osakaTravel';
+export const allowedFirebaseUid = (import.meta.env.VITE_ALLOWED_FIREBASE_UID || '').trim();

@@ -133,3 +133,13 @@ export function startTripSync() {
 
   return stopCloudListener;
 }
+
+/** 登出時停止監聽與寫入，避免未授權狀態存取雲端。 */
+export function stopTripSync() {
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = undefined;
+  cloudReady = false;
+  applyingCloudState = false;
+  stopCloudListener?.();
+  stopCloudListener = undefined;
+}
