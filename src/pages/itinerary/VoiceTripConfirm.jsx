@@ -1,26 +1,12 @@
 import { useState } from 'react';
 import { useTripStore } from '../../stores/tripStore';
 import { toast } from '../../stores/uiStore';
-import Button from '../../components/common/Button';
-import Icon from '../../components/common/Icon';
+import { VoiceActions, VoiceSaid } from '../../components/voice/VoiceInput';
 import TimeField from '../../components/common/TimeField';
 import { CATEGORIES } from '../../data/constants';
-import { addDays, diffDays, md, mdw, parseDate } from '../../utils/date';
+import { addDays, diffDays, md, mdw, tripYear } from '../../utils/date';
 import { durationText, guessCategory, parseTripVoice } from '../../utils/parseTripVoice';
 import { addItem } from './itemForm';
-
-/** 沒講年份的「12月23日」：優先選落在旅程期間內的年份（跨年旅程也能對上） */
-function tripYear(trip) {
-  const startYear = parseDate(trip.startDate).getFullYear();
-  return (month, day) => {
-    for (const y of [startYear, startYear + 1]) {
-      const iso = `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const d = diffDays(trip.startDate, iso);
-      if (d >= 0 && d < trip.days) return y;
-    }
-    return startYear;
-  };
-}
 
 /** 把解析結果轉成現有行程欄位（day / time / category / title / place / note） */
 function toDraft(parsed, trip) {
@@ -68,10 +54,7 @@ export default function VoiceTripConfirm({ transcript, onRetry, onDone }) {
 
   return (
     <form className="form" noValidate onSubmit={confirm}>
-      <div className="voice-said">
-        <span className="voice-said__label"><Icon bi="mic-fill" />你說</span>
-        <p className="voice-said__text">「{transcript}」</p>
-      </div>
+      <VoiceSaid text={transcript} />
 
       <div className="form__grid">
         <label className={'field' + missing(draft.day)}>
@@ -111,10 +94,7 @@ export default function VoiceTripConfirm({ transcript, onRetry, onDone }) {
         </label>
       </div>
 
-      <div className="btn-row">
-        <Button onClick={onRetry}><Icon bi="arrow-counterclockwise" />重新說一次</Button>
-        <Button type="submit" variant="primary"><Icon name="check" />確認新增</Button>
-      </div>
+      <VoiceActions onRetry={onRetry} />
     </form>
   );
 }

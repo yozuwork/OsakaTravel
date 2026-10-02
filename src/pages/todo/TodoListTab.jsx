@@ -6,7 +6,8 @@ import ProgressCard from '../../components/common/ProgressCard';
 import CheckRow from '../../components/common/CheckRow';
 import Icon from '../../components/common/Icon';
 import Fab, { addActions } from '../../components/common/Fab';
-import { uid } from '../../utils/helpers';
+import { addTodos } from './todoActions';
+import { openVoiceTodo } from './voiceTodo';
 
 export default function TodoListTab() {
   const todos = useTripStore((s) => s.todos);
@@ -28,7 +29,7 @@ export default function TodoListTab() {
     e.preventDefault();
     const v = text.trim();
     if (!v) return;
-    updateTrip((s) => { s.todos.push({ id: uid(), text: v, done: false }); });
+    addTodos([v]);
     setText('');
     inputRef.current?.focus();
   }
@@ -41,7 +42,7 @@ export default function TodoListTab() {
       onSave: (v) => {
         const t = v.text.trim();
         if (!t) { toast('請填寫待辦事項'); return false; }
-        updateTrip((s) => { s.todos.push({ id: uid(), text: t, done: false }); });
+        addTodos([t]);
         toast('已新增待辦');
       }
     });
@@ -75,7 +76,7 @@ export default function TodoListTab() {
           value={text} onChange={(e) => setText(e.target.value)} />
         <button className="btn btn--primary" type="submit" aria-label="新增待辦"><Icon name="plus" /></button>
       </form>
-      <Fab label="新增待辦" actions={addActions({ voiceDesc: '用說的快速新增待辦', textDesc: '手動輸入待辦內容', onText: openAdd })} />
+      <Fab label="新增待辦" actions={addActions({ voiceDesc: '用說的快速新增待辦', textDesc: '手動輸入待辦內容', onText: openAdd, onVoice: () => openVoiceTodo(openAdd) })} />
     </>
   );
 }

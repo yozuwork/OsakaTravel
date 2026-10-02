@@ -1,8 +1,8 @@
 {
   "rules": {
     "osakaTravel": {
-      ".read": "auth != null && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && auth.token.email == 'stupid1111174@gmail.com'))",
-      ".write": "auth != null && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && auth.token.email == 'stupid1111174@gmail.com'))"
+      ".read": "auth != null && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && (auth.token.email == 'stupid1111174@gmail.com' || auth.token.email == '422571395rex@gmail.com')))",
+      ".write": "auth != null && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && (auth.token.email == 'stupid1111174@gmail.com' || auth.token.email == '422571395rex@gmail.com')))"
     }
   }
 }

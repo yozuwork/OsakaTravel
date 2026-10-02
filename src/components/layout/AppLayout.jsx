@@ -5,6 +5,7 @@ import TabBar from './TabBar';
 import ModalRoot from '../modal/ModalRoot';
 import Toast from '../common/Toast';
 import GlobalLoading, { PageLoader } from '../common/GlobalLoading';
+import { PageTransitionProvider } from '../transition/PageTransition';
 
 export default function AppLayout() {
   const tripName = useTripStore((s) => s.trip.name);
@@ -19,7 +20,7 @@ export default function AppLayout() {
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
   return (
-    <>
+    <PageTransitionProvider>
       <div className="app">
         <div className="view">
           <Suspense fallback={<PageLoader />}>
@@ -32,6 +33,6 @@ export default function AppLayout() {
       <ModalRoot />
       <Toast />
       <GlobalLoading />
-    </>
+    </PageTransitionProvider>
   );
 }

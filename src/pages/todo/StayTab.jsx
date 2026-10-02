@@ -6,7 +6,9 @@ import Icon from '../../components/common/Icon';
 import Fab, { addActions } from '../../components/common/Fab';
 import KV from '../../components/common/KV';
 import { addDays, diffDays, mdw } from '../../utils/date';
-import { mapsUrl, uid } from '../../utils/helpers';
+import { mapsUrl } from '../../utils/helpers';
+import { addStay } from './todoActions';
+import { openVoiceStay } from './voiceTodo';
 import { compressImage } from '../../utils/file';
 
 function editStay(id) {
@@ -35,10 +37,11 @@ function editStay(id) {
       if (photoFile) {
         try { data.photo = await compressImage(photoFile, 900, 0.78); } catch { toast('圖片讀取失敗'); return false; }
       }
-      updateTrip((st) => {
-        const target = existing && st.stays.find((x) => x.id === id);
-        if (target) Object.assign(target, data); else st.stays.push({ ...data, id: uid() });
+      if (existing) updateTrip((st) => {
+        const target = st.stays.find((x) => x.id === id);
+        if (target) Object.assign(target, data);
       });
+      else addStay(data);
       toast('已儲存住宿');
     },
     onDelete: existing ? () => {
@@ -48,7 +51,7 @@ function editStay(id) {
   });
 }
 
-const stayActions = addActions({ voiceDesc: '用說的快速建立住宿', textDesc: '手動輸入住宿資訊', onText: () => editStay(null) });
+const stayActions = addActions({ voiceDesc: '用說的快速建立住宿', textDesc: '手動輸入住宿資訊', onText: () => editStay(null), onVoice: () => openVoiceStay(() => editStay(null)) });
 
 export default function StayTab() {
   const stays = useTripStore((s) => s.stays);

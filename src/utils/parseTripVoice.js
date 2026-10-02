@@ -7,7 +7,7 @@
 
 const CN = { 零: 0, 〇: 0, 一: 1, 二: 2, 兩: 2, 两: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9 };
 // 阿拉伯數字或中文數字（最多到「九十九」）
-const NUM = '[0-9０-９]+|[零〇一二兩两三四五六七八九十]+';
+export const NUM = '[0-9０-９]+|[零〇一二兩两三四五六七八九十]+';
 
 /** "23"、"二十三"、"十二"、"兩" → 數字；無法辨識回傳 NaN */
 export function toNum(s) {
@@ -35,7 +35,7 @@ const RE_REL = /大後天|大后天|今天|今日|明天|明日|後天|后天/;
 const RE_MD = new RegExp(`(${NUM})\\s*月\\s*(${NUM})\\s*[日號号]?`);
 const RE_SLASH = /(\d{1,2})\s*[/／]\s*(\d{1,2})(?!\s*[:：點点])/;
 
-function parseDatePart(s, { today, year }) {
+export function parseDatePart(s, { today, year }) {
   let m = s.match(RE_REL);
   if (m) {
     const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + RELATIVE[m[0]]);
@@ -56,7 +56,7 @@ const RE_TIME = new RegExp(
   `(${PERIODS})?\\s*(${NUM})\\s*(?:[點点時]\\s*(?:(半)|(一刻)|(三刻)|(${NUM})\\s*分?|整)?|[:：]\\s*(\\d{1,2}))`
 );
 
-function parseTimePart(s) {
+export function parseTimePart(s) {
   const m = s.match(RE_TIME);
   if (!m) return null;
   const [all, per, hs, half, q1, q3, minCn, minColon] = m;

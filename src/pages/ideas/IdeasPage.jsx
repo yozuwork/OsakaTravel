@@ -7,9 +7,10 @@ import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
 import Fab, { addActions } from '../../components/common/Fab';
 import { CATEGORIES } from '../../data/constants';
-import { safeUrl, uid } from '../../utils/helpers';
+import { safeUrl } from '../../utils/helpers';
 import { compressImage } from '../../utils/file';
 import { openItemForm } from '../itinerary/itemForm';
+import { addIdea, openVoiceIdea } from './voiceIdea';
 
 const metaText = (d) => [d.category, d.desc].filter(Boolean).join('・');
 
@@ -34,10 +35,11 @@ function editIdea(id) {
       if (file) {
         try { data.image = await compressImage(file, 700, 0.75); } catch { toast('圖片讀取失敗'); return false; }
       }
-      updateTrip((s) => {
-        const target = existing && s.ideas.find((x) => x.id === id);
-        if (target) Object.assign(target, data); else s.ideas.unshift({ ...data, id: uid() });
+      if (existing) updateTrip((s) => {
+        const target = s.ideas.find((x) => x.id === id);
+        if (target) Object.assign(target, data);
       });
+      else addIdea(data);
       toast('已儲存想法');
     },
     onDelete: existing ? () => {
@@ -47,7 +49,7 @@ function editIdea(id) {
   });
 }
 
-const ideaActions = addActions({ voiceDesc: '用說的快速記下想法', textDesc: '手動輸入想法內容', onText: () => editIdea(null) });
+const ideaActions = addActions({ voiceDesc: '用說的快速記下想法', textDesc: '手動輸入想法內容', onText: () => editIdea(null), onVoice: () => openVoiceIdea(() => editIdea(null)) });
 
 function IdeaDetail({ id }) {
   const { close } = useModalContext();

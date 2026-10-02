@@ -9,6 +9,7 @@ import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
 import Fab, { addActions } from '../../components/common/Fab';
 import { uid } from '../../utils/helpers';
+import { openVoiceBag } from './voiceTodo';
 
 const openBagGroup = (gid) => modal.open({ title: '管理行李清單', content: <BagGroupModal gid={gid} /> });
 
@@ -45,7 +46,7 @@ export default function BagTab() {
         </section>
       ))}
       <Button variant="dashed" className="add-inline" onClick={addGroup}><Icon name="plus" />新增分類</Button>
-      <Fab label="新增行李分類" actions={addActions({ voiceDesc: '用說的快速加入行李', textDesc: '手動新增行李分類', onText: addGroup })} />
+      <Fab label="新增行李分類" actions={addActions({ voiceDesc: '用說的快速加入行李', textDesc: '手動新增行李分類', onText: addGroup, onVoice: () => openVoiceBag(addGroup) })} />
     </>
   );
 }

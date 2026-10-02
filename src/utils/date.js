@@ -18,6 +18,18 @@ export function period(t) {
   return h < 12 ? '上午' : h < 18 ? '下午' : '晚上';
 }
 
+/** 沒講年份的「12月23日」：優先選落在旅程期間內的年份（跨年旅程也能對上） */
+export function tripYear(trip) {
+  const startYear = parseDate(trip.startDate).getFullYear();
+  return (month, day) => {
+    for (const y of [startYear, startYear + 1]) {
+      const d = diffDays(trip.startDate, `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+      if (d >= 0 && d < trip.days) return y;
+    }
+    return startYear;
+  };
+}
+
 /** 例：DEC 21 - DEC 25, 2026 */
 export function tripRangeText(trip) {
   const s = parseDate(trip.startDate);

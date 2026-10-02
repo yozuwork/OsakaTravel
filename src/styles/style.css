@@ -42,6 +42,13 @@
   --tabbar-h: 76px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --font: 'Lexend', 'Noto Sans TC', system-ui, -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+
+  /* 轉場動畫（鋸齒碎片・紅黑白） */
+  --fx-black: #000000;
+  --fx-red: #D8433A;
+  --fx-white: #FFFFFF;
+  --fx-dots: radial-gradient(circle, rgba(255, 255, 255, .22) 1.6px, transparent 1.8px);
+  --fx-dots-size: 9px 9px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -642,6 +649,52 @@ select.field__input {
 .voice-said__text { margin: 4px 0 0; font-size: 16px; font-weight: 700; line-height: 1.6; word-break: break-word; }
 .field.is-missing .field__input { border-color: var(--red); border-style: dashed; }
 .voice-warn { color: var(--red-dark); font-weight: 500; }
+.voice-item { display: flex; align-items: center; gap: 6px; }
+.voice-item .field__input { flex: 1; min-width: 0; }
+
+/* ---------- 頁面轉場：鋸齒碎片（PageTransition.jsx） ---------- */
+/* 非動畫時隱藏且不擋操作；動畫中蓋住畫面並吃掉點擊 */
+.xfx { position: fixed; inset: 0; z-index: 90; overflow: hidden; visibility: hidden; pointer-events: none; }
+.xfx.is-on { visibility: visible; pointer-events: auto; }
+/* 輕震時邊緣不露白 */
+.xfx__stage { position: absolute; inset: -8px; }
+.shard { position: absolute; top: -10%; bottom: -10%; left: -30%; right: -30%; transform: translateX(130%) skewX(-14deg); }
+.shard--black {
+  background: var(--fx-black);
+  clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 6% 78%, 2% 64%, 9% 46%, 4% 30%);
+}
+.shard--red {
+  background-color: var(--fx-red); background-image: var(--fx-dots); background-size: var(--fx-dots-size);
+  clip-path: polygon(16% 0, 100% 0, 100% 100%, 8% 100%, 13% 82%, 7% 68%, 15% 50%, 10% 26%);
+}
+.shard--white { background: var(--fx-white); clip-path: polygon(30% 0, 33% 0, 25% 100%, 22% 100%); }
+.xtitle {
+  position: absolute; left: 0; right: 0; top: 40%; transform: translateY(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: 0;
+}
+.xtitle__en { display: flex; gap: 3px; transform: rotate(-8deg); }
+.xtitle__en i {
+  font-style: normal; font-family: var(--font); font-weight: 900; font-size: 34px; line-height: 1;
+  padding: 4px 6px 3px; border: 2px solid var(--fx-black);
+}
+.xtitle__en i:nth-child(odd) { background: var(--fx-white); color: var(--fx-black); transform: rotate(-4deg) translateY(2px); }
+.xtitle__en i:nth-child(even) { background: var(--fx-black); color: var(--fx-white); border-color: var(--fx-white); transform: rotate(5deg) translateY(-3px); }
+.xtitle__zh {
+  transform: rotate(-8deg); font-size: 18px; font-weight: 900; color: var(--fx-white); letter-spacing: .2em;
+  background: var(--fx-black); padding: 4px 14px; box-shadow: 4px 4px 0 var(--fx-white);
+}
+
+/* ---------- 切換日期：紅色網點斜帶（useDaySwitch.js） ---------- */
+.content--itinerary { position: relative; }
+/* 斜帶限制在行程內容區內，不會撐出橫向捲軸 */
+.day-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 6; }
+.slash {
+  position: absolute; left: -20%; right: -20%; top: 60px; height: 120px;
+  background-color: var(--fx-red); background-image: var(--fx-dots); background-size: 8px 8px;
+  border-top: 3px solid var(--fx-black); border-bottom: 3px solid var(--fx-black);
+  transform: translateX(-120%) rotate(-12deg); visibility: hidden;
+}
+.slash.is-on { visibility: visible; }
 
 /* ---------- Toast ---------- */
 .toast {
@@ -662,6 +715,9 @@ select.field__input {
    ========================================================= */
 @media (min-width: 900px) {
   :root { --side-w: 248px; }
+  .xtitle__en i { font-size: 58px; padding: 6px 10px 5px; border-width: 3px; }
+  .xtitle__en { gap: 5px; }
+  .xtitle__zh { font-size: 26px; padding: 6px 20px; box-shadow: 6px 6px 0 var(--fx-white); }
   .fab, .fab-spacer, .fab-menu { display: none; }
   body { background: var(--bg); }
   .app { max-width: none; box-shadow: none; padding-left: var(--side-w); }

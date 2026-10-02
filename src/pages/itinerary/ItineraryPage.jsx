@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { DndContext, MouseSensor, TouchSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
@@ -6,6 +6,7 @@ import Icon from '../../components/common/Icon';
 import Button from '../../components/common/Button';
 import Fab, { addActions } from '../../components/common/Fab';
 import TripHeader from '../../components/layout/TripHeader';
+import { useDaySwitch } from '../../components/transition/useDaySwitch';
 import { cx, mapsUrl } from '../../utils/helpers';
 import { catIcon } from '../../data/constants';
 import { addDays, md, mdw, period } from '../../utils/date';
@@ -28,7 +29,11 @@ export default function ItineraryPage() {
     [allItems, day]
   );
 
-  const setDay = (i) => updateTrip((s) => { s.ui.day = i; });
+  const slashRef = useRef(null);
+  const listRef = useRef(null);
+  const applyDay = useCallback((i) => updateTrip((s) => { s.ui.day = i; }), []);
+  // 切換日期：紅色斜帶劃過，劃到中間時換資料
+  const setDay = useDaySwitch({ current: day, onSwitch: applyDay, slashRef, listRef });
 
   // 拖曳排序：滑鼠移動 6px 才算拖曳；手機要長按 250ms，避免和捲動、點擊衝突
   const sensors = useSensors(
@@ -62,7 +67,8 @@ export default function ItineraryPage() {
         ))}
       </div>
 
-      <main className="content content--itinerary">
+      <main className="content content--itinerary" ref={listRef}>
+        <div className="day-fx" aria-hidden="true"><div className="slash" ref={slashRef} /></div>
         <div className="row-between" style={{ maxWidth: 884 }}>
           <h2 className="section-title">D{day + 1} · {mdw(addDays(trip.startDate, day))}</h2>
           <span className="small muted">{items.length} 個行程</span>
