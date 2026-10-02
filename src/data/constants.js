@@ -26,7 +26,8 @@ export const TODO_TABS = [
   { id: 'flight', path: '/todo/flight', label: '班機' },
   { id: 'entry', path: '/todo/entry', label: '入國登記' },
   { id: 'stay', path: '/todo/stay', label: '住宿' },
-  { id: 'bag', path: '/todo/bag', label: '行李' }
+  { id: 'bag', path: '/todo/bag', label: '行李' },
+  { id: 'usj', path: '/todo/usj', label: '環球影城' }
 ];
 
 /** 交通的子分頁（對應 /transit/*） */

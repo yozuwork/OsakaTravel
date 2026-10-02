@@ -7,11 +7,11 @@ export function addTodos(texts) {
   updateTrip((s) => { texts.forEach((text) => s.todos.push({ id: uid(), text, done: false })); });
 }
 
-/** 新增行李項目到指定分類；gid 為 null 時建立「新分類」 */
-export function addBagItems(gid, texts) {
+/** 新增項目到分類清單（預設行李）的指定分類；gid 為 null 時建立「新分類」 */
+export function addBagItems(gid, texts, listKey = 'bag') {
   updateTrip((s) => {
-    let grp = gid && s.bag.find((x) => x.id === gid);
-    if (!grp) { grp = { id: uid(), name: '新分類', items: [] }; s.bag.push(grp); }
+    let grp = gid && s[listKey].find((x) => x.id === gid);
+    if (!grp) { grp = { id: uid(), name: '新分類', items: [] }; s[listKey].push(grp); }
     texts.forEach((text) => grp.items.push({ id: uid(), text, done: false }));
   });
 }

@@ -8,16 +8,24 @@ import { produce } from 'immer';
 import { onValue, ref, set } from 'firebase/database';
 import { STORAGE_KEY } from '../data/constants';
 import { defaultState, SAMPLE_SEED } from '../data/defaultState';
+import { DEFAULT_CHARACTERS } from '../data/dialogueScript';
 import { database, databasePath } from '../services/firebase';
 import { toast } from './uiStore';
 
 /* 舊版（seed 1）範例行程的標題，用來判斷使用者是否還沒改過範例 */
 const SEED1_TITLES = ['抵達關西機場第一航廈', '南海電鐵售票處兌換 rapi:t 車票', '搭乘南海 rapi:t 前往難波', '難波站步行至飯店入住'];
 
-/** 資料仍是未修改的舊範例時，換成新版範例的行程／班機／待辦；使用者改過的資料不動 */
+/** 資料仍是未修改的舊範例時，換成新版範例；使用者改過的資料不動（依 seed 逐版升級） */
 function upgradeSample(saved, base) {
-  if ((saved.seed || 1) >= SAMPLE_SEED) return saved;
-  const next = { ...saved, seed: SAMPLE_SEED };
+  let next = saved;
+  if ((next.seed || 1) < 2) next = upgradeToSeed2(next, base);
+  if ((next.seed || 1) < 3) next = upgradeToSeed3(next, base);
+  return next;
+}
+
+/** seed 1 → 2：整套換成新版範例行程／班機，補上新的待辦 */
+function upgradeToSeed2(saved, base) {
+  const next = { ...saved, seed: 2 };
   const items = saved.items || [];
   const untouchedItems = items.length === SEED1_TITLES.length && items.every((it) => SEED1_TITLES.includes(it.title));
   if (untouchedItems) {
@@ -30,6 +38,42 @@ function upgradeSample(saved, base) {
   return next;
 }
 
+/* seed 2 範例的回程是神戶機場；seed 3 改成關西機場。key 是舊標題，只改「還是原本範例內容」的那幾筆 */
+const KOBE_ITEMS = {
+  '前往神戶機場': { time: '09:15', title: '搭乘南海 rapi:t 前往關西機場', place: 'なんば駅（南海）', note: '約 35 分鐘抵達關西空港駅' },
+  '抵達神戶機場辦理報到': { time: '10:00', title: '抵達關西機場第一航廈辦理報到', place: '關西國際機場 第一航廈', note: '起飛前 2 小時到；退稅商品放隨身行李' },
+  '星宇航空 UKB → TPE 起飛': { title: '星宇航空 KIX → TPE 起飛', place: '關西國際機場', note: '直飛，抵達時間請以實際機票為準' }
+};
+const KOBE_NOTES = {
+  '回程改從神戶機場出發，買單程票即可': '回程也從關西機場出發，可一併規劃回程車票'
+};
+const KOBE_TODOS = { '確認神戶機場回程交通': '確認回程前往關西機場的交通' };
+
+/** seed 2 → 3：回程神戶機場改成關西機場 */
+function upgradeToSeed3(saved) {
+  const items = (saved.items || []).map((it) => {
+    if (KOBE_ITEMS[it.title]) return { ...it, ...KOBE_ITEMS[it.title] };
+    if (KOBE_NOTES[it.note]) return { ...it, note: KOBE_NOTES[it.note] };
+    return it;
+  });
+  const flights = (saved.flights || []).map((f) => (f.from === 'UKB'
+    ? { ...f, from: 'KIX', fromName: f.fromName === '神戶機場' ? '關西 第一航廈' : f.fromName, arr: f.arr === '15:05' ? '' : f.arr }
+    : f));
+  const todos = (saved.todos || []).map((t) => (KOBE_TODOS[t.text] ? { ...t, text: KOBE_TODOS[t.text] } : t));
+  return { ...saved, seed: 3, items, flights, todos };
+}
+
+/** 角色對話：沒有資料就用預設；內建角色一定存在（圖片檔名、builtin 以程式內建為準） */
+function normalizeDialogue(saved, base) {
+  if (!saved?.script || !saved?.characters) return base;
+  const custom = saved.characters.filter((c) => !DEFAULT_CHARACTERS.some((d) => d.id === c.id));
+  const builtins = DEFAULT_CHARACTERS.map((d) => {
+    const s = saved.characters.find((c) => c.id === d.id);
+    return s ? { ...s, img: d.img, builtin: true } : { ...d };
+  });
+  return { characters: [...builtins, ...custom], script: saved.script };
+}
+
 function normalize(saved) {
   const base = defaultState();
   if (!saved) return base;
@@ -38,7 +82,9 @@ function normalize(saved) {
     ...base, ...saved,
     trip: { ...base.trip, ...saved.trip },
     ui: { ...base.ui, ...saved.ui },
-    entry: { ...base.entry, ...saved.entry }
+    entry: { ...base.entry, ...saved.entry },
+    usj: { ...base.usj, ...saved.usj },
+    dialogue: normalizeDialogue(saved.dialogue, base.dialogue)
   };
 }
 

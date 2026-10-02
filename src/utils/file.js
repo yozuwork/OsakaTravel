@@ -1,5 +1,8 @@
-/** 圖片壓縮（存進 localStorage 前先縮小） */
-export function compressImage(file, max, quality) {
+/**
+ * 圖片壓縮（存進 localStorage 前先縮小）
+ * @param {string} [type] 輸出格式；去背立繪用 'image/webp' 或 'image/png' 才能保留透明
+ */
+export function compressImage(file, max, quality, type = 'image/jpeg') {
   return new Promise((resolve, reject) => {
     if (!file || !file.type.startsWith('image/')) return reject(new Error('不是圖片檔'));
     const reader = new FileReader();
@@ -11,7 +14,7 @@ export function compressImage(file, max, quality) {
         c.width = Math.round(img.width * s);
         c.height = Math.round(img.height * s);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        resolve(c.toDataURL('image/jpeg', quality || 0.8));
+        resolve(c.toDataURL(type, quality || 0.8));
       };
       img.onerror = reject;
       img.src = reader.result;

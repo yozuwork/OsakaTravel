@@ -17,10 +17,11 @@ const TYPE_MS = 55;        // 每字間隔
 const TYPE_START_MS = 420; // 開啟後多久開始打字
 const NEXT_TYPE_MS = 260;  // 換角色後多久開始打字
 
-const imgSrc = (file) => `${import.meta.env.BASE_URL}characters/${file}`;
+const sameSpeaker = (a, b) => a && b && a.name === b.name && a.img === b.img && a.side === b.side;
 
 /**
  * @param {{ script: Array<{ name: string, img: string, side?: 'left'|'right', lift?: string, line: Array<[string, boolean?]> }> }} props
+ *   img 是完整網址（utils/dialogueText.js 的 resolveScript 會轉好）
  */
 export default function CharacterDialogue({ script }) {
   const isOpen = useDialogueStore((s) => s.isOpen);
@@ -142,14 +143,35 @@ export default function CharacterDialogue({ script }) {
     later(TYPE_START_MS, () => { if (st.current.open) typeLine(script[0].line); });
   }
 
-  /* ---------- 換下一位角色：舊立繪甩出 → 對話框震一下 → 新立繪從新的一側切入 ---------- */
+  /* ---------- 換下一句：同一個角色只換台詞；換角色時舊立繪甩出 → 對話框震一下 → 新立繪從新的一側切入 ---------- */
   async function nextSpeaker() {
     const s = st.current;
     s.switching = true;
     const reduced = prefersReducedMotion();
     const dir = script[s.idx].side === 'left' ? -1 : 1;
+    const same = sameSpeaker(script[s.idx], script[s.idx + 1]);
     nextRef.current.classList.remove('is-shown');
     try {
+      if (same) {
+        // 同一個角色接著說：台詞淡出後直接打下一句，對話框輕輕跳一下
+        if (!reduced) {
+          const fade = lineRef.current.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 120, fill: 'forwards' });
+          await fade.finished;
+          fade.cancel();
+        }
+        if (!s.open) return;
+        s.idx += 1;
+        flushSync(() => setIdx(s.idx));
+        lineRef.current.textContent = '';
+        if (!reduced) {
+          anim(boxRef, [{ transform: 'none' }, { transform: 'translateY(-4px) rotate(-.6deg)', offset: 0.4 }, { transform: 'none' }], { duration: 180 });
+          await wait(120);
+        }
+        if (!s.open) return;
+        typeLine(script[s.idx].line);
+        if (reduced) s.finish();
+        return;
+      }
       if (!reduced) {
         const out = cutinRef.current.animate(
           [{ transform: 'none', opacity: 1 }, { transform: `translateX(${dir * 60}%) skewX(-10deg)`, opacity: 0 }],
@@ -233,7 +255,7 @@ export default function CharacterDialogue({ script }) {
             <div className="ci-shard ci-shard--black" ref={blackRef} />
             <div className="ci-shard ci-shard--white" ref={whiteRef} />
           </div>
-          {sp && <img ref={imgRef} src={imgSrc(sp.img)} alt={sp.name} style={{ bottom: sp.lift || '-2%' }} draggable="false" />}
+          {sp && <img ref={imgRef} src={sp.img} alt={sp.name} style={{ bottom: sp.lift || '-2%' }} draggable="false" />}
         </div>
         <div className="dbox" ref={boxRef}>
           <svg className="dbox__shape" viewBox="0 0 360 170" preserveAspectRatio="none" aria-hidden="true">

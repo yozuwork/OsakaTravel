@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { Outlet, useLocation, useMatches } from 'react-router';
 import { useTripStore } from '../../stores/tripStore';
 import TabBar from './TabBar';
@@ -9,10 +9,13 @@ import { PageTransitionProvider } from '../transition/PageTransition';
 import CharacterDialogue from '../dialogue/CharacterDialogue';
 import { openDialogue } from '../../stores/dialogueStore';
 import { splashGone } from '../../utils/splash';
-import { DIALOGUE_SCRIPT } from '../../data/dialogueScript';
+import { getSettings } from '../../stores/settingsStore';
+import { resolveScript } from '../../utils/dialogueText';
 
 export default function AppLayout() {
   const tripName = useTripStore((s) => s.trip.name);
+  const dialogue = useTripStore((s) => s.dialogue);
+  const script = useMemo(() => resolveScript(dialogue), [dialogue]);
   const { pathname } = useLocation();
   const matches = useMatches();
   const pageTitle = [...matches].reverse().find((m) => m.handle?.title)?.handle.title;
@@ -23,11 +26,11 @@ export default function AppLayout() {
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
 
-  // 開啟畫面消失約 0.5 秒後自動播放角色對話（之後可從頭像選單重新開啟）
+  // 開啟畫面消失約 0.5 秒後自動播放角色對話（可在「設定」關閉；之後可從頭像選單重新開啟）
   useEffect(() => {
     let t;
     let cancelled = false;
-    splashGone.then(() => { if (!cancelled) t = setTimeout(openDialogue, 500); });
+    splashGone.then(() => { if (!cancelled && getSettings().dialogueAutoplay) t = setTimeout(openDialogue, 500); });
     return () => { cancelled = true; clearTimeout(t); };
   }, []);
 
@@ -45,7 +48,7 @@ export default function AppLayout() {
       <ModalRoot />
       <Toast />
       <GlobalLoading />
-      <CharacterDialogue script={DIALOGUE_SCRIPT} />
+      <CharacterDialogue script={script} />
     </PageTransitionProvider>
   );
 }

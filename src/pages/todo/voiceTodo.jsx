@@ -21,15 +21,21 @@ export function openVoiceTodo(onText) {
   });
 }
 
-/* ---------- 行李 ---------- */
-export function openVoiceBag(onText) {
+/* ---------- 分類清單（行李、環球影城） ---------- */
+/**
+ * @param {() => void} onText 不支援語音時改用文字新增
+ * @param {{ listKey?: string, noun?: string, title?: string, placeholder?: string }} [o]
+ */
+export function openVoiceBag(onText, {
+  listKey = 'bag', noun = '行李', title = '語音加入行李', placeholder = '例如：「要帶充電器、牙刷還有拖鞋」'
+} = {}) {
   openVoice({
-    title: '語音加入行李',
-    placeholder: '例如：「要帶充電器、牙刷還有拖鞋」',
+    title,
+    placeholder,
     onText,
     render: (transcript, { retry, close }) => (
-      <VoiceListConfirm transcript={transcript} kind="bag" onRetry={retry}
-        onConfirm={(texts, gid) => { addBagItems(gid, texts); toast(`已加入 ${texts.length} 項行李`); close(); }} />
+      <VoiceListConfirm transcript={transcript} kind="bag" listKey={listKey} noun={noun} onRetry={retry}
+        onConfirm={(texts, gid) => { addBagItems(gid, texts, listKey); toast(`已加入 ${texts.length} 項${noun}`); close(); }} />
     )
   });
 }
@@ -37,11 +43,11 @@ export function openVoiceBag(onText) {
 /**
  * 待辦／行李確認卡：一句話拆成多個項目，可修改、刪除，行李另外選分類
  */
-function VoiceListConfirm({ transcript, kind, onRetry, onConfirm }) {
-  const bag = useTripStore((s) => s.bag);
+function VoiceListConfirm({ transcript, kind, listKey = 'bag', noun: nounProp, onRetry, onConfirm }) {
+  const bag = useTripStore((s) => s[listKey]) || [];
   const [items, setItems] = useState(() => parseListVoice(transcript, kind));
   const [gid, setGid] = useState(() => bag[0]?.id || '');
-  const noun = kind === 'bag' ? '行李' : '待辦';
+  const noun = nounProp || (kind === 'bag' ? '行李' : '待辦');
 
   const setAt = (i, v) => setItems((list) => list.map((x, j) => (j === i ? v : x)));
   const removeAt = (i) => setItems((list) => list.filter((_, j) => j !== i));

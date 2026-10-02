@@ -10,6 +10,7 @@ const FlightTab = lazy(() => import('./pages/todo/FlightTab'));
 const EntryTab = lazy(() => import('./pages/todo/EntryTab'));
 const StayTab = lazy(() => import('./pages/todo/StayTab'));
 const BagTab = lazy(() => import('./pages/todo/BagTab'));
+const UsjTab = lazy(() => import('./pages/todo/UsjTab'));
 const MapPage = lazy(() => import('./pages/map/MapPage'));
 const IdeasPage = lazy(() => import('./pages/ideas/IdeasPage'));
 const TransitLayout = lazy(() => import('./pages/transit/TransitLayout'));
@@ -34,7 +35,8 @@ export const router = createHashRouter([
           { path: 'flight', element: <FlightTab /> },
           { path: 'entry', element: <EntryTab /> },
           { path: 'stay', element: <StayTab /> },
-          { path: 'bag', element: <BagTab /> }
+          { path: 'bag', element: <BagTab /> },
+          { path: 'usj', element: <UsjTab /> }
         ]
       },
       { path: 'map', element: <MapPage />, handle: { title: '地圖' } },
