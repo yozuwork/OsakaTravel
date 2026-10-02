@@ -3,7 +3,6 @@ import { DndContext, MouseSensor, TouchSensor, closestCenter, useSensor, useSens
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
 import Icon from '../../components/common/Icon';
-import Button from '../../components/common/Button';
 import Fab, { addActions } from '../../components/common/Fab';
 import TripHeader from '../../components/layout/TripHeader';
 import { useMangaDaySwitch } from '../../components/transition/MangaDaySwitch';
@@ -11,8 +10,7 @@ import { cx, mapsUrl } from '../../utils/helpers';
 import { WEEK, catIcon } from '../../data/constants';
 import { addDays, md, mdw, parseDate, period } from '../../utils/date';
 import { dayItems, placeItem } from '../../utils/itinerary';
-import { openItemForm } from './itemForm';
-import { openItemDetail } from './itemDetail';
+import { openItemDetail, openItemForm } from './itemEditor';
 import { openVoiceTrip } from './VoiceTripInput';
 
 // 手機版 + 按鈕的選項
@@ -98,11 +96,10 @@ export default function ItineraryPage() {
           <div className="empty">
             <Icon name="calendar" />
             <span className="empty__title">這天還沒有行程</span>
-            <span className="small muted">點「＋」新增行程開始安排</span>
+            <span className="small muted">點右下角的「＋」開始安排</span>
           </div>
         )}
 
-        <Button variant="dashed" className="add-inline" onClick={() => openItemForm(null)}><Icon name="plus" />新增行程</Button>
         <Fab label="新增行程" actions={itemActions} />
       </main>
       {overlay}
@@ -129,7 +126,7 @@ function TimelineRow({ it, onOpen }) {
         onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpen(it.id); } }}>
         {it.image ? (
           <span className="tl-thumb">
-            <img src={it.image} alt="" draggable="false" />
+            <img src={it.image} alt="" draggable="false" referrerPolicy="no-referrer" />
             <a className="tl-thumb__map" href={mapsUrl(it.place || it.title)} target="_blank" rel="noopener"
               onClick={(e) => e.stopPropagation()} aria-label={`在 Google 地圖查看：${it.place || it.title}`}>
               <Icon name="map" />

@@ -6,7 +6,7 @@ import TimeField from '../../components/common/TimeField';
 import { CATEGORIES } from '../../data/constants';
 import { addDays, diffDays, md, mdw, tripYear } from '../../utils/date';
 import { durationText, guessCategory, parseTripVoice } from '../../utils/parseTripVoice';
-import { addItem } from './itemForm';
+import { addItem } from './itemEditor';
 
 /** 把解析結果轉成現有行程欄位（day / time / category / title / place / note） */
 function toDraft(parsed, trip) {

@@ -45,7 +45,6 @@ export default function BagTab() {
           </div>
         </section>
       ))}
-      <Button variant="dashed" className="add-inline" onClick={addGroup}><Icon name="plus" />新增分類</Button>
       <Fab label="新增行李分類" actions={addActions({ voiceDesc: '用說的快速加入行李', textDesc: '手動新增行李分類', onText: addGroup, onVoice: () => openVoiceBag(addGroup) })} />
     </>
   );

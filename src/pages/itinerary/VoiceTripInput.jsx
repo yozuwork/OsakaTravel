@@ -1,6 +1,6 @@
 import { openVoice } from '../../components/voice/VoiceInput';
 import VoiceTripConfirm from './VoiceTripConfirm';
-import { openItemForm } from './itemForm';
+import { openItemForm } from './itemEditor';
 
 /** 語音新增行程（手機版 + 按鈕 →「語音新增」） */
 export function openVoiceTrip() {

@@ -8,8 +8,32 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- 開啟畫面：寫在 HTML 裡，JS 還沒載入就先顯示；src/utils/splash.js 負責淡出移除 -->
+  <style>
+    #splash { position: fixed; inset: 0; z-index: 200; display: flex; background: #FDFBFB; transition: opacity .5s ease, visibility .5s; }
+    #splash.is-hidden { opacity: 0; visibility: hidden; }
+    #splash picture, #splash img { display: block; width: 100%; height: 100%; }
+    /* 預設完整顯示並貼齊底部（上方是天空，和底色接得起來）；螢幕比圖片寬時改成填滿，裁掉上方天空 */
+    #splash img { object-fit: contain; object-position: center bottom; }
+    @media (orientation: portrait) and (min-aspect-ratio: 941/1671) { #splash img { object-fit: cover; } }
+    /* 超寬螢幕：上下都會被裁，對齊 40% 讓標題和人物都留在畫面內 */
+    @media (orientation: landscape) and (min-aspect-ratio: 1672/941) { #splash img { object-fit: cover; object-position: center 40%; } }
+    .splash__dots { position: absolute; left: 50%; top: max(24px, 6vh); transform: translateX(-50%); display: flex; gap: 8px; }
+    .splash__dots i { width: 8px; height: 8px; border-radius: 50%; background: #D9453C; opacity: .25; animation: splash-dot 1s ease-in-out infinite; }
+    .splash__dots i:nth-child(2) { animation-delay: .15s; }
+    .splash__dots i:nth-child(3) { animation-delay: .3s; }
+    @keyframes splash-dot { 50% { opacity: 1; transform: translateY(-4px); } }
+    @media (prefers-reduced-motion: reduce) { #splash { transition: none; } .splash__dots i { animation: none; opacity: .6; } }
+  </style>
 </head>
 <body>
+  <div id="splash" role="status" aria-label="大阪行，載入中">
+    <picture>
+      <source media="(orientation: landscape)" srcset="/splash/splash-desktop.webp">
+      <img src="/splash/splash-mobile.webp" alt="" fetchpriority="high">
+    </picture>
+    <span class="splash__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+  </div>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

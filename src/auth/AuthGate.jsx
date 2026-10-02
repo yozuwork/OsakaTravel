@@ -1,7 +1,12 @@
+import { useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { hideSplash } from '../utils/splash';
 
 export default function AuthGate({ children }) {
   const { user, checking, error, login, isConfigured } = useAuth();
+
+  // 確認完登入狀態（不論已登入或要顯示登入畫面）就淡出開啟畫面
+  useEffect(() => { if (!checking) hideSplash(); }, [checking]);
 
   if (checking) {
     return (

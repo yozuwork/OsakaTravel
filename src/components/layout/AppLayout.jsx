@@ -6,6 +6,10 @@ import ModalRoot from '../modal/ModalRoot';
 import Toast from '../common/Toast';
 import GlobalLoading, { PageLoader } from '../common/GlobalLoading';
 import { PageTransitionProvider } from '../transition/PageTransition';
+import CharacterDialogue from '../dialogue/CharacterDialogue';
+import { openDialogue } from '../../stores/dialogueStore';
+import { splashGone } from '../../utils/splash';
+import { DIALOGUE_SCRIPT } from '../../data/dialogueScript';
 
 export default function AppLayout() {
   const tripName = useTripStore((s) => s.trip.name);
@@ -18,6 +22,14 @@ export default function AppLayout() {
   }, [tripName, pageTitle]);
 
   useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+
+  // 開啟畫面消失約 0.5 秒後自動播放角色對話（之後可從頭像選單重新開啟）
+  useEffect(() => {
+    let t;
+    let cancelled = false;
+    splashGone.then(() => { if (!cancelled) t = setTimeout(openDialogue, 500); });
+    return () => { cancelled = true; clearTimeout(t); };
+  }, []);
 
   return (
     <PageTransitionProvider>
@@ -33,6 +45,7 @@ export default function AppLayout() {
       <ModalRoot />
       <Toast />
       <GlobalLoading />
+      <CharacterDialogue script={DIALOGUE_SCRIPT} />
     </PageTransitionProvider>
   );
 }

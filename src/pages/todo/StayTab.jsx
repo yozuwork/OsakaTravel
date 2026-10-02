@@ -1,57 +1,15 @@
-import { useTripStore, updateTrip } from '../../stores/tripStore';
+import { useTripStore } from '../../stores/tripStore';
 import { toast } from '../../stores/uiStore';
-import { openForm } from '../../components/form/openForm';
 import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
 import Fab, { addActions } from '../../components/common/Fab';
 import KV from '../../components/common/KV';
-import { addDays, diffDays, mdw } from '../../utils/date';
+import { diffDays, mdw } from '../../utils/date';
 import { mapsUrl } from '../../utils/helpers';
-import { addStay } from './todoActions';
 import { openVoiceStay } from './voiceTodo';
-import { compressImage } from '../../utils/file';
+import { openStayEditor } from './stayEditor';
 
-function editStay(id) {
-  const { stays, trip } = useTripStore.getState();
-  const existing = id ? stays.find((x) => x.id === id) : null;
-  const s = existing ? { ...existing } : { name: '', address: '', checkIn: trip.startDate, checkInTime: '', checkOut: addDays(trip.startDate, 1), checkOutTime: '', orderNo: '', roomType: '', phone: '', platform: '', photo: '' };
-
-  openForm({
-    title: existing ? '編輯住宿' : '新增住宿',
-    fields: [
-      { name: 'name', label: '飯店名稱', value: s.name, required: true, full: true },
-      { name: 'address', label: '地址', value: s.address, full: true, hint: '導航會用這個地址搜尋 Google 地圖' },
-      { name: 'checkIn', label: '入住日期', type: 'date', value: s.checkIn },
-      { name: 'checkInTime', label: '入住時間', type: 'time', value: s.checkInTime },
-      { name: 'checkOut', label: '退房日期', type: 'date', value: s.checkOut },
-      { name: 'checkOutTime', label: '退房時間', type: 'time', value: s.checkOutTime },
-      { name: 'orderNo', label: '訂單編號', value: s.orderNo },
-      { name: 'roomType', label: '房型', value: s.roomType },
-      { name: 'phone', label: '電話', type: 'tel', value: s.phone },
-      { name: 'platform', label: '訂房平台', value: s.platform },
-      { name: 'photo', label: '飯店照片', type: 'file', full: true, hint: s.photo ? '已有照片，選新檔會取代' : '選填' }
-    ],
-    onSave: async (v) => {
-      const { photo: photoFile, ...rest } = v;
-      const data = { ...s, ...rest };
-      if (photoFile) {
-        try { data.photo = await compressImage(photoFile, 900, 0.78); } catch { toast('圖片讀取失敗'); return false; }
-      }
-      if (existing) updateTrip((st) => {
-        const target = st.stays.find((x) => x.id === id);
-        if (target) Object.assign(target, data);
-      });
-      else addStay(data);
-      toast('已儲存住宿');
-    },
-    onDelete: existing ? () => {
-      updateTrip((st) => { st.stays = st.stays.filter((x) => x.id !== id); });
-      toast('已刪除住宿');
-    } : undefined
-  });
-}
-
-const stayActions = addActions({ voiceDesc: '用說的快速建立住宿', textDesc: '手動輸入住宿資訊', onText: () => editStay(null), onVoice: () => openVoiceStay(() => editStay(null)) });
+const stayActions = addActions({ voiceDesc: '用說的快速建立住宿', textDesc: '手動輸入住宿資訊', onText: () => openStayEditor(null), onVoice: () => openVoiceStay(() => openStayEditor(null)) });
 
 export default function StayTab() {
   const stays = useTripStore((s) => s.stays);
@@ -84,12 +42,12 @@ export default function StayTab() {
                   ? <a className="btn btn--sm" href={`tel:${s.phone.replace(/[^\d+]/g, '')}`}><Icon name="phone" />撥打電話</a>
                   : <Button size="sm" onClick={() => toast('請先填寫飯店電話')}><Icon name="phone" />撥打電話</Button>}
               </div>
-              <Button size="sm" block onClick={() => editStay(s.id)}><Icon name="edit" />編輯住宿資訊</Button>
+              <Button size="sm" block onClick={() => openStayEditor(s.id)}><Icon name="edit" />編輯住宿資訊</Button>
             </div>
           </article>
         );
       })}
-      <Button variant="dashed" className="add-inline" onClick={() => editStay(null)}><Icon name="plus" />新增住宿</Button>
+      {!stays.length && <div className="empty"><Icon name="bed" /><span className="empty__title">還沒有住宿</span><span className="small muted">按右下角的「＋」新增住宿</span></div>}
       <Fab label="新增住宿" actions={stayActions} />
     </>
   );

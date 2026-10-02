@@ -52,6 +52,9 @@
   /* 切換日期轉場（黑白漫畫斜切） */
   --manga-ink: #000000;
   --manga-paper: #FFFFFF;
+  /* 角色對話 */
+  --talk-dim: rgba(0, 0, 0, .84);
+  --talk-stripe: rgba(216, 67, 58, .28);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -435,11 +438,14 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 }
 .idea__img img { width: 100%; height: 100%; object-fit: cover; }
 .idea__img-label { padding: 2px 8px; background: var(--card); border: 1.5px solid var(--navy); border-radius: 6px; font-size: 13px; font-weight: 700; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.idea__body { display: flex; flex-direction: column; gap: 4px; padding: 12px 12px 14px; }
-.idea__title { margin: 0; font-size: 16px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.idea__meta { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.idea__body .btn { margin-top: 8px; height: 40px; font-size: 14px; }
-.idea--add { align-items: center; justify-content: center; min-height: 260px; border-style: dashed; border-color: var(--red); color: var(--red); box-shadow: none; background: transparent; gap: 8px; font-weight: 700; }
+/* 圖片＋標題整塊可點，開啟想法 */
+.idea__open { display: flex; flex-direction: column; width: 100%; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; border-radius: 6px 6px 0 0; }
+.idea__open:hover .idea__title { color: var(--red); }
+.idea__body { display: flex; flex-direction: column; gap: 4px; padding: 12px 12px 8px; min-width: 0; }
+.idea__title { display: block; margin: 0; font-size: 16px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.idea__meta { display: block; font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.idea__actions { padding: 0 12px 14px; margin-top: auto; }
+.idea__actions .btn { width: 100%; height: 40px; font-size: 14px; padding: 0 8px; }
 
 /* ---------- Tabbar ---------- */
 .tabbar {
@@ -506,6 +512,46 @@ select.field__input {
 .field__hint { font-size: 12px; color: var(--muted); }
 .form__actions { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
 
+/* 多張圖片（ImageGallery.jsx）：第一張是封面 */
+.gallery { display: flex; flex-direction: column; gap: 10px; }
+.gallery__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 8px; padding: 2px; border-radius: 12px; }
+.gallery__grid.is-over { outline: 2px dashed var(--red); outline-offset: 4px; }
+.gallery__tile {
+  position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; cursor: pointer;
+  border: var(--border); border-radius: 12px; background: var(--red-soft);
+}
+.gallery__tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gallery__tile--cover { box-shadow: 3px 3px 0 var(--red); }
+.gallery__tile.is-empty { cursor: default; }
+.gallery__placeholder { position: absolute; inset: 0; display: flex; }
+.gallery__badge {
+  position: absolute; left: 4px; top: 4px; padding: 1px 6px; border-radius: 6px;
+  background: var(--red); color: var(--white); font-size: 11px; font-weight: 700; line-height: 1.5;
+}
+.gallery__add { display: flex; align-items: center; justify-content: center; border-style: dashed; border-color: var(--red); color: var(--red); background: var(--card); }
+.gallery__add svg.i { width: 26px; height: 26px; }
+.gallery__add:hover { background: var(--red-soft); }
+.gallery__bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.gallery__bar .field__hint { flex-basis: 100%; }
+.gallery__full { width: 100%; max-height: 60vh; object-fit: contain; border: var(--border); border-radius: 12px; background: var(--red-bg); }
+/* 詢問視窗（choose.jsx） */
+.choose__detail { margin: 0; }
+.choose__preview { display: block; width: 100%; max-height: 180px; object-fit: contain; border: var(--border); border-radius: 12px; background: var(--red-bg); }
+.confirm__msg { overflow-wrap: anywhere; }
+
+/* 多筆超連結（LinkList.jsx） */
+.link-list { display: flex; flex-direction: column; gap: 8px; }
+.link-row { display: flex; align-items: center; gap: 6px; }
+.link-row .field__input { flex: 1; min-width: 0; }
+.link-row__btn {
+  width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  border: var(--border); border-radius: 10px; background: var(--card); color: var(--navy); padding: 0; text-decoration: none;
+}
+.link-row__btn .i-bi, .link-row__btn svg.i { font-size: 17px; width: 17px; height: 17px; }
+.link-row__btn:hover { background: var(--red-soft); color: var(--red); }
+.link-row__btn:disabled { opacity: .35; cursor: not-allowed; background: var(--card); color: var(--navy); }
+.link-row__btn--del:hover { border-color: var(--red); }
+
 .place-input-row { position: relative; display: block; }
 .place-input-row .field__input { width: 100%; padding-right: 48px; }
 .place-input-row__copy {
@@ -518,7 +564,7 @@ select.field__input {
 
 .menu-list { display: flex; flex-direction: column; gap: 10px; }
 
-/* ---------- 手機版右下角新增按鈕（FAB） ---------- */
+/* ---------- 右下角新增按鈕（FAB；電腦版位置在 ≥ 900px 區塊調整） ---------- */
 .fab {
   position: fixed; z-index: 25;
   right: max(20px, calc(50% - 240px + 20px));
@@ -612,8 +658,6 @@ select.field__input {
   from { opacity: 1; transform: rotate(var(--rot)) scale(1); }
   to { opacity: 0; transform: translate(50px, 40px) rotate(calc(var(--rot) + 14deg)) scale(.3); }
 }
-/* 手機改用 FAB，頁面內的新增按鈕只在桌機顯示 */
-@media (max-width: 899.98px) { .add-inline { display: none !important; } }
 
 /* ---------- 語音新增行程 ---------- */
 .voice { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 8px 0 4px; text-align: center; }
@@ -725,6 +769,83 @@ select.field__input {
 .manga__slashline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .manga__slashline line { stroke: var(--manga-ink); stroke-width: 6; stroke-linecap: square; }
 
+/* ---------- 頭像選單（TripHeader.jsx） ---------- */
+.avatar-wrap { position: relative; flex-shrink: 0; }
+.avatar-menu {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 30; min-width: 184px; padding: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--card); border: var(--border); border-radius: 12px; box-shadow: 4px 4px 0 var(--red);
+  animation: avatar-menu-in .14s ease-out;
+}
+@keyframes avatar-menu-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.avatar-menu__item {
+  display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: 0; border-radius: 8px;
+  background: none; color: var(--navy); font: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer;
+}
+.avatar-menu__item:hover, .avatar-menu__item:focus-visible { background: var(--red-soft); color: var(--red); }
+.avatar-menu__item .i-bi { font-size: 18px; color: var(--red); }
+
+/* ---------- 角色立繪對話（CharacterDialogue.jsx） ---------- */
+.talk { position: fixed; inset: 0; z-index: 85; visibility: hidden; overflow: hidden; cursor: pointer; outline: none; }
+.talk.is-on { visibility: visible; }
+.talk__bg {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(-60deg, transparent 0 26px, var(--talk-stripe) 26px 34px), var(--talk-dim);
+}
+/* 手機：立繪與對話框放在中間最寬 480px 的區塊（電腦版在 ≥ 900px 區塊調整） */
+.talk__stage { position: absolute; top: 0; bottom: 0; left: 50%; width: min(100%, 480px); transform: translateX(-50%); }
+.cutin { position: absolute; right: -6%; bottom: 150px; width: 88%; height: 66%; }
+.ci-flip { position: absolute; inset: 0; }
+.ci-shard { position: absolute; inset: 0; }
+.ci-shard--red { background: var(--fx-red); clip-path: polygon(22% 8%, 100% 0, 100% 100%, 0 92%, 10% 60%, 4% 44%); }
+.ci-shard--black { background: var(--fx-black); clip-path: polygon(30% 16%, 96% 10%, 100% 100%, 12% 94%, 20% 64%, 14% 48%); }
+.ci-shard--white { background: var(--fx-white); clip-path: polygon(8% 30%, 12% 30%, 2% 100%, -2% 100%); }
+.cutin img {
+  position: absolute; right: 0; bottom: -2%; width: 92%; height: auto; user-select: none;
+  filter: drop-shadow(-6px 0 0 var(--fx-black)) drop-shadow(5px 0 0 var(--fx-red));
+}
+/* 立繪從左側切入：碎片鏡像、描邊方向對調、尖角換邊 */
+.talk.is-left .cutin { right: auto; left: -6%; }
+.talk.is-left .ci-flip { transform: scaleX(-1); }
+.talk.is-left .cutin img { right: auto; left: 0; filter: drop-shadow(6px 0 0 var(--fx-black)) drop-shadow(-5px 0 0 var(--fx-red)); }
+.tail-l { display: none; }
+.talk.is-left .tail-r { display: none; }
+.talk.is-left .tail-l { display: inline; }
+
+.dbox { position: absolute; left: 4%; right: 4%; bottom: 96px; height: 170px; transform-origin: 30% 60%; }
+.dbox__shape { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.dbox__frame { fill: var(--fx-white); }
+.dbox__ink { fill: var(--fx-black); }
+/* 名字牌：每個字一個小方塊，一黑一白交錯，底下墊紅色斜片 */
+.dname { position: absolute; left: 6px; top: -18px; display: flex; align-items: flex-end; transform: rotate(-6deg); }
+.dname::before {
+  content: ''; position: absolute; left: -6px; right: -14px; top: 6px; bottom: -6px; background: var(--fx-red);
+  clip-path: polygon(0 10%, 100% 0, 92% 100%, 4% 90%);
+}
+.dname i {
+  position: relative; font-style: normal; font-weight: 900; line-height: 1; padding: 4px 6px;
+  background: var(--fx-black); color: var(--fx-white); border: 2px solid var(--fx-white);
+}
+.dname i:nth-child(odd) { font-size: 30px; transform: rotate(-5deg); }
+.dname i:nth-child(even) {
+  font-size: 24px; transform: rotate(6deg) translate(-3px, -4px);
+  background: var(--fx-white); color: var(--fx-black); border-color: var(--fx-black);
+}
+.dline {
+  position: absolute; left: 34px; right: 30px; top: 46px; margin: 0; min-height: 64px; color: var(--fx-white);
+  font-size: 20px; font-weight: 900; line-height: 1.6; letter-spacing: .04em; transform: rotate(-2deg);
+}
+.dline em { font-style: normal; color: var(--fx-white); background: var(--fx-red); padding: 0 4px; }
+/* 繼續提示：打字完成後才出現並閃爍 */
+.dnext {
+  position: absolute; right: 26px; bottom: 26px; width: 0; height: 0;
+  border-left: 9px solid transparent; border-right: 9px solid transparent; border-top: 13px solid var(--fx-red);
+  opacity: 0; animation: talk-blink .7s steps(2) infinite; animation-play-state: paused;
+}
+.dnext.is-shown { opacity: 1; animation-play-state: running; }
+@keyframes talk-blink { 50% { transform: translateY(4px); } }
+.thint { position: absolute; left: 0; right: 0; bottom: 64px; text-align: center; font-size: 11px; color: rgba(255, 255, 255, .6); letter-spacing: .1em; }
+
 /* ---------- Toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-b) + 16px); transform: translate(-50%, 20px);
@@ -746,11 +867,21 @@ select.field__input {
   :root { --side-w: 248px; }
   .xtitle__en i { font-size: 58px; padding: 6px 10px 5px; border-width: 3px; }
   .xtitle__en { gap: 5px; }
+  /* 角色對話：中間區塊放寬到 640px（比例同手機）；碎片背景延伸到視窗邊緣，避免畫面中間出現切邊
+     cutin 右緣在區塊外 6%（38px），所以延伸量 = 50vw - 320px - 38px */
+  .talk__stage { width: 640px; }
+  .ci-flip { right: calc(358px - 50vw); }
+  .talk.is-left .ci-flip { right: 0; left: calc(358px - 50vw); }
+  .dbox { height: 190px; }
+  .dline { font-size: 22px; }
   .manga__big { font-size: 84px; }
   .manga__tag { font-size: 16px; }
   .manga__cap { font-size: 16px; max-width: 50%; }
   .xtitle__zh { font-size: 26px; padding: 6px 20px; box-shadow: 6px 6px 0 var(--fx-white); }
-  .fab, .fab-spacer, .fab-menu { display: none; }
+  /* 右下角 + 按鈕：電腦版沒有底部選單，改貼齊右下角 */
+  .fab { right: 32px; bottom: 32px; }
+  .fab-menu__list { right: 32px; bottom: 112px; }
+  .fab-menu__slash { bottom: 40px; }
   body { background: var(--bg); }
   .app { max-width: none; box-shadow: none; padding-left: var(--side-w); }
   .view { padding-bottom: 0; }
@@ -799,7 +930,6 @@ select.field__input {
   .tl-thumb { width: 108px; height: 108px; }
   .tl-title { font-size: 18px; }
   .tl-meta { font-size: 14px; }
-  .content--itinerary > .btn--dashed { max-width: 860px; margin-left: 78px; width: calc(100% - 78px); }
 
   /* 待辦：各分頁版面 */
   .content--todo { max-width: 820px; }

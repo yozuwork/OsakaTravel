@@ -12,7 +12,7 @@ export const addActions = ({ voiceDesc, textDesc, onText, onVoice = () => toast(
 ];
 
 /**
- * 手機版右下角的「新增」浮動按鈕（桌機 ≥ 900px 隱藏，改用頁面內的新增按鈕）
+ * 右下角的「新增」浮動按鈕（手機版、電腦版都有）
  * 會一併放一個佔位區塊，避免最後一筆內容被按鈕擋住
  * - onClick：直接執行
  * - actions：[{ icon, bi, title, desc, onClick }]，點按鈕先彈出選單（女神異聞錄風格對話框）
