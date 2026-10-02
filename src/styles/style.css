@@ -49,6 +49,9 @@
   --fx-white: #FFFFFF;
   --fx-dots: radial-gradient(circle, rgba(255, 255, 255, .22) 1.6px, transparent 1.8px);
   --fx-dots-size: 9px 9px;
+  /* 切換日期轉場（黑白漫畫斜切） */
+  --manga-ink: #000000;
+  --manga-paper: #FFFFFF;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -139,7 +142,7 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 .day-tab:hover { background: var(--red-soft); }
 .day-tab__date { font-size: 12px; }
 .day-tab__label { font-size: 20px; font-weight: 900; line-height: 1.1; }
-.day-tab[aria-selected="true"] { background: var(--red); border-color: var(--red); color: var(--white); box-shadow: 3px 3px 0 var(--red-dark); }
+.day-tab[aria-selected="true"], .day-tab[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: var(--white); box-shadow: 3px 3px 0 var(--red-dark); }
 
 .seg-tabs {
   display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px;
@@ -684,17 +687,43 @@ select.field__input {
   background: var(--fx-black); padding: 4px 14px; box-shadow: 4px 4px 0 var(--fx-white);
 }
 
-/* ---------- 切換日期：紅色網點斜帶（useDaySwitch.js） ---------- */
-.content--itinerary { position: relative; }
-/* 斜帶限制在行程內容區內，不會撐出橫向捲軸 */
-.day-fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 6; }
-.slash {
-  position: absolute; left: -20%; right: -20%; top: 60px; height: 120px;
-  background-color: var(--fx-red); background-image: var(--fx-dots); background-size: 8px 8px;
-  border-top: 3px solid var(--fx-black); border-bottom: 3px solid var(--fx-black);
-  transform: translateX(-120%) rotate(-12deg); visibility: hidden;
+/* ---------- 切換日期：黑白漫畫斜切（MangaDaySwitch.jsx） ---------- */
+/* 位置與尺寸由 JS 依日期按鈕列量出（只蓋列表區）；非動畫時隱藏且不擋操作 */
+.manga { position: fixed; z-index: 30; overflow: hidden; visibility: hidden; pointer-events: none; }
+.manga.is-on { visibility: visible; pointer-events: auto; }
+.manga__paper { position: absolute; inset: 0; background: var(--manga-paper); }
+.manga__pn { position: absolute; inset: 0; background: var(--manga-paper); overflow: hidden; }
+.manga__edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* 黑框畫在裁切邊上，被裁掉一半，實際約 3.5px */
+.manga__edge polygon { fill: none; stroke: var(--manga-ink); stroke-width: 7; stroke-linejoin: miter; }
+/* 寬螢幕上限 1500px，避免中心留白過大 */
+.manga__lines { position: absolute; left: 40%; top: 30%; width: min(220%, 1500px); aspect-ratio: 1; transform: translate(-50%, -50%); fill: var(--manga-ink); }
+.manga__burst { position: absolute; left: 40%; top: 29%; width: 62%; max-width: 240px; transform: translate(-50%, -50%); }
+.manga__burst svg { display: block; width: 100%; overflow: visible; }
+.manga__burst polygon { fill: var(--manga-ink); stroke: var(--manga-paper); stroke-width: 3; stroke-linejoin: round; }
+.manga__burst text { font-family: var(--font); font-weight: 800; font-size: 72px; fill: var(--manga-paper); }
+.manga__tone {
+  position: absolute; inset: 0; opacity: .7;
+  background-image: radial-gradient(circle, var(--manga-ink) 1.1px, transparent 1.3px); background-size: 6px 6px;
+  -webkit-mask-image: linear-gradient(160deg, transparent 50%, #000 100%); mask-image: linear-gradient(160deg, transparent 50%, #000 100%);
 }
-.slash.is-on { visibility: visible; }
+.manga__tag {
+  position: absolute; right: 8%; top: 52%; transform: rotate(-13deg);
+  background: var(--manga-ink); color: var(--manga-paper); padding: 4px 10px;
+  font-family: var(--font); font-weight: 800; font-size: 13px; letter-spacing: .18em;
+}
+.manga__big {
+  position: absolute; right: 8%; top: 66%; transform: translateY(-50%) rotate(-13deg);
+  font-family: var(--font); font-weight: 800; font-size: 56px; line-height: 1; color: var(--manga-ink);
+  text-shadow: 3px 3px 0 var(--manga-paper), 5px 5px 0 var(--manga-ink);
+}
+.manga__cap {
+  position: absolute; left: 8%; bottom: 7%; max-width: 70%; transform: skewX(-12deg);
+  background: var(--manga-paper); border: 2.5px solid var(--manga-ink); padding: 6px 12px;
+  font-weight: 900; font-size: 14px; color: var(--manga-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.manga__slashline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.manga__slashline line { stroke: var(--manga-ink); stroke-width: 6; stroke-linecap: square; }
 
 /* ---------- Toast ---------- */
 .toast {
@@ -717,6 +746,9 @@ select.field__input {
   :root { --side-w: 248px; }
   .xtitle__en i { font-size: 58px; padding: 6px 10px 5px; border-width: 3px; }
   .xtitle__en { gap: 5px; }
+  .manga__big { font-size: 84px; }
+  .manga__tag { font-size: 16px; }
+  .manga__cap { font-size: 16px; max-width: 50%; }
   .xtitle__zh { font-size: 26px; padding: 6px 20px; box-shadow: 6px 6px 0 var(--fx-white); }
   .fab, .fab-spacer, .fab-menu { display: none; }
   body { background: var(--bg); }

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>大阪冬旅 轉場動畫 v5</title>
+<title>大阪冬旅 轉場動畫 v10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -183,12 +183,27 @@
     background: var(--black); padding: 4px 14px; box-shadow: 4px 4px 0 #fff;
   }
 
-  /* day switch: single slash */
-  .slash { position: absolute; z-index: 40; pointer-events: none; left: -20%; right: -20%; height: 120px;
-    background-color: var(--red);
-    background-image: radial-gradient(circle, rgba(255,255,255,.25) 1.4px, transparent 1.6px); background-size: 8px 8px;
-    border-top: 3px solid var(--black); border-bottom: 3px solid var(--black);
-    transform: translateX(-120%) rotate(-12deg); visibility: hidden; }
+  /* day switch: manga page with panels cutting in */
+  .manga { position: absolute; left: 0; right: 0; bottom: 0; z-index: 40; pointer-events: none; visibility: hidden; overflow: hidden; }
+  .manga.on { visibility: visible; pointer-events: auto; }
+  .sheet { position: absolute; inset: 0; background: #fff; }
+  .pn { position: absolute; inset: 0; background: #fff; overflow: hidden; }
+  .pn .edge { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .lines { position: absolute; left: 40%; top: 30%; width: 220%; aspect-ratio: 1; transform: translate(-50%,-50%); }
+  .burst { position: absolute; left: 40%; top: 29%; width: 62%; max-width: 240px; transform: translate(-50%,-50%); }
+  .burst svg { display: block; width: 100%; overflow: visible; }
+  .tone { position: absolute; inset: 0;
+    background-image: radial-gradient(circle, #000 1.1px, transparent 1.3px); background-size: 6px 6px;
+    -webkit-mask-image: linear-gradient(160deg, transparent 50%, #000 100%); mask-image: linear-gradient(160deg, transparent 50%, #000 100%); opacity: .7; }
+  .p2 .tag { position: absolute; right: 8%; top: 52%; background: #000; color: #fff;
+    font-family: "Outfit", "Noto Sans TC", sans-serif; font-weight: 800; font-size: 13px; letter-spacing: .18em; padding: 4px 10px; transform: rotate(-13deg); }
+  .p2 .big { position: absolute; right: 8%; top: 66%; transform: translateY(-50%) rotate(-13deg);
+    font-family: "Outfit", sans-serif; font-weight: 800; font-size: 56px; line-height: 1; color: #000;
+    text-shadow: 3px 3px 0 #fff, 5px 5px 0 #000; }
+  .p2 .cap { position: absolute; left: 8%; bottom: 7%; max-width: 70%; transform: skewX(-12deg);
+    background: #fff; border: 2.5px solid #000; padding: 6px 12px;
+    font-weight: 900; font-size: 14px; color: #000; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slashline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 </style>
 </head>
 <body>
@@ -246,7 +261,16 @@
     <div class="shard white"></div>
     <div class="xtitle"><span class="en" id="xEn"></span><span class="zh" id="xZh"></span></div>
   </div>
-  <div class="slash" id="slash" aria-hidden="true"></div>
+  <div class="manga" id="manga" aria-hidden="true">
+    <div class="sheet"></div>
+    <div class="pn p1"><svg class="lines" viewBox="-100 -100 200 200"></svg>
+      <div class="burst"><svg viewBox="0 0 240 200">
+        <polygon points="235.0,100.0 195.1,107.7 230.3,123.1 199.5,125.9 216.7,144.3 177.4,135.4 195.3,162.0 167.3,152.4 167.8,174.6 141.4,151.9 136.4,181.2 120.0,162.3 103.6,181.2 98.6,151.9 72.2,174.6 72.7,152.4 44.7,162.0 62.6,135.4 23.3,144.3 40.5,125.9 9.7,123.1 44.9,107.7 5.0,100.0 33.5,91.1 9.7,76.9 51.0,77.5 23.3,55.7 53.9,59.2 44.7,38.0 79.0,54.5 72.2,25.4 95.4,40.2 103.6,18.8 120.0,45.9 136.4,18.8 144.6,40.2 167.8,25.4 161.0,54.5 195.3,38.0 186.1,59.2 216.7,55.7 189.0,77.5 230.3,76.9 206.5,91.1" fill="#000" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+        <text id="mD" x="120" y="122" text-anchor="middle" font-family="Outfit, sans-serif" font-weight="800" font-size="72" fill="#fff" transform="rotate(-6 120 100)">D1</text>
+      </svg></div><svg class="edge"><polygon fill="none" stroke="#000" stroke-width="7" stroke-linejoin="miter"/></svg></div>
+    <div class="pn p2"><div class="tone"></div><span class="tag" id="mTag">DAY 1 · 星期一</span><span class="big" id="mDate">12/21</span><span class="cap" id="mCap"></span><svg class="edge"><polygon fill="none" stroke="#000" stroke-width="7" stroke-linejoin="miter"/></svg></div>
+    <svg class="slashline"><line stroke="#000" stroke-width="6" stroke-linecap="square"/></svg>
+  </div>
 </div>
 
 <script>
@@ -399,32 +423,98 @@
   document.querySelectorAll('.nav button').forEach(b =>
     b.addEventListener('click', () => goPage(b.dataset.go, b.dataset.zh)));
 
-  // 切換日期：一道斜切紅帶劃過列表
-  const slash = document.getElementById('slash');
+  // 切換日期：漫畫斜切兩格（約 0.85s）
+  const manga = document.getElementById('manga');
+  const sheet = manga.querySelector('.sheet');
+  const pns = [...manga.querySelectorAll('.pn')];
   const scroller = document.querySelector('.page[data-page="itinerary"]');
+  const WEEK = { '一':'星期一','二':'星期二','三':'星期三','四':'星期四','五':'星期五','六':'星期六','日':'星期日' };
+
+  (function speedLines() {
+    let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    let d = '';
+    for (let i = 0; i < 110; i++) {
+      const a = (i / 110) * Math.PI * 2 + rnd() * 0.04;
+      const r0 = 30 + rnd() * 18, w = 0.006 + rnd() * 0.014;
+      const p = (ang, r) => `${(Math.cos(ang) * r).toFixed(2)},${(Math.sin(ang) * r).toFixed(2)}`;
+      d += `M${p(a, r0)}L${p(a - w, 100)}L${p(a + w, 100)}Z`;
+    }
+    manga.querySelector('.lines').innerHTML = `<path d="${d}" fill="#000"/>`;
+  })();
+
+  const slashSvg = manga.querySelector('.slashline line');
+  const slashEl = manga.querySelector('.slashline');
+
+  // 依照實際尺寸算出斜切的兩格（左邊 62% → 右邊 38%）
+  function layout() {
+    const W = manga.offsetWidth, H = manga.offsetHeight, m = 12, g = 14;
+    const yl = H * 0.62, yr = H * 0.38;
+    const top = [[m, m], [W - m, m], [W - m, yr - g / 2], [m, yl - g / 2]];
+    const bot = [[m, yl + g / 2], [W - m, yr + g / 2], [W - m, H - m], [m, H - m]];
+    [top, bot].forEach((pts, k) => {
+      pns[k].style.clipPath = `polygon(${pts.map(([x, y]) => `${x}px ${y}px`).join(',')})`;
+      pns[k].querySelector('.edge polygon').setAttribute('points', pts.map(p => p.join(',')).join(' '));
+    });
+    slashSvg.setAttribute('x1', -20); slashSvg.setAttribute('y1', yl + 20 * (yl - yr) / W);
+    slashSvg.setAttribute('x2', W + 20); slashSvg.setAttribute('y2', yr - 20 * (yl - yr) / W);
+    const len = Math.hypot(W + 40, yl - yr);
+    slashSvg.style.strokeDasharray = len;
+    return { W, dy: yl - yr, len };
+  }
+
   document.querySelectorAll('.day').forEach((b, i) => b.addEventListener('click', async () => {
     if (b.getAttribute('aria-pressed') === 'true' || busy) return;
     document.querySelectorAll('.day').forEach(x => x.setAttribute('aria-pressed', 'false'));
     b.setAttribute('aria-pressed', 'true');
     if (reduced) { renderDay(i); return; }
     busy = true;
-    const top = scroller.offsetTop + 60;
-    slash.style.top = top + 'px';
-    slash.style.visibility = 'visible';
-    const a = slash.animate([
-      { transform:'translateX(-120%) rotate(-12deg)' },
-      { transform:'translateX(0) rotate(-12deg)', offset:.45 },
-      { transform:'translateX(0) rotate(-12deg)', offset:.55 },
-      { transform:'translateX(120%) rotate(-12deg)' }],
-      { duration: 520, easing: EASE_IN });
-    setTimeout(() => {
-      renderDay(i); scroller.scrollTop = 0;
-      scroller.querySelectorAll('.item').forEach((el, k) => el.animate(
-        [{ opacity:0, transform:'translateX(40px) skewX(-8deg)' }, { opacity:1, transform:'none' }],
-        { duration: 260, delay: 80 + k * 45, easing:'cubic-bezier(.2,.9,.3,1)', fill:'backwards' }));
-    }, 240);
-    await a.finished;
-    slash.style.visibility = 'hidden';
+
+    const day = DAYS[i];
+    document.getElementById('mTag').textContent = 'DAY ' + (i + 1) + ' · ' + (WEEK[(day.label.match(/（(.)）/) || [])[1]] || '');
+    document.getElementById('mDate').textContent = b.querySelector('span').textContent;
+    document.getElementById('mD').textContent = 'D' + (i + 1);
+    document.getElementById('mCap').textContent = day.items[0] ? day.items[0].t + '　' + day.items[0].title : '';
+
+    manga.style.top = scroller.offsetTop + 'px';
+    const { W, dy, len } = layout();
+    manga.classList.add('on');
+    const anims = [];
+    const run = (el, k, o) => { const an = el.animate(k, { fill: 'both', ...o }); anims.push(an); return an; };
+    const along = f => `translate(${W * f}px, ${-dy * f}px)`;   // 沿著斜線方向移動
+    const IN = 'cubic-bezier(.2,.9,.25,1)', OUT = 'cubic-bezier(.7,0,.85,.4)';
+
+    // 1. 白紙斜切蓋上，一刀黑線沿斜角劃過
+    run(manga.querySelector('.sheet'), [
+      { clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 130% 100%)' },
+      { clipPath: 'polygon(-30% 0, 100% 0, 100% 100%, 0% 100%)' }],
+      { duration: 150, easing: 'cubic-bezier(.6,0,.3,1)' });
+    run(slashSvg, [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: 150, delay: 30, easing: 'cubic-bezier(.6,0,.3,1)' });
+    run(slashEl, [{ opacity: 1 }, { opacity: 1, offset: .6 }, { opacity: 0 }], { duration: 260, delay: 30 });
+
+    // 2. 兩格沿斜線反方向滑進來
+    run(pns[0], [{ transform: along(1.1) }, { transform: 'none' }], { duration: 190, delay: 90, easing: IN });
+    run(pns[1], [{ transform: along(-1.1) }, { transform: 'none' }], { duration: 190, delay: 130, easing: IN });
+    run(manga.querySelector('.burst'), [
+      { transform: 'translate(-50%,-50%) scale(0) rotate(-20deg)' },
+      { transform: 'translate(-50%,-50%) scale(1.1) rotate(3deg)', offset: .7 },
+      { transform: 'translate(-50%,-50%) scale(1) rotate(0)' }],
+      { duration: 200, delay: 200, easing: 'cubic-bezier(.2,1.3,.4,1)' });
+
+    await new Promise(r => setTimeout(r, 560));
+    renderDay(i); scroller.scrollTop = 0;
+
+    // 3. 兩格沿斜線錯開滑出，像被切開
+    run(pns[0], [{ transform: 'none' }, { transform: along(-1.15) }], { duration: 230, easing: OUT });
+    const last = run(pns[1], [{ transform: 'none' }, { transform: along(1.15) }], { duration: 230, delay: 30, easing: OUT });
+    run(manga.querySelector('.sheet'), [{ opacity: 1 }, { opacity: 0 }], { duration: 120, delay: 60 });
+    scroller.querySelectorAll('.item').forEach((el, k) => el.animate(
+      [{ opacity: 0, transform: 'translateX(24px) skewX(-6deg)' }, { opacity: 1, transform: 'none' }],
+      { duration: 200, delay: 110 + k * 35, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' }));
+
+    await last.finished;
+    manga.classList.remove('on');
+    anims.forEach(an => an.cancel());
     busy = false;
   }));
 </script>

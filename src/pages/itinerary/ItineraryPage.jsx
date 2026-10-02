@@ -6,10 +6,10 @@ import Icon from '../../components/common/Icon';
 import Button from '../../components/common/Button';
 import Fab, { addActions } from '../../components/common/Fab';
 import TripHeader from '../../components/layout/TripHeader';
-import { useDaySwitch } from '../../components/transition/useDaySwitch';
+import { useMangaDaySwitch } from '../../components/transition/MangaDaySwitch';
 import { cx, mapsUrl } from '../../utils/helpers';
-import { catIcon } from '../../data/constants';
-import { addDays, md, mdw, period } from '../../utils/date';
+import { WEEK, catIcon } from '../../data/constants';
+import { addDays, md, mdw, parseDate, period } from '../../utils/date';
 import { dayItems, placeItem } from '../../utils/itinerary';
 import { openItemForm } from './itemForm';
 import { openItemDetail } from './itemDetail';
@@ -29,11 +29,24 @@ export default function ItineraryPage() {
     [allItems, day]
   );
 
-  const slashRef = useRef(null);
+  const tabsRef = useRef(null);
   const listRef = useRef(null);
   const applyDay = useCallback((i) => updateTrip((s) => { s.ui.day = i; }), []);
-  // 切換日期：紅色斜帶劃過，劃到中間時換資料
-  const setDay = useDaySwitch({ current: day, onSwitch: applyDay, slashRef, listRef });
+  // 漫畫分格上的文字：D2／DAY 2 · 星期二／12/22／當天第一個行程
+  const dayInfo = useCallback((i) => {
+    const date = addDays(trip.startDate, i);
+    const first = dayItems(allItems, i)[0];
+    return {
+      d: `D${i + 1}`,
+      tag: `DAY ${i + 1} · 星期${WEEK[parseDate(date).getDay()]}`,
+      date: md(date),
+      caption: first ? `${first.time || '--:--'}　${first.title}` : ''
+    };
+  }, [trip.startDate, allItems]);
+  // 切換日期：漫畫斜切轉場，只蓋住日期按鈕下方的列表區
+  const { pressedDay, switchDay, overlay } = useMangaDaySwitch({
+    current: day, onSwitch: applyDay, getInfo: dayInfo, anchorRef: tabsRef, boundsRef: tabsRef, listRef
+  });
 
   // 拖曳排序：滑鼠移動 6px 才算拖曳；手機要長按 250ms，避免和捲動、點擊衝突
   const sensors = useSensors(
@@ -58,9 +71,9 @@ export default function ItineraryPage() {
     <>
       <TripHeader />
 
-      <div className="day-tabs" role="tablist" aria-label="選擇日期">
+      <div className="day-tabs" role="group" aria-label="選擇日期" ref={tabsRef}>
         {Array.from({ length: trip.days }, (_, i) => (
-          <button key={i} className="day-tab" role="tab" aria-selected={i === day} onClick={() => setDay(i)}>
+          <button key={i} type="button" className="day-tab" aria-pressed={i === pressedDay} onClick={() => switchDay(i)}>
             <span className="day-tab__date">{md(addDays(trip.startDate, i))}</span>
             <span className="day-tab__label">D{i + 1}</span>
           </button>
@@ -68,7 +81,6 @@ export default function ItineraryPage() {
       </div>
 
       <main className="content content--itinerary" ref={listRef}>
-        <div className="day-fx" aria-hidden="true"><div className="slash" ref={slashRef} /></div>
         <div className="row-between" style={{ maxWidth: 884 }}>
           <h2 className="section-title">D{day + 1} · {mdw(addDays(trip.startDate, day))}</h2>
           <span className="small muted">{items.length} 個行程</span>
@@ -93,6 +105,7 @@ export default function ItineraryPage() {
         <Button variant="dashed" className="add-inline" onClick={() => openItemForm(null)}><Icon name="plus" />新增行程</Button>
         <Fab label="新增行程" actions={itemActions} />
       </main>
+      {overlay}
     </>
   );
 }
