@@ -3,6 +3,7 @@ import { toast } from '../../stores/uiStore';
 import { openForm } from '../../components/form/openForm';
 import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
+import Fab, { addActions } from '../../components/common/Fab';
 import KV from '../../components/common/KV';
 import { addDays, diffDays, mdw } from '../../utils/date';
 import { mapsUrl, uid } from '../../utils/helpers';
@@ -47,6 +48,8 @@ function editStay(id) {
   });
 }
 
+const stayActions = addActions({ voiceDesc: '用說的快速建立住宿', textDesc: '手動輸入住宿資訊', onText: () => editStay(null) });
+
 export default function StayTab() {
   const stays = useTripStore((s) => s.stays);
   return (
@@ -83,7 +86,8 @@ export default function StayTab() {
           </article>
         );
       })}
-      <Button variant="dashed" onClick={() => editStay(null)}><Icon name="plus" />新增住宿</Button>
+      <Button variant="dashed" className="add-inline" onClick={() => editStay(null)}><Icon name="plus" />新增住宿</Button>
+      <Fab label="新增住宿" actions={stayActions} />
     </>
   );
 }

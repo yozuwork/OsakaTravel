@@ -5,6 +5,7 @@ import { useModalContext } from '../../components/modal/ModalContext';
 import { openForm } from '../../components/form/openForm';
 import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
+import Fab, { addActions } from '../../components/common/Fab';
 import { CATEGORIES } from '../../data/constants';
 import { safeUrl, uid } from '../../utils/helpers';
 import { compressImage } from '../../utils/file';
@@ -14,12 +15,15 @@ const metaText = (d) => [d.category, d.desc].filter(Boolean).join('・');
 
 function editIdea(id) {
   const existing = id ? useTripStore.getState().ideas.find((x) => x.id === id) : null;
-  const d = existing ? { ...existing } : { title: '', category: '', desc: '', link: '', image: '' };
+  const d = existing ? { ...existing } : { title: '', category: '景點', desc: '', link: '', image: '' };
+  // 舊資料若是自由輸入的分類（不在清單內），保留成一個選項，避免存檔時被默默改掉
+  const categoryOptions = CATEGORIES.map((c) => c.id);
+  if (d.category && !categoryOptions.includes(d.category)) categoryOptions.push(d.category);
   openForm({
     title: existing ? '編輯想法' : '新增想法',
     fields: [
       { name: 'title', label: '標題', value: d.title, required: true, full: true, placeholder: '例如：黑門市場吃海鮮' },
-      { name: 'category', label: '分類', value: d.category, placeholder: '美食／景點／購物' },
+      { name: 'category', label: '分類', type: 'select', options: categoryOptions, value: d.category || '景點' },
       { name: 'desc', label: '說明', value: d.desc, placeholder: '一句話備註' },
       { name: 'link', label: '參考連結', type: 'url', value: d.link, placeholder: 'https://', full: true },
       { name: 'image', label: '圖片', type: 'file', full: true, hint: d.image ? '已有圖片，選新檔會取代' : '選填' }
@@ -43,6 +47,8 @@ function editIdea(id) {
   });
 }
 
+const ideaActions = addActions({ voiceDesc: '用說的快速記下想法', textDesc: '手動輸入想法內容', onText: () => editIdea(null) });
+
 function IdeaDetail({ id }) {
   const { close } = useModalContext();
   const d = useTripStore((s) => s.ideas.find((x) => x.id === id));
@@ -51,7 +57,7 @@ function IdeaDetail({ id }) {
   function toTrip() {
     close();
     const category = CATEGORIES.some((c) => c.id === d.category) ? d.category : '景點';
-    openItemForm(null, { category, title: d.title, note: d.desc || '' });
+    openItemForm(null, { category, title: d.title, note: d.desc || '', image: d.image || '' });
   }
 
   return (
@@ -84,8 +90,9 @@ export default function IdeasPage() {
             </div>
           </article>
         ))}
-        <button className="idea idea--add" onClick={() => editIdea(null)}><Icon name="plus" />新增想法</button>
+        <button className="idea idea--add add-inline" onClick={() => editIdea(null)}><Icon name="plus" />新增想法</button>
       </main>
+      <Fab label="新增想法" actions={ideaActions} />
     </>
   );
 }

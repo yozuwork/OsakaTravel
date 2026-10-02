@@ -4,12 +4,18 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { useTripStore, updateTrip } from '../../stores/tripStore';
 import Icon from '../../components/common/Icon';
 import Button from '../../components/common/Button';
+import Fab, { addActions } from '../../components/common/Fab';
 import TripHeader from '../../components/layout/TripHeader';
 import { cx, mapsUrl } from '../../utils/helpers';
+import { catIcon } from '../../data/constants';
 import { addDays, md, mdw, period } from '../../utils/date';
 import { dayItems, placeItem } from '../../utils/itinerary';
 import { openItemForm } from './itemForm';
 import { openItemDetail } from './itemDetail';
+import { openVoiceTrip } from './VoiceTripInput';
+
+// 手機版 + 按鈕的選項
+const itemActions = addActions({ voiceDesc: '用說的快速建立行程', textDesc: '手動輸入詳細內容', onText: () => openItemForm(null), onVoice: openVoiceTrip });
 
 export default function ItineraryPage() {
   const trip = useTripStore((s) => s.trip);
@@ -74,11 +80,12 @@ export default function ItineraryPage() {
           <div className="empty">
             <Icon name="calendar" />
             <span className="empty__title">這天還沒有行程</span>
-            <span className="small muted">點下方「新增行程」開始安排</span>
+            <span className="small muted">點「＋」新增行程開始安排</span>
           </div>
         )}
 
-        <Button variant="dashed" onClick={() => openItemForm(null)}><Icon name="plus" />新增行程</Button>
+        <Button variant="dashed" className="add-inline" onClick={() => openItemForm(null)}><Icon name="plus" />新增行程</Button>
+        <Fab label="新增行程" actions={itemActions} />
       </main>
     </>
   );
@@ -92,21 +99,29 @@ function TimelineRow({ it, onOpen }) {
 
   return (
     <div className={cx('tl-row', isDragging && 'is-dragging')} ref={setNodeRef} style={style}>
+      <span className="tl-time">
+        <span className="tl-time__period">{period(it.time)}</span>
+        <span className="tl-time__clock">{it.time || '--:--'}</span>
+      </span>
       <span className="tl-dot" />
       <div className="tl-card" {...attributes} {...listeners} role="button" tabIndex={0} aria-label={`查看：${it.title}`}
         aria-roledescription="可拖曳排序的行程"
         onClick={() => onOpen(it.id)}
         onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onOpen(it.id); } }}>
-        <span className="tl-left">
-          <span className="tl-time">
-            <span className="tl-time__period">{period(it.time)}</span>
-            <span className="tl-time__clock">{it.time || '--:--'}</span>
+        {it.image ? (
+          <span className="tl-thumb">
+            <img src={it.image} alt="" draggable="false" />
+            <a className="tl-thumb__map" href={mapsUrl(it.place || it.title)} target="_blank" rel="noopener"
+              onClick={(e) => e.stopPropagation()} aria-label={`在 Google 地圖查看：${it.place || it.title}`}>
+              <Icon name="map" />
+            </a>
           </span>
-          <a className="chip" href={mapsUrl(it.place || it.title)} target="_blank" rel="noopener"
-            onClick={(e) => e.stopPropagation()} aria-label={`在 Google 地圖查看：${it.place || it.title}`}>
-            <Icon name="map" />地圖
-          </a>
-        </span>
+        ) : (
+          <span className="tl-thumb tl-thumb--icon">
+            <Icon name={catIcon(it.category)} />
+            <span className="tl-thumb__label">{it.category || '其他'}</span>
+          </span>
+        )}
         <span className="tl-right">
           <span className="tl-title">{it.title}</span>
           {it.place && <span className="tl-meta"><Icon name="pin" /><span>{it.place}</span></span>}

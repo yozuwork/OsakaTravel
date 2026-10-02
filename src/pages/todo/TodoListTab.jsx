@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
 import { toast } from '../../stores/uiStore';
+import { openForm } from '../../components/form/openForm';
 import ProgressCard from '../../components/common/ProgressCard';
 import CheckRow from '../../components/common/CheckRow';
 import Icon from '../../components/common/Icon';
+import Fab, { addActions } from '../../components/common/Fab';
 import { uid } from '../../utils/helpers';
 
 export default function TodoListTab() {
@@ -31,6 +33,20 @@ export default function TodoListTab() {
     inputRef.current?.focus();
   }
 
+  // 手機版：右下角按鈕開表單新增
+  function openAdd() {
+    openForm({
+      title: '新增待辦',
+      fields: [{ name: 'text', label: '待辦事項', value: '', required: true, full: true, placeholder: '例如：預約美容院' }],
+      onSave: (v) => {
+        const t = v.text.trim();
+        if (!t) { toast('請填寫待辦事項'); return false; }
+        updateTrip((s) => { s.todos.push({ id: uid(), text: t, done: false }); });
+        toast('已新增待辦');
+      }
+    });
+  }
+
   const row = (t) => <CheckRow key={t.id} text={t.text} done={t.done} onToggle={() => toggle(t.id)} onDelete={() => remove(t.id)} onEdit={(text) => edit(t.id, text)} />;
 
   return (
@@ -53,12 +69,13 @@ export default function TodoListTab() {
         </>
       )}
       {!showDone && done.length > 0 && <p className="small muted" style={{ textAlign: 'center', margin: 0 }}>已隱藏 {done.length} 項已完成待辦</p>}
-      <form className="row-between" style={{ gap: 8 }} onSubmit={add}>
+      <form className="row-between add-inline" style={{ gap: 8 }} onSubmit={add}>
         <label htmlFor="todoInput" className="sr-only">新增待辦</label>
         <input id="todoInput" ref={inputRef} className="field__input" placeholder="新增待辦，例如：預約美容院" autoComplete="off"
           value={text} onChange={(e) => setText(e.target.value)} />
         <button className="btn btn--primary" type="submit" aria-label="新增待辦"><Icon name="plus" /></button>
       </form>
+      <Fab label="新增待辦" actions={addActions({ voiceDesc: '用說的快速新增待辦', textDesc: '手動輸入待辦內容', onText: openAdd })} />
     </>
   );
 }
