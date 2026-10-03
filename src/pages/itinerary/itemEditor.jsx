@@ -11,7 +11,9 @@ import { readClipboard, toImages, toLinks, useClipboardLink } from '../../compon
 import LinkList, { cleanLinks, normalizeUrl } from '../../components/common/LinkList';
 import { CATEGORIES, catIcon } from '../../data/constants';
 import { addDays, mdw } from '../../utils/date';
-import { mapsUrl, uid } from '../../utils/helpers';
+import { cx, mapsUrl, uid } from '../../utils/helpers';
+import { autoStageLine, dayChar } from '../../utils/dialogueText';
+import { Avatar } from '../../components/dialogue/DialogueEditor';
 import { dayItems, placeItem, timeIndex } from '../../utils/itinerary';
 
 /* =========================================================
@@ -136,6 +138,8 @@ function ItemEditor({ id, preset, copy = false, clipboard }) {
       title,
       place: draft.place.trim(),
       note: draft.note.trim(),
+      charId: draft.charId || '',
+      say: (draft.say || '').trim(),
       // 「www.xxx.com」補上 https://；不像網址的照原樣保留
       links: cleanLinks(draft.links).map((u) => normalizeUrl(u) || u),
       // 第一張是封面；行程卡片讀 image
@@ -218,6 +222,7 @@ function ItemEditor({ id, preset, copy = false, clipboard }) {
           <span className="field__label">備註</span>
           <textarea className="field__input" name="note" value={draft.note} onChange={change} placeholder="換票、轉乘、訂位資訊…" />
         </label>
+        <StageDialogueField draft={draft} setDraft={setDraft} index={pos} />
       </div>
       {q.trim() && <a className="btn btn--primary btn--block" href={mapsUrl(q)} target="_blank" rel="noopener"><Icon name="map" />在 Google 地圖查看</a>}
       {isNew ? (
@@ -228,6 +233,68 @@ function ItemEditor({ id, preset, copy = false, clipboard }) {
           <Button type="submit" variant="primary"><Icon name="check" />確定</Button>
         </div>
       )}
+    </form>
+  );
+}
+
+/** 地圖上這一關的角色與台詞（都可留「自動」） */
+function StageDialogueField({ draft, setDraft, index }) {
+  const characters = useTripStore((s) => s.dialogue.characters);
+  const day = Number(draft.day);
+  const auto = dayChar(characters, day);
+  const charId = characters.some((c) => c.id === draft.charId) ? draft.charId : '';
+  const set = (patch) => setDraft((d) => ({ ...d, ...patch }));
+
+  return (
+    <div className="field field--full stage-say">
+      <span className="field__label">地圖角色與對話</span>
+      <div className="dlg-chars dlg-chars--pick" role="radiogroup" aria-label="這一關的角色">
+        <button type="button" role="radio" aria-checked={!charId}
+          className={cx('dlg-char', !charId && 'is-selected')} onClick={() => set({ charId: '' })}>
+          <Avatar char={auto} size={44} /><span>自動</span>
+        </button>
+        {characters.map((c) => (
+          <button type="button" key={c.id} role="radio" aria-checked={c.id === charId}
+            className={cx('dlg-char', c.id === charId && 'is-selected')} onClick={() => set({ charId: c.id })}>
+            <Avatar char={c} size={44} /><span>{c.name}</span>
+          </button>
+        ))}
+      </div>
+      <textarea className="field__input" rows={2} value={draft.say || ''} onChange={(e) => set({ say: e.target.value })}
+        placeholder={`自動：${autoStageLine(draft, index)}`} aria-label="到達這一關時說的話" />
+      <span className="field__hint">走到這一關時角色說的話；留空會依類別自動產生，用【】括起來的字會紅底強調</span>
+    </div>
+  );
+}
+
+/** 只編輯這一關的角色與台詞（地圖上的「編輯台詞」用） */
+export function openStageSay(id) {
+  modal.open({ title: '編輯台詞', content: <StageSayEditor id={id} /> });
+}
+
+function StageSayEditor({ id }) {
+  const { close } = useModalContext();
+  const items = useTripStore((s) => s.items);
+  const it = items.find((x) => x.id === id);
+  const [draft, setDraft] = useState(() => ({ ...it, charId: it?.charId || '', say: it?.say || '' }));
+  if (!it) return <p className="muted">此行程已刪除</p>;
+  const index = dayItems(items, it.day).findIndex((x) => x.id === id);
+
+  function save(e) {
+    e.preventDefault();
+    updateTrip((s) => {
+      const t = s.items.find((x) => x.id === id);
+      if (t) Object.assign(t, { charId: draft.charId || '', say: draft.say.trim() });
+    });
+    toast('已更新台詞');
+    close();
+  }
+
+  return (
+    <form className="form" noValidate onSubmit={save}>
+      <div className="small muted">{it.time || '時間未定'} · {it.title}</div>
+      <StageDialogueField draft={draft} setDraft={setDraft} index={index} />
+      <Button type="submit" variant="primary" block><Icon name="check" />儲存</Button>
     </form>
   );
 }

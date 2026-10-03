@@ -34,8 +34,36 @@ export function resolveScript(dialogue) {
   return (dialogue?.script || [])
     .map((l) => {
       const c = chars.get(l.charId);
-      if (!c || !l.line?.length) return null;
+      if (!c || !l.line?.length || l.hidden) return null; // 編輯器裡設為隱藏的不播
       return { key: l.id, charId: c.id, name: c.name, img: charImgSrc(c.img), side: l.side || c.side || 'right', lift: c.lift || '-2%', line: l.line };
     })
     .filter(Boolean);
 }
+
+/* ---------- 地圖關卡：每個行程可指定角色與台詞，沒指定就自動 ---------- */
+
+// 自動台詞：依行程類別
+const STAGE_LINES = {
+  交通: ['出發囉！', '車子要來了，快跟上！', '移動中，記得看站名～'],
+  景點: ['這裡一定要拍照打卡！', '終於到了！', '哇～好壯觀！'],
+  餐廳: ['肚子好餓，開吃！', '這間我期待很久了！', '吃飽才有力氣逛！'],
+  住宿: ['回血時間～', '先放行李休息一下', '今天辛苦了！'],
+  購物: ['錢包準備好了嗎？', '買買買！', '行李箱還裝得下嗎…'],
+  其他: ['下一關！', '繼續前進！', '衝啊！']
+};
+
+/** 自動台詞（i 是當天第幾關，讓同類別的關卡輪流說不同的話） */
+export function autoStageLine(item, i = 0) {
+  const lines = STAGE_LINES[item?.category] || STAGE_LINES.其他;
+  return lines[i % lines.length];
+}
+
+/** 關卡的台詞片段：有自訂就用自訂（支援【】），沒有就自動 */
+export const stageLine = (item, i) => textToLine(item?.say?.trim() || autoStageLine(item, i));
+
+/** 當天的預設角色：每天輪一位 */
+export const dayChar = (characters, day) => (characters.length ? characters[day % characters.length] : null);
+
+/** 關卡的角色：有指定且角色還在就用指定的，否則用當天預設 */
+export const stageChar = (characters, item, day) =>
+  characters.find((c) => c.id === item?.charId) || dayChar(characters, day);

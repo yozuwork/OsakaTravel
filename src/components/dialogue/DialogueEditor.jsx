@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react';
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { modal } from '../../stores/modalStore';
 import { toast } from '../../stores/uiStore';
 import { openDialogue } from '../../stores/dialogueStore';
@@ -12,7 +14,7 @@ import Button from '../common/Button';
 import Icon from '../common/Icon';
 
 /* =========================================================
-   對話編輯器：台詞新增／編輯／刪除／排序、換角色；角色可自行新增（上傳去背立繪）
+   對話編輯器：台詞新增／編輯／刪除／拖曳排序／隱藏、換角色；角色可自行新增（上傳去背立繪）
    資料存在 state.dialogue，會跟帳號同步
    ========================================================= */
 
@@ -24,7 +26,7 @@ export function openDialogueEditor() {
 }
 
 /** 角色頭像（圓形，取上方臉的位置） */
-function Avatar({ char, size = 44 }) {
+export function Avatar({ char, size = 44 }) {
   return (
     <span className="dlg-avatar" style={{ width: size, height: size }}>
       {char ? <img src={charImgSrc(char.img)} alt="" draggable="false" /> : <Icon bi="question-lg" />}
@@ -46,11 +48,26 @@ function DialogueEditor() {
   const { characters, script } = useTripStore((s) => s.dialogue);
   const charOf = (id) => characters.find((c) => c.id === id);
 
-  const move = (i, d) => updateTrip((s) => {
-    const list = s.dialogue.script;
-    const j = i + d;
-    if (j < 0 || j >= list.length) return;
-    [list[i], list[j]] = [list[j], list[i]];
+  const hiddenCount = script.filter((l) => l.hidden).length;
+
+  // 只從把手拖曳，移動 4px 才開始，避免和點擊、捲動衝突；鍵盤：聚焦把手按空白鍵拿起、方向鍵移動
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  function dragEnd({ active, over }) {
+    if (!over || active.id === over.id) return;
+    updateTrip((s) => {
+      const list = s.dialogue.script;
+      s.dialogue.script = arrayMove(list, list.findIndex((l) => l.id === active.id), list.findIndex((l) => l.id === over.id));
+    });
+  }
+
+  const toggleHidden = (id) => updateTrip((s) => {
+    const l = s.dialogue.script.find((x) => x.id === id);
+    if (!l) return;
+    if (l.hidden) delete l.hidden; else l.hidden = true;
   });
 
   async function removeLine(l) {
@@ -66,7 +83,7 @@ function DialogueEditor() {
   }
 
   function preview() {
-    if (!script.length) { toast('還沒有台詞'); return; }
+    if (script.length === hiddenCount) { toast(script.length ? '台詞都被隱藏了' : '還沒有台詞'); return; }
     close();
     openDialogue();
   }
@@ -76,30 +93,18 @@ function DialogueEditor() {
       <section className="setting-group">
         <div className="row-between">
           <h3 className="setting-group__title"><Icon bi="chat-quote-fill" />對話（依序播放）</h3>
-          <span className="small muted">{script.length} 句</span>
+          <span className="small muted">{script.length} 句{hiddenCount > 0 && `（${hiddenCount} 句隱藏）`}</span>
         </div>
-        <ol className="dlg-lines">
-          {script.map((l, i) => {
-            const c = charOf(l.charId);
-            return (
-              <li key={l.id} className="dlg-line">
-                <button type="button" className="dlg-line__main" onClick={() => openLineEditor(l.id)} aria-label={`編輯第 ${i + 1} 句`}>
-                  <Avatar char={c} />
-                  <span className="dlg-line__text">
-                    <span className="dlg-line__name">{c?.name || '（角色已刪除）'}<span className="small muted">・{SIDE_LABEL[l.side || c?.side] || ''}</span></span>
-                    <LinePreview line={l.line} />
-                  </span>
-                </button>
-                <span className="dlg-line__tools">
-                  <button type="button" className="link-row__btn" onClick={() => move(i, -1)} disabled={i === 0} aria-label="往上移"><Icon bi="arrow-up" /></button>
-                  <button type="button" className="link-row__btn" onClick={() => move(i, 1)} disabled={i === script.length - 1} aria-label="往下移"><Icon bi="arrow-down" /></button>
-                  <button type="button" className="link-row__btn link-row__btn--del" onClick={() => removeLine(l)} aria-label="刪除這句"><Icon name="trash" /></button>
-                </span>
-              </li>
-            );
-          })}
-          {!script.length && <li className="small muted">還沒有台詞，按下方「新增一句」</li>}
-        </ol>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={dragEnd}>
+          <SortableContext items={script.map((l) => l.id)} strategy={verticalListSortingStrategy}>
+            <ol className="dlg-lines">
+              {script.map((l, i) => (
+                <LineRow key={l.id} l={l} i={i} char={charOf(l.charId)} onToggle={toggleHidden} onRemove={removeLine} />
+              ))}
+              {!script.length && <li className="small muted">還沒有台詞，按下方「新增一句」</li>}
+            </ol>
+          </SortableContext>
+        </DndContext>
         <button type="button" className="btn btn--sm btn--dashed" onClick={() => openLineEditor(null)}><Icon name="plus" />新增一句</button>
       </section>
 
@@ -125,6 +130,38 @@ function DialogueEditor() {
         <Button variant="primary" onClick={preview}><Icon bi="play-fill" />預覽播放</Button>
       </div>
     </div>
+  );
+}
+
+/** 台詞列表的一列（可拖曳排序） */
+function LineRow({ l, i, char, onToggle, onRemove }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: l.id });
+  // 只允許上下移動
+  const style = { transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined, transition };
+
+  return (
+    <li ref={setNodeRef} style={style} className={cx('dlg-line', l.hidden && 'is-hidden', isDragging && 'is-dragging')}>
+      <button type="button" ref={setActivatorNodeRef} className="dlg-line__grip" {...attributes} {...listeners} aria-label={`拖曳排序第 ${i + 1} 句`}>
+        <Icon bi="grip-vertical" />
+      </button>
+      <button type="button" className="dlg-line__main" onClick={() => openLineEditor(l.id)} aria-label={`編輯第 ${i + 1} 句`}>
+        <Avatar char={char} />
+        <span className="dlg-line__text">
+          <span className="dlg-line__name">
+            {char?.name || '（角色已刪除）'}<span className="small muted">・{SIDE_LABEL[l.side || char?.side] || ''}</span>
+            {l.hidden && <span className="dlg-line__tag">已隱藏</span>}
+          </span>
+          <LinePreview line={l.line} />
+        </span>
+      </button>
+      <span className="dlg-line__tools">
+        <button type="button" className="link-row__btn" onClick={() => onToggle(l.id)} aria-pressed={!!l.hidden}
+          aria-label={l.hidden ? '顯示這句' : '隱藏這句'} title={l.hidden ? '顯示這句' : '隱藏這句'}>
+          <Icon bi={l.hidden ? 'eye-slash' : 'eye'} />
+        </button>
+        <button type="button" className="link-row__btn link-row__btn--del" onClick={() => onRemove(l)} aria-label="刪除這句"><Icon name="trash" /></button>
+      </span>
+    </li>
   );
 }
 

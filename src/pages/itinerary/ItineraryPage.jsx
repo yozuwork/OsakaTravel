@@ -11,6 +11,7 @@ import { WEEK, catIcon } from '../../data/constants';
 import { addDays, md, mdw, parseDate, period } from '../../utils/date';
 import { dayItems, placeItem } from '../../utils/itinerary';
 import { openItemDetail, openItemForm } from './itemEditor';
+import { charImgSrc, stageChar, stageLine } from '../../utils/dialogueText';
 import { openVoiceTrip } from './VoiceTripInput';
 
 // 手機版 + 按鈕的選項
@@ -19,6 +20,7 @@ const itemActions = addActions({ voiceDesc: '用說的快速建立行程', textD
 export default function ItineraryPage() {
   const trip = useTripStore((s) => s.trip);
   const allItems = useTripStore((s) => s.items);
+  const characters = useTripStore((s) => s.dialogue.characters);
   const uiDay = useTripStore((s) => s.ui.day);
   const day = Math.min(uiDay, trip.days - 1);
 
@@ -88,7 +90,7 @@ export default function ItineraryPage() {
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={() => { dragged.current = true; }} onDragEnd={dragEnd} onDragCancel={dragEnd}>
             <SortableContext items={items.map((it) => it.id)} strategy={verticalListSortingStrategy}>
               <div className="timeline">
-                {items.map((it) => <TimelineRow key={it.id} it={it} onOpen={open} />)}
+                {items.map((it, i) => <TimelineRow key={it.id} it={it} onOpen={open} char={stageChar(characters, it, day)} line={stageLine(it, i)} />)}
               </div>
             </SortableContext>
           </DndContext>
@@ -108,7 +110,7 @@ export default function ItineraryPage() {
 }
 
 /** 時間軸上的一張行程卡（可拖曳排序） */
-function TimelineRow({ it, onOpen }) {
+function TimelineRow({ it, onOpen, char, line }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: it.id });
   // 只允許上下移動
   const style = { transform: transform ? `translate3d(0, ${transform.y}px, 0)` : undefined, transition };
@@ -142,6 +144,16 @@ function TimelineRow({ it, onOpen }) {
           <span className="tl-title">{it.title}</span>
           {it.place && <span className="tl-meta"><Icon name="pin" /><span>{it.place}</span></span>}
           {it.note && <span className="tl-meta"><Icon name="alert" /><span>{it.note}</span></span>}
+          {char && (
+            // 和地圖同一份：走到這一關時角色說的話（沒自訂就是自動台詞）
+            <span className={cx('tl-say', !it.say?.trim() && 'is-auto')}>
+              <img src={charImgSrc(char.img)} alt="" draggable="false" />
+              <span className="tl-say__text">
+                <b>{char.name}</b>
+                {line.map(([t, hi], k) => (hi ? <em key={k}>{t}</em> : <span key={k}>{t}</span>))}
+              </span>
+            </span>
+          )}
         </span>
       </div>
     </div>
