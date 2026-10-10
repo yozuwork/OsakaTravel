@@ -5,6 +5,10 @@ import { ModalContext } from './ModalContext';
 import Icon from '../common/Icon';
 import Button from '../common/Button';
 
+/* 彈出視窗的 z-index 起點：要高於所有全螢幕層（打卡相機／明信片 55、角色對話 85、轉場 90），
+   低於全局 Loading（160）、Toast（170）、開啟畫面（200）；堆疊時每層 +2 */
+const MODAL_Z = 100;
+
 /** 放在 App 最外層一次即可，負責渲染所有彈出視窗 */
 export default function ModalRoot() {
   const stack = useModalStore((s) => s.stack);
@@ -26,7 +30,7 @@ export default function ModalRoot() {
   }, []);
 
   return createPortal(
-    stack.map((m, i) => <Modal key={m.id} entry={m} z={40 + i * 2} />),
+    stack.map((m, i) => <Modal key={m.id} entry={m} z={MODAL_Z + i * 2} />),
     document.body
   );
 }

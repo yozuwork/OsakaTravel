@@ -212,7 +212,7 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .loading-overlay {
-  position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center;
+  position: fixed; inset: 0; z-index: 160; display: flex; align-items: center; justify-content: center;
   background: rgba(30, 42, 69, .35);
 }
 .loading-box {
@@ -506,6 +506,39 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 .ck-btn.is-red { background: var(--red); color: var(--white); box-shadow: 2px 2px 0 var(--white); }
 .ck-btn.is-ghost { background: transparent; color: var(--white); border-color: var(--white); box-shadow: none; }
 .ck-btn:disabled { opacity: .6; }
+.ck-btn svg.i { width: 18px; height: 18px; }
+.ck-btn.is-on { background: var(--navy); color: var(--white); border-color: var(--white); }
+.ck-chip.is-sm { padding: 5px 12px; font-size: 12px; }
+
+/* 匯出 PDF 按鈕（日期列） */
+.ck-pdfbtn {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 12px; border: var(--border); border-radius: 999px;
+  background: var(--card); color: var(--navy); font-size: 13px; font-weight: 900; box-shadow: 2px 2px 0 var(--red);
+}
+.ck-pdfbtn .i-bi { font-size: 15px; }
+.ck-pdfbtn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* 明信片蓋章模式 */
+.ck-card.is-stamping { cursor: crosshair; outline: 3px dashed var(--white); outline-offset: 6px; }
+.ck-stampbar { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ck-stampbar__hint { font-size: 13px; font-weight: 700; color: var(--white); }
+.ck-stampbar__row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ck-stampchip { width: 64px; height: 64px; padding: 4px; border: 2px solid var(--white); border-radius: 12px; background: transparent; }
+.ck-stampchip img { display: block; width: 100%; height: 100%; }
+.ck-stampchip[aria-pressed="true"] { background: var(--white); box-shadow: 2px 2px 0 var(--red); }
+
+/* 明信片留言 */
+.ck-msg { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 4px; }
+.ck-msg label { font-size: 12px; font-weight: 800; letter-spacing: 1px; color: var(--white); }
+.ck-msg textarea {
+  width: 100%; resize: none; padding: 10px 12px; border: var(--border); border-radius: 10px; background: var(--white); color: var(--navy);
+  font: 600 15px/1.5 "LXGW WenKai TC", "Noto Sans TC", sans-serif; box-shadow: 2px 2px 0 var(--red);
+}
+.ck-msg__count { align-self: flex-end; font-size: 11px; font-weight: 700; color: #CFD3DD; }
+
+/* PDF 預覽 */
+.ck-pdfpages { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+.ck-pdfpages img { width: 100%; max-width: 440px; aspect-ratio: 1240 / 1754; border-radius: 2px; background: var(--white); box-shadow: 0 10px 24px rgba(0, 0, 0, .3), 4px 4px 0 var(--red); }
 @media (prefers-reduced-motion: reduce) {
   .ck-rowstamp.is-new, .ck-card, .ck-lab__tray::after { animation: none; }
 }
@@ -864,9 +897,9 @@ a.more-item:active { box-shadow: none; transform: translate(1px, 1px); }
 @keyframes more-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
 
 /* ---------- 彈出視窗（Bottom sheet / 對話框） ---------- */
-.sheet-backdrop { position: fixed; inset: 0; background: rgba(30, 42, 69, .45); z-index: 40; }
+.sheet-backdrop { position: fixed; inset: 0; background: rgba(30, 42, 69, .45); z-index: 100; }
 .sheet {
-  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 41;
+  position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 101;
   width: 100%; max-width: 480px; max-height: 88vh; max-height: 88dvh;
   display: flex; flex-direction: column;
   background: var(--card); border: var(--border); border-bottom: 0; border-radius: 20px 20px 0 0;
@@ -1359,7 +1392,7 @@ a.chip-link:hover { border-color: var(--red); color: var(--red); }
 /* ---------- Toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(var(--tabbar-h) + var(--safe-b) + 16px); transform: translate(-50%, 20px);
-  z-index: 60; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 10px;
+  z-index: 170; max-width: calc(100% - 32px); padding: 10px 16px; border-radius: 10px;
   background: var(--navy); color: var(--white); font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
 }
 .toast.is-show { opacity: 1; transform: translate(-50%, 0); }

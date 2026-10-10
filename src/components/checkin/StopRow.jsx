@@ -1,6 +1,6 @@
+import { useMemo } from 'react';
 import { cx } from '../../utils/helpers';
-import { fmtTime } from '../../features/checkin/photo';
-import { stampUrl } from '../../features/checkin/stamps';
+import { fmtTime, stampCanvas } from '../../features/checkin/engine';
 import Icon from '../common/Icon';
 import BlobImg from './BlobImg';
 
@@ -20,6 +20,7 @@ export const StampIcon = () => (
  * @param {boolean} p.isNew 剛蓋的章（播放蓋下去的動畫）
  */
 export default function StopRow({ stop, cards, stamp, isNew, onStamp, onUnstamp, onShoot, onOpenCard }) {
+  const stampSrc = useMemo(() => stamp && stampCanvas('post', { at: stamp.at, title: stop.title, no: stop.no }, 180).toDataURL(), [stamp, stop.title, stop.no]);
   const meta = [stop.category, cards.length && `${cards.length} 張`, stamp && `${fmtTime(stamp.at)} 打卡`].filter(Boolean).join(' · ');
 
   return (
@@ -34,7 +35,7 @@ export default function StopRow({ stop, cards, stamp, isNew, onStamp, onUnstamp,
         {stamp && (
           <button type="button" className={cx('ck-rowstamp', isNew && 'is-new')} style={{ '--rot': `${stamp.rot}rad` }}
             onClick={onUnstamp} title="點一下取消打卡" aria-label={`${stop.title} 已於 ${fmtTime(stamp.at)} 打卡，點一下可以取消`}>
-            <img src={stampUrl('post', { at: stamp.at, title: stop.title, no: stop.no })} alt="" draggable="false" />
+            <img src={stampSrc} alt="" draggable="false" />
           </button>
         )}
         <div className="ck-stop__btns">

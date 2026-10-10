@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { toast } from '../../stores/uiStore';
-import { blobToPhotoCanvas, toPhotoCanvas } from '../../features/checkin/photo';
+import { blobToPhotoCanvas, videoToCanvas } from '../../features/checkin/photo';
 import Icon from '../common/Icon';
 
 /**
@@ -56,7 +56,7 @@ export default function CameraSheet({ title, onClose, onPhoto }) {
   function shoot() {
     const v = videoRef.current;
     if (!v?.videoWidth) return;
-    onPhoto(toPhotoCanvas(v, v.videoWidth, v.videoHeight, facing === 'user'));
+    onPhoto(videoToCanvas(v, facing === 'user'));
   }
 
   const onFile = useCallback(async (e) => {

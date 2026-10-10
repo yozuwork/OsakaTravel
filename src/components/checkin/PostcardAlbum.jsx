@@ -1,4 +1,4 @@
-import { pad } from '../../features/checkin/photo';
+import { pad } from '../../features/checkin/engine';
 import BlobImg from './BlobImg';
 
 /**
