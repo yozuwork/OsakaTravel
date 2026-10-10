@@ -39,7 +39,7 @@
   --border: 2px solid var(--navy);
   --border-accent: 2px solid var(--red);
 
-  --tabbar-h: 76px;
+  --tabbar-h: 72px;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --font: 'Lexend', 'Noto Sans TC', system-ui, -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
 
@@ -157,7 +157,7 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 .seg-tab {
   height: 44px; padding: 0 10px; white-space: nowrap; font-size: 12px; font-weight: 500;
   display: flex; align-items: center; justify-content: center; text-decoration: none;
-  background: var(--card); color: var(--navy); border: var(--border-accent); border-radius: 22px;
+  background: var(--card); color: var(--navy); border: var(--border-accent); border-radius: 22px; font-family: inherit; cursor: pointer;
 }
 .seg-tab:hover { color: var(--navy); background: var(--red-soft); }
 .seg-tab[aria-selected="true"] { background: var(--red); color: var(--white); font-weight: 700; box-shadow: var(--shadow-sm); }
@@ -571,6 +571,79 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 .idea__actions { padding: 0 12px 14px; margin-top: auto; }
 .idea__actions .btn { width: 100%; height: 40px; font-size: 14px; padding: 0 8px; }
 
+/* 收集箱分頁上的數量 */
+.seg-tab__count {
+  min-width: 20px; height: 20px; margin-left: 6px; padding: 0 6px; border-radius: 10px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--red-soft); color: var(--red); font-size: 11px; font-weight: 800;
+}
+.seg-tab[aria-selected="true"] .seg-tab__count { background: var(--white); }
+
+/* ---------- 機票與飯店 ---------- */
+.content--booking .small .i-bi { font-size: 12px; vertical-align: -1px; }
+/* 我的預訂：整張卡可點，進「待辦 › 班機／住宿」查看 */
+.my-booking { display: flex; align-items: center; gap: 12px; padding: 14px; color: var(--navy); text-decoration: none; transition: transform .12s, box-shadow .12s; }
+.my-booking:hover { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--red); }
+.my-booking:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--red); }
+.my-booking__icon { width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--red-soft); color: var(--red); }
+.my-booking__icon .i-bi { font-size: 21px; }
+.my-booking__icon svg.i { width: 22px; height: 22px; }
+.my-booking__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.my-booking__top { display: flex; align-items: center; gap: 8px; }
+.my-booking__date { font-size: 12px; font-weight: 700; color: var(--muted); }
+.my-booking__title { font-size: 16px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-booking__meta { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.my-booking__arrow { flex-shrink: 0; color: var(--red); }
+
+.budget { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.budget__row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--red-bg); }
+.budget__row > span:first-child { display: flex; flex-direction: column; min-width: 0; font-size: 14px; }
+.budget__row small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.budget__row > span:last-child { flex-shrink: 0; font-size: 17px; font-weight: 900; }
+.budget__row .is-ok { color: var(--navy); }
+.budget__row .is-over { color: var(--red); }
+.budget__note { margin: 0; font-size: 12px; color: var(--muted); }
+
+/* 方案卡片 */
+.deal { overflow: hidden; }
+.deal__photo { height: 150px; border-bottom: var(--border); background: var(--red-bg); }
+.deal__photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.deal__body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+.deal__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.deal__tags { display: flex; align-items: center; gap: 6px; }
+.deal__status { height: 22px; padding: 0 8px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 12px; font-weight: 700; border: 1.5px solid var(--navy); color: var(--navy); }
+.deal__status.is-est { border-style: dashed; border-color: var(--navy-light); color: var(--muted); }
+.deal__fav {
+  width: 40px; height: 40px; padding: 0; border-radius: 50%; border: var(--border); background: var(--white); color: var(--navy);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform .12s;
+}
+.deal__fav .i-bi { font-size: 18px; }
+.deal__fav:hover { background: var(--red-soft); color: var(--red); }
+.deal__fav:active { transform: scale(.9); }
+.deal__fav.is-on { background: var(--red); border-color: var(--red); color: var(--white); box-shadow: 2px 2px 0 var(--navy); }
+.deal__title { margin: 0; font-size: 18px; font-weight: 900; line-height: 1.3; }
+.deal__local { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.deal__sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.deal__line { display: flex; align-items: flex-start; gap: 6px; font-size: 13px; font-weight: 700; }
+.deal__line svg.i { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: var(--red); }
+.deal-legs { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--red-bg); }
+.deal-leg { display: grid; grid-template-columns: 36px auto 1fr auto 52px; align-items: center; gap: 8px; }
+.deal-leg__label { font-size: 12px; font-weight: 700; color: var(--muted); }
+.deal-leg__time { display: flex; flex-direction: column; font-size: 16px; font-weight: 800; line-height: 1.15; }
+.deal-leg__time small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.deal-leg__time--r { text-align: right; }
+.deal-leg__mid { display: flex; align-items: center; gap: 4px; color: var(--red); }
+.deal-leg__mid::before, .deal-leg__mid::after { content: ''; flex: 1; border-top: 2px dashed var(--red-line); }
+.deal-leg__mid svg.i { width: 16px; height: 16px; }
+.deal-leg__no { font-size: 11px; color: var(--muted); text-align: right; }
+.deal__price { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.deal__amount { font-size: 24px; font-weight: 900; color: var(--red); line-height: 1; }
+.deal__amount small { font-size: 12px; font-weight: 700; color: var(--muted); margin-right: 6px; }
+.deal__budget { height: 26px; padding: 0 10px; border-radius: 13px; display: inline-flex; align-items: center; font-size: 12px; font-weight: 800; background: var(--navy); color: var(--white); }
+.deal__budget.is-over { background: var(--red-soft); color: var(--red); }
+.deal__budget.is-part { background: var(--red-bg); color: var(--navy); border: 1.5px solid var(--navy-line); }
+.deal__note { margin: 0; font-size: 13px; line-height: 1.55; color: var(--muted); }
+
 /* ---------- Tabbar ---------- */
 .tabbar {
   position: fixed; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 20;
@@ -580,8 +653,12 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
   background: var(--bg); border-top: 1px solid var(--navy-line);
 }
 .tabbar__brand { display: none; }
-.tabbar__item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-decoration: none; color: var(--muted); }
-.tabbar__icon { width: 60px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 16px; }
+.tabbar__item {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-width: 0; padding: 0; border: 0; background: none; font: inherit; text-decoration: none; color: var(--muted); cursor: pointer;
+}
+.tabbar__item--extra { display: none; } /* 手機版收在「更多」面板裡，電腦版左側選單才列出 */
+.tabbar__icon { width: 56px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 15px; border: 2px solid transparent; }
 .tabbar__icon svg.i { width: 22px; height: 22px; stroke-width: 1.7; }
 .tabbar__label { font-size: 12px; white-space: nowrap; }
 .tabbar__item:hover { color: var(--red); }
@@ -589,6 +666,60 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 .tabbar__item[aria-current="page"] .tabbar__icon { background: var(--red); color: var(--white); }
 .tabbar__item[aria-current="page"] .tabbar__icon svg.i { width: 20px; height: 20px; stroke-width: 2; }
 .tabbar__item[aria-current="page"] .tabbar__label { font-weight: 700; }
+
+/* 「更多」：一般＝灰色三點；打開＝淺紅底＋紅框、三點轉 90°；目前頁在面板裡＝實心紅＋右上角頁名 */
+.tabbar__icon .i-bi { font-size: 21px; }
+.tabbar__more .tabbar__icon .i-bi { font-size: 22px; transition: transform .22s cubic-bezier(.3, 1.6, .5, 1); }
+.tabbar__more.is-open { color: var(--red); }
+.tabbar__more.is-open .tabbar__icon { background: var(--red-soft); border-color: var(--red); }
+.tabbar__more.is-open .tabbar__icon .i-bi { transform: rotate(90deg); }
+.tabbar__more.is-current { color: var(--red); }
+.tabbar__more.is-current .tabbar__icon { background: var(--red); border-color: var(--red); color: var(--white); }
+.tabbar__more.is-current .tabbar__label { font-weight: 700; }
+.tabbar__badge {
+  position: absolute; top: 2px; left: calc(50% + 14px); max-width: calc(50% - 14px);
+  padding: 1px 5px; border-radius: 6px; background: var(--navy); color: var(--white);
+  font-size: 10px; font-weight: 700; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 1px 1px 0 var(--red);
+}
+.fab.is-hidden { display: none; }
+
+/* 「更多」面板：浮在導覽列上方的卡片，3 欄格線 */
+.more-panel { position: fixed; inset: 0; z-index: 19; }
+.more-panel__backdrop { position: absolute; inset: 0; background: rgba(30, 42, 69, .35); animation: fab-fade .18s ease-out both; }
+.more-panel__card {
+  position: absolute;
+  left: max(12px, calc(50% - 240px + 12px)); right: max(12px, calc(50% - 240px + 12px));
+  bottom: calc(var(--tabbar-h) + var(--safe-b) + 12px);
+  padding: 16px 16px 18px; background: var(--card); border: var(--border); border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--red);
+  animation: more-in .24s cubic-bezier(.2, 1.3, .4, 1) both;
+}
+.more-panel__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.more-panel__title { margin: 0; font-size: 18px; font-weight: 900; color: var(--navy); }
+.more-panel__close {
+  width: 36px; height: 36px; padding: 0; border-radius: 50%; border: var(--border); background: var(--white); color: var(--navy);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.more-panel__close svg.i { width: 18px; height: 18px; stroke-width: 2.4; }
+.more-panel__close:hover { background: var(--red-soft); }
+.more-panel__grid { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 12px; }
+.more-item {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 6px 14px;
+  border: 2px solid var(--navy); border-radius: 14px; background: var(--white); color: var(--navy); text-decoration: none;
+  transition: transform .12s, box-shadow .12s;
+}
+.more-item__icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--red-soft); color: var(--red); }
+.more-item__icon svg.i { width: 22px; height: 22px; stroke-width: 1.8; }
+.more-item__icon .i-bi { font-size: 21px; }
+.more-item__label { font-size: 14px; font-weight: 700; white-space: nowrap; }
+a.more-item:hover { box-shadow: 3px 3px 0 var(--red); transform: translate(-1px, -1px); }
+a.more-item:active { box-shadow: none; transform: translate(1px, 1px); }
+.more-item[aria-current="page"] { background: var(--red); border-color: var(--red); color: var(--white); box-shadow: 3px 3px 0 var(--navy); }
+.more-item[aria-current="page"] .more-item__icon { background: rgba(255, 255, 255, .2); color: var(--white); }
+.more-item--empty { border: 2px dashed var(--navy-line); color: var(--muted-2); }
+.more-item--empty .more-item__icon { background: rgba(30, 42, 69, .06); color: var(--muted-2); }
+@keyframes more-in { from { opacity: 0; transform: translateY(16px) scale(.97); } to { opacity: 1; transform: none; } }
 
 /* ---------- 彈出視窗（Bottom sheet / 對話框） ---------- */
 .sheet-backdrop { position: fixed; inset: 0; background: rgba(30, 42, 69, .45); z-index: 40; }
@@ -1132,6 +1263,10 @@ a.chip-link:hover { border-color: var(--red); color: var(--red); }
   .tabbar__item[aria-current="page"] { background: var(--red); color: var(--white); border-color: var(--red); box-shadow: 3px 3px 0 var(--navy); }
   .tabbar__item[aria-current="page"] .tabbar__icon { background: transparent; }
   .tabbar__item[aria-current="page"] .tabbar__icon svg.i { width: 22px; height: 22px; }
+  .tabbar__icon { border: 0; }
+  .tabbar__item--extra { display: flex; }
+  .tabbar__more, .more-panel { display: none; } /* 左側選單空間夠，全部列出，不需要「更多」 */
+  .fab.is-hidden { display: flex; }
 
   /* 頁首與內容寬度 */
   .page-head { padding: 36px 48px 18px; }
@@ -1154,6 +1289,7 @@ a.chip-link:hover { border-color: var(--red); color: var(--red); }
 
   /* 待辦：各分頁版面 */
   .content--todo { max-width: 820px; }
+  .content--booking { max-width: 820px; }
   .content--flight, .content--stay { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
   .content--flight > .btn--dashed, .content--stay > .btn--dashed { grid-column: 1 / -1; }
   .content--entry { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }

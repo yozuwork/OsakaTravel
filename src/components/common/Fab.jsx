@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { cx } from '../../utils/helpers';
-import { toast } from '../../stores/uiStore';
+import { toast, useUiStore } from '../../stores/uiStore';
 
 const CLOSE_MS = 220;
 
@@ -22,6 +22,7 @@ export default function Fab({ label, onClick, actions }) {
   const [phase, setPhase] = useState('closed');
   const timer = useRef(null);
   const shown = phase !== 'closed';
+  const moreOpen = useUiStore((s) => s.moreOpen); // 底部「更多」面板打開時先藏起來，避免重疊
 
   useEffect(() => () => clearTimeout(timer.current), []);
 
@@ -71,7 +72,7 @@ export default function Fab({ label, onClick, actions }) {
           </div>
         </div>
       )}
-      <button type="button" className={cx('fab', phase === 'open' && 'is-open')} onClick={toggle}
+      <button type="button" className={cx('fab', phase === 'open' && 'is-open', moreOpen && 'is-hidden')} onClick={toggle}
         aria-label={phase === 'open' ? '關閉選單' : label} title={label}
         aria-haspopup={actions ? 'menu' : undefined} aria-expanded={actions ? phase === 'open' : undefined}>
         <Icon name="plus" />

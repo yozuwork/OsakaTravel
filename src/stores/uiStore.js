@@ -1,13 +1,17 @@
 /* =========================================================
-   共用 UI 狀態：Toast、全局 Loading
+   共用 UI 狀態：Toast、全局 Loading、「更多」面板
    任何地方（元件內外）都可以直接呼叫 toast() / loading.xxx()
    ========================================================= */
 import { create } from 'zustand';
 
 export const useUiStore = create(() => ({
   toast: { msg: '', show: false },
-  loading: { count: 0, text: '' }
+  loading: { count: 0, text: '' },
+  moreOpen: false // 底部「更多」面板是否打開（打開時隱藏右下 FAB）
 }));
+
+/* ---------- 「更多」面板 ---------- */
+export const setMoreOpen = (moreOpen) => useUiStore.setState({ moreOpen });
 
 /* ---------- Toast ---------- */
 let toastTimer;

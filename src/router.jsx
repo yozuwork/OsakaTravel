@@ -13,6 +13,7 @@ const BagTab = lazy(() => import('./pages/todo/BagTab'));
 const UsjTab = lazy(() => import('./pages/todo/UsjTab'));
 const MapPage = lazy(() => import('./pages/map/MapPage'));
 const IdeasPage = lazy(() => import('./pages/ideas/IdeasPage'));
+const BookingPage = lazy(() => import('./pages/booking/BookingPage'));
 const TransitLayout = lazy(() => import('./pages/transit/TransitLayout'));
 const RouteTab = lazy(() => import('./pages/transit/RouteTab'));
 const AirportTab = lazy(() => import('./pages/transit/AirportTab'));
@@ -51,6 +52,7 @@ export const router = createHashRouter([
           { path: 'lines', element: <LinesTab /> }
         ]
       },
+      { path: 'booking', element: <BookingPage />, handle: { title: '機票' } },
       { path: '*', element: <Navigate to="/itinerary" replace /> }
     ]
   }

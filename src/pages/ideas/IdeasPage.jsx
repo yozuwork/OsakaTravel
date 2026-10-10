@@ -1,8 +1,11 @@
+import { useState } from 'react';
+import { Link } from 'react-router';
 import { useTripStore } from '../../stores/tripStore';
 import Icon from '../../components/common/Icon';
 import Fab, { addActions } from '../../components/common/Fab';
 import { ideaToTrip, openIdeaEditor } from './ideaEditor';
 import { openVoiceIdea } from './voiceIdea';
+import DealCard from '../booking/DealCard';
 
 const metaText = (d) => [d.category, d.desc].filter(Boolean).join('・');
 const cover = (d) => d.images?.[0] || d.image;
@@ -12,11 +15,10 @@ const ideaActions = addActions({
   onText: () => openIdeaEditor(null), onVoice: () => openVoiceIdea(() => openIdeaEditor(null))
 });
 
-export default function IdeasPage() {
-  const ideas = useTripStore((s) => s.ideas);
+/** 行程區：想去的店、景點（可轉成行程） */
+function IdeaGrid({ ideas }) {
   return (
     <>
-      <header className="page-head"><h1 className="page-title">想法收集箱</h1></header>
       <main className="idea-grid">
         {ideas.map((d) => (
           <article className="idea" key={d.id}>
@@ -45,6 +47,46 @@ export default function IdeasPage() {
         )}
       </main>
       <Fab label="新增想法" actions={ideaActions} />
+    </>
+  );
+}
+
+/** 機票與飯店區：在「機票與飯店」頁按喜歡的方案 */
+function FavDeals({ deals }) {
+  return (
+    <main className="content content--booking">
+      {deals.map((d) => <DealCard key={d.id} d={d} />)}
+      {!deals.length && (
+        <div className="empty">
+          <Icon bi="heart" />
+          <span className="empty__title">還沒有喜歡的機票或飯店</span>
+          <span className="small muted">到「更多 › 機票」按 ♡ 收進這裡</span>
+          <Link to="/booking" className="btn btn--sm" style={{ marginTop: 6 }}><Icon bi="airplane" />去看機票與飯店</Link>
+        </div>
+      )}
+    </main>
+  );
+}
+
+export default function IdeasPage() {
+  const ideas = useTripStore((s) => s.ideas);
+  const favDeals = useTripStore((s) => s.favDeals || []);
+  const [tab, setTab] = useState('ideas');
+  const tabs = [
+    { id: 'ideas', label: '行程區', count: ideas.length },
+    { id: 'deals', label: '機票與飯店區', count: favDeals.length }
+  ];
+  return (
+    <>
+      <header className="page-head page-head--flush"><h1 className="page-title">想法收集箱</h1></header>
+      <div className="seg-tabs" role="tablist" aria-label="收集箱分類">
+        {tabs.map((t) => (
+          <button key={t.id} type="button" className="seg-tab" role="tab" aria-selected={t.id === tab} onClick={() => setTab(t.id)}>
+            {t.label}{t.count > 0 && <span className="seg-tab__count">{t.count}</span>}
+          </button>
+        ))}
+      </div>
+      {tab === 'deals' ? <FavDeals deals={favDeals} /> : <IdeaGrid ideas={ideas} />}
     </>
   );
 }

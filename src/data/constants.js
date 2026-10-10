@@ -11,13 +11,18 @@ export const CATEGORIES = [
 ];
 export const catIcon = (c) => (CATEGORIES.find((x) => x.id === c) || CATEGORIES[5]).icon;
 
-/** 主選單（底部 / 左側）；en 是切換分頁時轉場動畫上的英文標題 */
+/** 主選單（底部固定 4 格 + 「更多」；左側選單全部列出）；en 是切換分頁時轉場動畫上的英文標題 */
 export const NAV_ITEMS = [
   { to: '/itinerary', label: '行程', en: 'ITINERARY', icon: 'suitcase' },
-  { to: '/todo', label: '待辦與清單', en: 'CHECKLIST', icon: 'checklist' },
+  { to: '/todo', label: '待辦', en: 'CHECKLIST', icon: 'checklist' },
   { to: '/map', label: '地圖', en: 'MAP', icon: 'map' },
-  { to: '/ideas', label: '收集箱', en: 'INBOX', icon: 'inbox' },
-  { to: '/transit', label: '交通', en: 'TRANSIT', icon: 'train' }
+  { to: '/ideas', label: '收集', en: 'INBOX', icon: 'inbox' }
+];
+
+/** 「更多」面板裡的分頁（3 欄格線，之後加頁直接往後排） */
+export const MORE_ITEMS = [
+  { to: '/transit', label: '交通', en: 'TRANSIT', icon: 'train' },
+  { to: '/booking', label: '機票', en: 'BOOKING', bi: 'airplane' }
 ];
 
 /** 待辦與清單的子分頁（對應 /todo/*） */
