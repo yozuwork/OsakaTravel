@@ -11,6 +11,7 @@ const EntryTab = lazy(() => import('./pages/todo/EntryTab'));
 const StayTab = lazy(() => import('./pages/todo/StayTab'));
 const BagTab = lazy(() => import('./pages/todo/BagTab'));
 const UsjTab = lazy(() => import('./pages/todo/UsjTab'));
+const CheckinPage = lazy(() => import('./pages/checkin/CheckinPage'));
 const MapPage = lazy(() => import('./pages/map/MapPage'));
 const IdeasPage = lazy(() => import('./pages/ideas/IdeasPage'));
 const TransitLayout = lazy(() => import('./pages/transit/TransitLayout'));
@@ -39,6 +40,7 @@ export const router = createHashRouter([
           { path: 'usj', element: <UsjTab /> }
         ]
       },
+      { path: 'checkin', element: <CheckinPage />, handle: { title: '打卡' } },
       { path: 'map', element: <MapPage />, handle: { title: '地圖' } },
       { path: 'ideas', element: <IdeasPage />, handle: { title: '收集箱' } },
       {
