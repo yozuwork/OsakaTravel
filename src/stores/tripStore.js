@@ -7,7 +7,8 @@ import { create } from 'zustand';
 import { produce } from 'immer';
 import { onValue, ref, set } from 'firebase/database';
 import { STORAGE_KEY } from '../data/constants';
-import { defaultState, SAMPLE_SEED, withCovers } from '../data/defaultState';
+import { defaultState, FLIGHTS, HOTEL, PEACH_BAGGAGE_TODO, SAMPLE_SEED, seed4Items, withCovers } from '../data/defaultState';
+import { uid } from '../utils/helpers';
 import { DEFAULT_CHARACTERS } from '../data/dialogueScript';
 import { database, databasePath } from '../services/firebase';
 import { toast } from './uiStore';
@@ -20,6 +21,7 @@ function upgradeSample(saved, base) {
   let next = saved;
   if ((next.seed || 1) < 2) next = upgradeToSeed2(next, base);
   if ((next.seed || 1) < 3) next = upgradeToSeed3(next, base);
+  if ((next.seed || 1) < 4) next = upgradeToSeed4(next);
   if ((next.seed || 1) < 5) next = upgradeToSeed5(next);
   return next;
 }
@@ -64,7 +66,62 @@ function upgradeToSeed3(saved) {
   return { ...saved, seed: 3, items, flights, todos };
 }
 
-/** seed 3 → 5：D1 行程補上封面圖（已經有圖片的不動） */
+/* seed 3 → 4：換成實際訂到的樂桃航班與飯店。key 是 seed 3 範例的標題，value 是 seed 4 範例的標題 */
+const SEED4_TITLES = {
+  '抵達桃園機場辦理報到': '抵達桃園機場第一航廈辦理報到',
+  '星宇航空 TPE → KIX 起飛': '樂桃 MM024 TPE → KIX 起飛',
+  '抵達關西機場第一航廈': '抵達關西機場第二航廈',
+  '南海電鐵售票處兌換 rapi:t 車票': '南海電鐵售票處兌換 rapi:t 車票',
+  '搭乘南海 rapi:t 前往難波': '搭乘南海 rapi:t 前往難波',
+  '難波站步行至飯店入住': '從難波前往飯店',
+  '從難波出發前往環球影城': '從飯店出發前往環球影城',
+  '搭車返回難波飯店': '搭車返回飯店',
+  '飯店退房': '飯店退房',
+  '搭乘南海 rapi:t 前往關西機場': '搭乘南海 rapi:t 前往關西機場',
+  '抵達關西機場第一航廈辦理報到': '抵達關西機場第二航廈辦理報到',
+  '星宇航空 KIX → TPE 起飛': '樂桃 MM027 KIX → TPE 起飛'
+};
+/* seed 4 新增、seed 3 沒有的項目（D1 有改到範例時才補） */
+const SEED4_NEW_TITLES = ['搭免費接駁巴士到關西空港駅', `${HOTEL.name} 入住`];
+
+/** seed 3 → 4：只改還是範例內容的行程；班機只改還沒填航班編號的星宇範例；住宿只填空白的 */
+function upgradeToSeed4(saved) {
+  const seed4 = seed4Items();
+  const byTitle = (title, day) => seed4.find((it) => it.title === title && it.day === day);
+  const touchedDays = new Set();
+
+  let items = (saved.items || []).map((it) => {
+    const target = SEED4_TITLES[it.title] && byTitle(SEED4_TITLES[it.title], it.day);
+    if (!target) return it;
+    touchedDays.add(it.day);
+    return { ...it, ...target };
+  });
+  if (touchedDays.has(0)) {
+    const have = new Set(items.map((it) => it.title));
+    items.push(...SEED4_NEW_TITLES.filter((t) => !have.has(t)).map((t) => ({ id: uid(), ...byTitle(t, 0) })));
+  }
+  // D1、D5 時間大改，清掉手動序號，改回依時間排序（D2 只改文字，保留順序）
+  items = items.map((it) => {
+    if (![0, 4].includes(it.day) || !touchedDays.has(it.day) || it.order === undefined) return it;
+    const { order: _order, ...rest } = it;
+    return rest;
+  });
+
+  const flights = (saved.flights || []).map((f) => {
+    if (f.airline !== '星宇航空' || f.flightNo) return f;
+    const real = f.leg === '去程' ? FLIGHTS.out : f.leg === '回程' ? FLIGHTS.back : null;
+    return real ? { ...f, ...real } : f;
+  });
+
+  const stays = (saved.stays || []).map((s, i) => (i === 0 && !s.name && !s.address ? { ...s, name: HOTEL.name, address: HOTEL.address } : s));
+
+  const todos = saved.todos || [];
+  const nextTodos = todos.some((t) => t.text === PEACH_BAGGAGE_TODO) ? todos : [...todos, { id: uid(), text: PEACH_BAGGAGE_TODO, done: false }];
+
+  return { ...saved, seed: 4, items, flights, stays, todos: nextTodos };
+}
+
+/** seed 4 → 5：D1 行程補上封面圖（已經有圖片的不動） */
 function upgradeToSeed5(saved) {
   return { ...saved, seed: 5, items: withCovers(saved.items || []) };
 }
@@ -165,12 +222,16 @@ export function startTripSync() {
     tripRef,
     (snapshot) => {
       if (snapshot.exists()) {
+        const cloud = snapshot.val();
+        const next = normalize(cloud);
         applyingCloudState = true;
-        useTripStore.setState(normalize(snapshot.val()), true);
+        useTripStore.setState(next, true);
         applyingCloudState = false;
         cloudReady = true;
-        // 雲端是舊版範例資料：升級後寫回，之後不會重複升級
-        if ((snapshot.val().seed || 1) < SAMPLE_SEED) saveToCloud(useTripStore.getState());
+        // 雲端還是舊版範例：升級後寫回，其他裝置才會拿到同一份（新增項目的 id 也才固定）
+        if ((cloud.seed || 1) < SAMPLE_SEED) {
+          set(tripRef, next).catch(() => toast('雲端儲存失敗，資料仍已保存在此裝置'));
+        }
       } else if (firstSnapshot) {
         cloudReady = true;
         set(tripRef, useTripStore.getState()).catch(() => {

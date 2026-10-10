@@ -5,6 +5,50 @@ import { defaultDialogue } from './dialogueScript';
 /** 範例資料版本：更新預設行程時 +1，並在 tripStore 的 upgradeSample 補上對應判斷 */
 export const SAMPLE_SEED = 5;
 
+/* 住宿：心齋橋長堀通哈頓飯店（地圖搜尋用日文名稱比較準） */
+export const HOTEL = {
+  name: '心齋橋長堀通哈頓飯店',
+  mapName: 'ハートンホテル心斎橋長堀通',
+  address: '〒550-0013 大阪府大阪市西區新町 1-5-11'
+};
+
+/* 樂桃航空：去程 MM024、回程 MM027（樂桃在關西機場使用第二航廈、桃園使用第一航廈） */
+export const FLIGHTS = {
+  out: { leg: '去程', airline: '樂桃航空', flightNo: 'MM024', from: 'TPE', fromName: '桃園 第一航廈', to: 'KIX', toName: '關西 第二航廈', dep: '09:40', arr: '13:10', seat: 'TSUI YUNGCHING 21A、LEE YUJUNG 21B、CHEN BOYOU 21C' },
+  back: { leg: '回程', airline: '樂桃航空', flightNo: 'MM027', from: 'KIX', fromName: '關西 第二航廈', to: 'TPE', toName: '桃園 第一航廈', dep: '15:25', arr: '17:55', seat: 'TSUI YUNGCHING 22A、LEE YUJUNG 22B、CHEN BOYOU 22C' }
+};
+
+export const PEACH_BAGGAGE_TODO = '確認樂桃行李額度（託運行李需另外加購）';
+
+/** seed 4 範例行程（不含 id）；tripStore 的升級也用這份 */
+export function seed4Items() {
+  const hotel = HOTEL.mapName;
+  return [
+    /* D1：去程 樂桃 MM024 TPE 09:40 → KIX 13:10 */
+    { day: 0, time: '07:30', category: '交通', title: '抵達桃園機場第一航廈辦理報到', place: '桃園國際機場 第一航廈', note: '樂桃航空櫃檯；廉航櫃檯約起飛前 50 分鐘關閉，請提早到' },
+    { day: 0, time: '09:40', category: '交通', title: '樂桃 MM024 TPE → KIX 起飛', place: '桃園國際機場 第一航廈', note: '座位 21A／21B／21C；13:10 抵達關西機場第二航廈' },
+    { day: 0, time: '13:10', category: '交通', title: '抵達關西機場第二航廈', place: '關西國際機場 第二航廈', note: '樂桃使用第二航廈；入境審查出示 Visit Japan Web QR Code' },
+    { day: 0, time: '14:00', category: '交通', title: '搭免費接駁巴士到關西空港駅', place: '關西國際機場 第二航廈', note: '第二航廈沒有車站，接駁巴士約 10 分鐘到第一航廈／關西空港駅' },
+    { day: 0, time: '14:15', category: '交通', title: '南海電鐵售票處兌換 rapi:t 車票', place: '關西空港駅 南海電鐵售票處', note: '回程也從關西機場出發，可一併規劃回程車票' },
+    { day: 0, time: '14:30', category: '交通', title: '搭乘南海 rapi:t 前往難波', place: '關西空港駅', note: '約 35 分鐘抵達難波' },
+    { day: 0, time: '15:15', category: '交通', title: '從難波前往飯店', place: 'なんば駅', note: '地鐵四つ橋線難波 → 四ツ橋 1 站後步行，或從難波步行約 20 分鐘（以 Google 地圖為準）' },
+    { day: 0, time: '15:45', category: '住宿', title: `${HOTEL.name} 入住`, place: hotel, note: `${HOTEL.address}；辦理入住、放行李` },
+
+    /* D2：環球影城 */
+    { day: 1, time: '07:30', category: '交通', title: '從飯店出發前往環球影城', place: '西大橋駅', note: '長堀鶴見綠地線西大橋 → 大正，轉 JR 環狀線到西九條，再轉 JR 夢咲線到環球城站，約 35–40 分鐘（以 Google 地圖為準）' },
+    { day: 1, time: '08:30', category: '景點', title: '日本環球影城入園', place: 'ユニバーサル・スタジオ・ジャパン', note: '開園時間以官網為準；入園後先用 APP 確認任天堂世界整理券' },
+    { day: 1, time: '12:00', category: '餐廳', title: '園區內午餐', place: 'ユニバーサル・スタジオ・ジャパン', note: '避開 12:00–13:00 尖峰可提早或延後' },
+    { day: 1, time: '18:00', category: '景點', title: '夜間遊行／聖誕活動', place: 'ユニバーサル・スタジオ・ジャパン', note: '聖誕季活動，時間以園區當日公告為準' },
+    { day: 1, time: '20:30', category: '交通', title: '搭車返回飯店', place: 'ユニバーサルシティ駅', note: '閉園前人潮多，可提早離開' },
+
+    /* D5：回程 樂桃 MM027 KIX 15:25 → TPE 17:55 */
+    { day: 4, time: '10:00', category: '住宿', title: '飯店退房', place: hotel, note: '確認行李、退稅商品' },
+    { day: 4, time: '11:15', category: '交通', title: '搭乘南海 rapi:t 前往關西機場', place: 'なんば駅（南海）', note: '約 35 分鐘到關西空港駅，再搭免費接駁巴士到第二航廈（約 10 分鐘）' },
+    { day: 4, time: '12:30', category: '交通', title: '抵達關西機場第二航廈辦理報到', place: '關西國際機場 第二航廈', note: '廉航櫃檯約起飛前 50 分鐘關閉；退稅商品放隨身行李' },
+    { day: 4, time: '15:25', category: '交通', title: '樂桃 MM027 KIX → TPE 起飛', place: '關西國際機場 第二航廈', note: '座位 22A／22B／22C；17:55 抵達桃園機場第一航廈' }
+  ];
+}
+
 /* D1 行程的封面圖（public/covers，來源與授權見 public/covers/CREDITS.md）
    用關鍵字比對（先比標題、再比地點），使用者改過字也對得到；依序比對，先對到的優先 */
 const cover = (name) => `${import.meta.env.BASE_URL}covers/${name}.jpg`;
@@ -13,7 +57,7 @@ const D1_COVERS = [
   [/rapi:?t|南海/i, 'd1-rapit'],
   [/入住|飯店|酒店|旅館|check.?in/i, 'd1-namba'],
   [/桃園|TPE.*報到|報到/, 'd1-tpe-checkin'],
-  [/起飛|星宇|航班|TPEs*→/, 'd1-starlux'],
+  [/星宇/, 'd1-starlux'], // 星宇客機的照片，只給星宇的航班（樂桃等其他航空不配這張）
   [/關西|KIX|入境/, 'd1-kix-t1']
 ];
 
@@ -37,45 +81,25 @@ export function defaultState() {
     v: 1,
     seed: SAMPLE_SEED,
     trip: { name: '大阪冬旅', en: 'Osaka', from: '台北', to: '大阪', startDate: start, days: 5 },
-    items: withCovers([
-      /* D1：去程 TPE 09:20 → KIX 12:50（星宇航空，直飛 2 小時 30 分） */
-      { id: uid(), day: 0, time: '07:00', category: '交通', title: '抵達桃園機場辦理報到', place: '桃園國際機場', note: '星宇航空櫃檯，起飛前 2 小時到' },
-      { id: uid(), day: 0, time: '09:20', category: '交通', title: '星宇航空 TPE → KIX 起飛', place: '桃園國際機場', note: '直飛，約 2 小時 30 分鐘' },
-      { id: uid(), day: 0, time: '12:50', category: '交通', title: '抵達關西機場第一航廈', place: '關西國際機場 第一航廈', note: '入境審查出示 Visit Japan Web QR Code' },
-      { id: uid(), day: 0, time: '13:40', category: '交通', title: '南海電鐵售票處兌換 rapi:t 車票', place: '關西空港駅 南海電鐵售票處', note: '回程也從關西機場出發，可一併規劃回程車票' },
-      { id: uid(), day: 0, time: '14:00', category: '交通', title: '搭乘南海 rapi:t 前往難波', place: '關西空港駅', note: '約 35 分鐘抵達難波' },
-      { id: uid(), day: 0, time: '15:00', category: '住宿', title: '難波站步行至飯店入住', place: '難波駅', note: '辦理入住、放行李' },
-
-      /* D2：環球影城 */
-      { id: uid(), day: 1, time: '07:30', category: '交通', title: '從難波出發前往環球影城', place: '難波駅', note: '阪神難波線到西九條，轉 JR 夢咲線至環球城站，約 30 分鐘' },
-      { id: uid(), day: 1, time: '08:30', category: '景點', title: '日本環球影城入園', place: 'ユニバーサル・スタジオ・ジャパン', note: '開園時間以官網為準；入園後先用 APP 確認任天堂世界整理券' },
-      { id: uid(), day: 1, time: '12:00', category: '餐廳', title: '園區內午餐', place: 'ユニバーサル・スタジオ・ジャパン', note: '避開 12:00–13:00 尖峰可提早或延後' },
-      { id: uid(), day: 1, time: '18:00', category: '景點', title: '夜間遊行／聖誕活動', place: 'ユニバーサル・スタジオ・ジャパン', note: '聖誕季活動，時間以園區當日公告為準' },
-      { id: uid(), day: 1, time: '20:30', category: '交通', title: '搭車返回難波飯店', place: 'ユニバーサルシティ駅', note: '閉園前人潮多，可提早離開' },
-
-      /* D5：回程 KIX 12:45 → TPE（星宇航空，直飛；抵達時間請以實際機票為準） */
-      { id: uid(), day: 4, time: '08:30', category: '住宿', title: '飯店退房', place: '難波駅', note: '確認行李、退稅商品' },
-      { id: uid(), day: 4, time: '09:15', category: '交通', title: '搭乘南海 rapi:t 前往關西機場', place: 'なんば駅（南海）', note: '約 35 分鐘抵達關西空港駅' },
-      { id: uid(), day: 4, time: '10:00', category: '交通', title: '抵達關西機場第一航廈辦理報到', place: '關西國際機場 第一航廈', note: '起飛前 2 小時到；退稅商品放隨身行李' },
-      { id: uid(), day: 4, time: '12:45', category: '交通', title: '星宇航空 KIX → TPE 起飛', place: '關西國際機場', note: '直飛，抵達時間請以實際機票為準' }
-    ]),
+    items: withCovers(seed4Items().map((it) => ({ id: uid(), ...it }))),
     todos: [
       { id: uid(), text: '填寫 Visit Japan Web 入境資料', done: false },
       { id: uid(), text: '購買 eSIM／網卡', done: false },
       { id: uid(), text: '兌換日幣現金', done: false },
       { id: uid(), text: '投保旅遊平安險', done: false },
       { id: uid(), text: '購買環球影城門票（考慮快速通關）', done: false },
+      { id: uid(), text: PEACH_BAGGAGE_TODO, done: false },
       { id: uid(), text: '確認回程前往關西機場的交通', done: false },
       { id: uid(), text: '預訂南海 rapi:t 車票', done: true },
       { id: uid(), text: '確認住宿訂單', done: true }
     ],
     flights: [
-      { id: uid(), leg: '去程', airline: '星宇航空', date: start, from: 'TPE', fromName: '桃園機場', to: 'KIX', toName: '關西 第一航廈', dep: '09:20', arr: '12:50', flightNo: '', pnr: '', seat: '', baggage: '', ticket: '' },
-      { id: uid(), leg: '回程', airline: '星宇航空', date: addDays(start, 4), from: 'KIX', fromName: '關西 第一航廈', to: 'TPE', toName: '桃園機場', dep: '12:45', arr: '', flightNo: '', pnr: '', seat: '', baggage: '', ticket: '' }
+      { id: uid(), ...FLIGHTS.out, date: start, pnr: '', baggage: '', ticket: '' },
+      { id: uid(), ...FLIGHTS.back, date: addDays(start, 4), pnr: '', baggage: '', ticket: '' }
     ],
     entry: { steps: [false, false, false, false, false], qr: '' },
     stays: [
-      { id: uid(), name: '', address: '', checkIn: start, checkInTime: '', checkOut: addDays(start, 4), checkOutTime: '', orderNo: '', roomType: '', phone: '', platform: '', photo: '' }
+      { id: uid(), name: HOTEL.name, address: HOTEL.address, checkIn: start, checkInTime: '', checkOut: addDays(start, 4), checkOutTime: '', orderNo: '', roomType: '', phone: '', platform: '', photo: '' }
     ],
     bag: [
       { id: uid(), name: '證件與錢包', items: ['護照', '電子機票', '日幣現金', '信用卡'] },
@@ -102,6 +126,8 @@ export function defaultState() {
       { name: '天王寺・新世界', en: 'TENNOJI', station: '惠美須町站／天王寺站', x: 140, y: 404, w: 136, tx: 144, ty: 460 }
     ],
     ideas: [],
+    /* 收集箱「機票與飯店區」：在「機票與飯店」頁按喜歡的方案（存一份快照） */
+    favDeals: [],
     /* 角色對話：角色與劇本（可在「編輯對話」修改） */
     dialogue: defaultDialogue(),
     ui: { day: 0, showDone: true, spot: 4 }
