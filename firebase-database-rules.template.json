@@ -3,6 +3,18 @@
     "osakaTravel": {
       ".read": "auth != null && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && (auth.token.email == 'stupid1111174@gmail.com' || auth.token.email == '422571395rex@gmail.com')))",
       ".write": "auth != null && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && (auth.token.email == 'stupid1111174@gmail.com' || auth.token.email == '422571395rex@gmail.com')))"
+    },
+    "osakaTravelSettings": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && (auth.token.email == 'stupid1111174@gmail.com' || auth.token.email == '422571395rex@gmail.com')))",
+        ".write": "auth != null && auth.uid == $uid && (auth.uid == 'K6DbALyBPVdX8SkUf36TnyF20433' || (auth.token.email_verified == true && (auth.token.email == 'stupid1111174@gmail.com' || auth.token.email == '422571395rex@gmail.com')))",
+        "splashMs": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000" },
+        "splashFirstOnly": { ".validate": "newData.isBoolean()" },
+        "dialogueAutoplay": { ".validate": "newData.isBoolean()" },
+        "splashMobile": { ".validate": "newData.isString() && (newData.val() == '' || (newData.val().beginsWith('data:image/') && newData.val().length < 3000000))" },
+        "splashDesktop": { ".validate": "newData.isString() && (newData.val() == '' || (newData.val().beginsWith('data:image/') && newData.val().length < 3000000))" },
+        "$other": { ".validate": false }
+      }
     }
   }
 }

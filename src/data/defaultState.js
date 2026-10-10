@@ -3,7 +3,33 @@ import { addDays } from '../utils/date';
 import { defaultDialogue } from './dialogueScript';
 
 /** 範例資料版本：更新預設行程時 +1，並在 tripStore 的 upgradeSample 補上對應判斷 */
-export const SAMPLE_SEED = 3;
+export const SAMPLE_SEED = 5;
+
+/* D1 行程的封面圖（public/covers，來源與授權見 public/covers/CREDITS.md）
+   用關鍵字比對（先比標題、再比地點），使用者改過字也對得到；依序比對，先對到的優先 */
+const cover = (name) => `${import.meta.env.BASE_URL}covers/${name}.jpg`;
+const D1_COVERS = [
+  [/售票|兌換|車票/, 'd1-kix-station'],
+  [/rapi:?t|南海/i, 'd1-rapit'],
+  [/入住|飯店|酒店|旅館|check.?in/i, 'd1-namba'],
+  [/桃園|TPE.*報到|報到/, 'd1-tpe-checkin'],
+  [/起飛|星宇|航班|TPEs*→/, 'd1-starlux'],
+  [/關西|KIX|入境/, 'd1-kix-t1']
+];
+
+/** D1 行程（day 0）還沒有圖片時，補上對應的封面圖；每張圖只用一次 */
+export function withCovers(items) {
+  const used = new Set();
+  return items.map((it) => {
+    if (it.day !== 0 || it.image || it.images?.length) return it;
+    const match = (text) => D1_COVERS.find(([re, name]) => !used.has(name) && re.test(text || ''));
+    const hit = match(it.title) || match(it.place);
+    if (!hit) return it;
+    used.add(hit[1]);
+    const img = cover(hit[1]);
+    return { ...it, image: img, images: [img] };
+  });
+}
 
 export function defaultState() {
   const start = '2026-12-21';
@@ -11,7 +37,7 @@ export function defaultState() {
     v: 1,
     seed: SAMPLE_SEED,
     trip: { name: '大阪冬旅', en: 'Osaka', from: '台北', to: '大阪', startDate: start, days: 5 },
-    items: [
+    items: withCovers([
       /* D1：去程 TPE 09:20 → KIX 12:50（星宇航空，直飛 2 小時 30 分） */
       { id: uid(), day: 0, time: '07:00', category: '交通', title: '抵達桃園機場辦理報到', place: '桃園國際機場', note: '星宇航空櫃檯，起飛前 2 小時到' },
       { id: uid(), day: 0, time: '09:20', category: '交通', title: '星宇航空 TPE → KIX 起飛', place: '桃園國際機場', note: '直飛，約 2 小時 30 分鐘' },
@@ -32,7 +58,7 @@ export function defaultState() {
       { id: uid(), day: 4, time: '09:15', category: '交通', title: '搭乘南海 rapi:t 前往關西機場', place: 'なんば駅（南海）', note: '約 35 分鐘抵達關西空港駅' },
       { id: uid(), day: 4, time: '10:00', category: '交通', title: '抵達關西機場第一航廈辦理報到', place: '關西國際機場 第一航廈', note: '起飛前 2 小時到；退稅商品放隨身行李' },
       { id: uid(), day: 4, time: '12:45', category: '交通', title: '星宇航空 KIX → TPE 起飛', place: '關西國際機場', note: '直飛，抵達時間請以實際機票為準' }
-    ],
+    ]),
     todos: [
       { id: uid(), text: '填寫 Visit Japan Web 入境資料', done: false },
       { id: uid(), text: '購買 eSIM／網卡', done: false },

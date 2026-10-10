@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth';
 import { allowedEmails, allowedFirebaseUid, auth } from '../services/firebase';
 import { startTripSync, stopTripSync } from '../stores/tripStore';
+import { startSettingsSync, stopSettingsSync } from '../stores/settingsStore';
 
 const AuthContext = createContext(null);
 const googleProvider = new GoogleAuthProvider();
@@ -40,14 +41,15 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (nextUser) => {
       if (nextUser && !isAllowed(nextUser)) {
         stopTripSync();
+        stopSettingsSync();
         setUser(null);
         setError('此 Google 帳號沒有行程存取權限。');
         await signOut(auth);
       } else {
         setUser(nextUser);
         setError('');
-        if (nextUser) startTripSync();
-        else stopTripSync();
+        if (nextUser) { startTripSync(); startSettingsSync(nextUser.uid); }
+        else { stopTripSync(); stopSettingsSync(); }
       }
       setChecking(false);
     });
@@ -55,6 +57,7 @@ export function AuthProvider({ children }) {
     return () => {
       unsubscribe();
       stopTripSync();
+      stopSettingsSync();
     };
   }, []);
 
@@ -79,6 +82,7 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     stopTripSync();
+    stopSettingsSync();
     await signOut(auth);
   }
 

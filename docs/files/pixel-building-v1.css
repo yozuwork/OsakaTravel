@@ -1,0 +1,11 @@
+/* pixel buildings v1 */
+.qm-bldg{--px:3px;position:absolute;bottom:6px;width:calc(var(--px)*16);height:calc(var(--px)*16);pointer-events:none;z-index:1;animation:qm-bldg-rise .55s steps(8,end) both}
+.qm-bldg.is-right{left:38px}
+.qm-bldg.is-left{right:38px}
+.qm-bldg__art{display:block;width:100%;height:100%;image-rendering:pixelated;filter:drop-shadow(var(--px) var(--px) 0 var(--red-line,#f2b8b3))}
+.qm-bldg__ground{position:absolute;left:-6px;right:-6px;bottom:calc(var(--px)*-1);height:var(--px);background:var(--navy,#1e2a45);opacity:.18;border-radius:2px}
+.qm-bldg__spark{position:absolute;top:-6px;right:-4px;width:var(--px);height:var(--px);background:#f2b33d;box-shadow:calc(var(--px)*-1) var(--px) 0 #f2b33d,var(--px) var(--px) 0 #f2b33d,0 calc(var(--px)*2) 0 #f2b33d,0 var(--px) 0 #fff;animation:qm-bldg-spark 1.6s steps(2,end) .55s infinite}
+@keyframes qm-bldg-rise{0%{clip-path:inset(100% -20% 0 -20%);transform:translateY(4px)}80%{transform:translateY(-2px)}100%{clip-path:inset(-30% -20% 0 -20%);transform:none}}
+@keyframes qm-bldg-spark{0%{opacity:1}50%{opacity:0}}
+@media (min-width:560px){.qm-bldg{--px:4px}.qm-bldg.is-right{left:40px}.qm-bldg.is-left{right:40px}}
+@media (prefers-reduced-motion:reduce){.qm-bldg,.qm-bldg__spark{animation:none}}

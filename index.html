@@ -34,6 +34,15 @@
     </picture>
     <span class="splash__dots" aria-hidden="true"><i></i><i></i><i></i></span>
   </div>
+  <script>
+    /* 設定裡自訂的開啟畫面（localStorage 'osaka-settings'，見 src/stores/settingsStore.js），JS 主程式載入前就換上 */
+    try {
+      var s = JSON.parse(localStorage.getItem('osaka-settings') || '{}');
+      var pic = document.querySelector('#splash picture');
+      if (s.splashDesktop) pic.querySelector('source').srcset = s.splashDesktop;
+      if (s.splashMobile) pic.querySelector('img').src = s.splashMobile;
+    } catch (e) { /* 讀不到就用內建圖片 */ }
+  </script>
   <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
 </body>

@@ -341,20 +341,6 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
 .tl-meta { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 13px; color: var(--muted); }
 .tl-meta svg.i { width: 16px; height: 16px; color: var(--red); }
 .tl-meta span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* 地圖台詞：角色頭像＋一行對話泡泡 */
-.tl-say { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.tl-say img {
-  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; object-fit: cover; object-position: 50% 12%;
-  border: 2px solid var(--navy); background: var(--red-soft);
-}
-.tl-say__text {
-  position: relative; min-width: 0; padding: 3px 8px; font-size: 12px; line-height: 1.4;
-  background: var(--red-bg); border: 1.5px solid var(--navy); border-radius: 8px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
-.tl-say__text b { margin-right: 4px; color: var(--red); }
-.tl-say__text em { font-style: normal; background: var(--red); color: var(--white); padding: 0 2px; }
-.tl-say.is-auto .tl-say__text { border-style: dashed; color: var(--muted); }
 
 /* ---------- 班機 / 住宿 ---------- */
 .tag { display: inline-flex; align-items: center; height: 24px; padding: 0 12px; border-radius: 12px; font-size: 13px; font-weight: 700; background: var(--red); color: var(--white); }
@@ -479,6 +465,39 @@ svg.i { width: 20px; height: 20px; flex-shrink: 0; stroke: currentColor; fill: n
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
 .qm-node.is-clear:not(.is-current) .qm-node__label { opacity: .7; }
+
+/* 像素建築：角色抵達的關卡才出現，放在標籤另一側；手機 48px（每格 3px），≥ 560px 64px（每格 4px）
+   --gap 是離節點中心的距離，--room（由 JS 給）是到路線區邊緣的空間，不夠時往節點靠，不超出畫面 */
+.qm-bldg {
+  --px: 3px; --gap: 38px;
+  --offset: min(var(--gap), calc(var(--room, 999px) - var(--px) * 16 - 8px));
+  position: absolute; bottom: 6px; z-index: 1; width: calc(var(--px) * 16); height: calc(var(--px) * 16);
+  pointer-events: none; animation: qm-bldg-rise .55s steps(8, end) both;
+}
+.qm-bldg.is-right { left: var(--offset); }
+.qm-bldg.is-left { right: var(--offset); }
+.qm-bldg__art { display: block; width: 100%; height: 100%; image-rendering: pixelated; filter: drop-shadow(var(--px) var(--px) 0 var(--red-line)); }
+.qm-bldg__ground {
+  position: absolute; left: -6px; right: -6px; bottom: calc(var(--px) * -1); height: var(--px);
+  background: var(--navy); opacity: .18; border-radius: 2px;
+}
+.qm-bldg__spark {
+  position: absolute; top: -6px; right: -4px; width: var(--px); height: var(--px); background: #F2B33D;
+  box-shadow: calc(var(--px) * -1) var(--px) 0 #F2B33D, var(--px) var(--px) 0 #F2B33D, 0 calc(var(--px) * 2) 0 #F2B33D, 0 var(--px) 0 #fff;
+  animation: qm-bldg-spark 1.6s steps(2, end) .55s infinite;
+}
+@keyframes qm-bldg-rise {
+  0% { clip-path: inset(100% -20% 0 -20%); transform: translateY(4px); }
+  80% { transform: translateY(-2px); }
+  100% { clip-path: inset(-30% -20% 0 -20%); transform: none; }
+}
+@keyframes qm-bldg-spark { 0% { opacity: 1; } 50% { opacity: 0; } }
+@media (min-width: 560px) {
+  .qm-bldg { --px: 4px; --gap: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .qm-bldg, .qm-bldg__spark { animation: none; }
+}
 
 /* 角色：腳踩在關卡圓點上緣 */
 .qm-avatar { position: absolute; left: 0; top: 0; z-index: 3; width: 0; height: 0; pointer-events: none; }
@@ -951,6 +970,21 @@ a.chip-link:hover { border-color: var(--red); color: var(--red); }
 .setting-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .setting-row__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 14px; }
 .setting-group > .btn { align-self: flex-start; }
+/* 開啟畫面圖片：手機版、電腦版並排；預覽同高，圖片完整顯示 */
+.splash-picks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.splash-pick { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.splash-pick__preview {
+  position: relative; height: 128px; padding: 0; overflow: hidden; cursor: pointer;
+  border: var(--border); border-radius: var(--radius); background: var(--red-bg);
+}
+.splash-pick__preview img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.splash-pick__preview:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+.splash-pick__badge {
+  position: absolute; left: 6px; top: 6px; padding: 1px 6px; border-radius: 6px;
+  background: var(--navy); color: var(--white); font-size: 11px; font-weight: 800;
+}
+.splash-pick__text { display: flex; flex-direction: column; font-size: 14px; }
+.splash-pick__btns { display: flex; flex-wrap: wrap; gap: 6px; }
 
 /* ---------- 對話編輯器（DialogueEditor.jsx） ---------- */
 .dlg-avatar {

@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
 import Icon from '../../components/common/Icon';
+import PixelBuilding from '../../components/map/PixelBuilding';
 import { cx, mapsUrl } from '../../utils/helpers';
 import { catIcon } from '../../data/constants';
 import { addDays, mdw, parseDate } from '../../utils/date';
@@ -291,6 +292,8 @@ function QuestBoard({ day, items, cleared, sel, onSelect, characters }) {
                   <span className="qm-node__time">{it.time || '--:--'}</span>
                   <span className="qm-node__title">{it.title}</span>
                 </span>
+                {/* 用「抵達的關卡」而不是選取的關卡：角色還在路上時不出現；換關卡會重新掛載、重播蓋起來的動畫 */}
+                {i === at && !walking && <PixelBuilding item={it} labelLeft={labelLeft} room={labelLeft ? W - p.x : p.x} />}
               </button>
             );
           })}

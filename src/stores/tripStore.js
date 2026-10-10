@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import { produce } from 'immer';
 import { onValue, ref, set } from 'firebase/database';
 import { STORAGE_KEY } from '../data/constants';
-import { defaultState, SAMPLE_SEED } from '../data/defaultState';
+import { defaultState, SAMPLE_SEED, withCovers } from '../data/defaultState';
 import { DEFAULT_CHARACTERS } from '../data/dialogueScript';
 import { database, databasePath } from '../services/firebase';
 import { toast } from './uiStore';
@@ -20,6 +20,7 @@ function upgradeSample(saved, base) {
   let next = saved;
   if ((next.seed || 1) < 2) next = upgradeToSeed2(next, base);
   if ((next.seed || 1) < 3) next = upgradeToSeed3(next, base);
+  if ((next.seed || 1) < 5) next = upgradeToSeed5(next);
   return next;
 }
 
@@ -61,6 +62,11 @@ function upgradeToSeed3(saved) {
     : f));
   const todos = (saved.todos || []).map((t) => (KOBE_TODOS[t.text] ? { ...t, text: KOBE_TODOS[t.text] } : t));
   return { ...saved, seed: 3, items, flights, todos };
+}
+
+/** seed 3 → 5：D1 行程補上封面圖（已經有圖片的不動） */
+function upgradeToSeed5(saved) {
+  return { ...saved, seed: 5, items: withCovers(saved.items || []) };
 }
 
 /** 角色對話：沒有資料就用預設；內建角色一定存在（圖片檔名、builtin 以程式內建為準） */
@@ -163,6 +169,8 @@ export function startTripSync() {
         useTripStore.setState(normalize(snapshot.val()), true);
         applyingCloudState = false;
         cloudReady = true;
+        // 雲端是舊版範例資料：升級後寫回，之後不會重複升級
+        if ((snapshot.val().seed || 1) < SAMPLE_SEED) saveToCloud(useTripStore.getState());
       } else if (firstSnapshot) {
         cloudReady = true;
         set(tripRef, useTripStore.getState()).catch(() => {
