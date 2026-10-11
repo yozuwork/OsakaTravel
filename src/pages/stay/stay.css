@@ -1,0 +1,17 @@
+.stay-page { padding-bottom: 100px; }
+.stay-page__bookings { display: grid; gap: 16px; }
+.stay-area__heading { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.stay-area__intro { margin: 0 0 14px; }
+.stay-area__grid { display: grid; gap: 16px; }
+.stay-area__card { overflow: hidden; min-width: 0; }
+.stay-area__image { display: block; background: var(--card); }
+.stay-area__image img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.stay-area__body { padding: 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.stay-area__body p { margin: 0; }
+.stay-area__guide { display: grid; gap: 12px; }
+.stay-area__guide p { margin: 0; line-height: 1.7; }
+.stay-area__missing { min-height: 180px; padding: 24px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+@media (min-width: 900px) {
+  .stay-area__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .stay-page__bookings { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

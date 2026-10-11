@@ -22,6 +22,7 @@ export const NAV_ITEMS = [
 
 /** 「更多」面板裡的分頁（3 欄格線，之後加頁直接往後排） */
 export const MORE_ITEMS = [
+  { to: '/stay', label: '住宿', en: 'STAY', icon: 'bed' },
   { to: '/map', label: '地圖', en: 'MAP', icon: 'map' },
   { to: '/transit', label: '交通', en: 'TRANSIT', icon: 'train' },
   { to: '/booking', label: '機票', en: 'BOOKING', bi: 'airplane' }

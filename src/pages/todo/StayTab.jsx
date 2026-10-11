@@ -8,6 +8,7 @@ import { diffDays, mdw } from '../../utils/date';
 import { mapsUrl } from '../../utils/helpers';
 import { openVoiceStay } from './voiceTodo';
 import { openStayEditor } from './stayEditor';
+import { HOTEL_PHOTO, HOTEL_SOURCE, isNagahoriHotel } from '../../data/stayArea';
 
 const stayActions = addActions({ voiceDesc: '用說的快速建立住宿', textDesc: '手動輸入住宿資訊', onText: () => openStayEditor(null), onVoice: () => openVoiceStay(() => openStayEditor(null)) });
 
@@ -18,12 +19,15 @@ export default function StayTab() {
       {stays.map((s) => {
         const nights = s.checkIn && s.checkOut ? diffDays(s.checkIn, s.checkOut) : 0;
         const q = s.address || s.name;
+        const photo = s.images?.[0] || s.photo || (isNagahoriHotel(s) ? HOTEL_PHOTO : '');
+        const officialPhoto = photo === HOTEL_PHOTO;
         return (
           <article key={s.id} className="card" style={{ overflow: 'hidden' }}>
-            <div className="stay__photo" style={s.photo ? { backgroundImage: `url('${s.photo}')` } : undefined}>
-              {!s.photo && <><Icon name="image" /><span style={{ marginLeft: 6 }}>飯店照片</span></>}
+            <div className="stay__photo">
+              {photo ? <img src={photo} alt={`${s.name || '飯店'}外觀或住宿照片`} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <><Icon name="image" /><span style={{ marginLeft: 6 }}>飯店照片</span></>}
             </div>
             <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {officialPhoto && <a className="small muted" href={HOTEL_SOURCE} target="_blank" rel="noopener noreferrer">照片來源：Hearton Hotel 官方網站</a>}
               <div>
                 <h2 className="section-title" style={{ fontSize: 20 }}>{s.name || '尚未填寫飯店名稱'}</h2>
                 <div className="tl-meta" style={{ marginTop: 6 }}><Icon name="pin" /><span>{s.address || '尚未填寫地址'}</span></div>

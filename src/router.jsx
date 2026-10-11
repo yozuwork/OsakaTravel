@@ -15,6 +15,7 @@ const CheckinPage = lazy(() => import('./pages/checkin/CheckinPage'));
 const MapPage = lazy(() => import('./pages/map/MapPage'));
 const IdeasPage = lazy(() => import('./pages/ideas/IdeasPage'));
 const BookingPage = lazy(() => import('./pages/booking/BookingPage'));
+const StayPage = lazy(() => import('./pages/stay/StayPage'));
 const TransitLayout = lazy(() => import('./pages/transit/TransitLayout'));
 const RouteTab = lazy(() => import('./pages/transit/RouteTab'));
 const AirportTab = lazy(() => import('./pages/transit/AirportTab'));
@@ -55,6 +56,7 @@ export const router = createHashRouter([
         ]
       },
       { path: 'booking', element: <BookingPage />, handle: { title: '機票' } },
+      { path: 'stay', element: <StayPage />, handle: { title: '住宿' } },
       { path: '*', element: <Navigate to="/itinerary" replace /> }
     ]
   }
