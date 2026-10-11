@@ -29,7 +29,14 @@ function initialDraft(existing) {
 
 const TEXT_FIELDS = [
   { name: 'orderNo', label: '訂單編號' },
+  { name: 'confirmationNo', label: '飯店確認號碼' },
+  { name: 'englishName', label: '英文名稱' },
   { name: 'roomType', label: '房型' },
+  { name: 'bedType', label: '床型' },
+  { name: 'rooms', label: '房間數' },
+  { name: 'capacity', label: '每房人數上限' },
+  { name: 'checkInWindow', label: '可辦理入住時段（當地時間）' },
+  { name: 'email', label: '電子郵件', type: 'email' },
   { name: 'phone', label: '電話', type: 'tel' },
   { name: 'platform', label: '訂房平台' }
 ];
@@ -119,6 +126,12 @@ function StayEditor({ id, clipboard }) {
           <span className="field__label">超連結</span>
           <LinkList value={draft.links} onChange={(links) => setDraft((d) => ({ ...d, links }))} idPrefix={`stay_link_${id || 'new'}`} />
         </div>
+        {['specialRequest', 'arrivalNote', 'paymentNote'].map((name, i) => (
+          <label className="field field--full" key={name}>
+            <span className="field__label">{['特殊需求與確認狀態', '入住提醒', '稅金與付款提醒'][i]}</span>
+            <textarea className="field__input" name={name} value={draft[name] || ''} onChange={change} rows={3} />
+          </label>
+        ))}
       </div>
       {existing ? (
         <div className="btn-row">

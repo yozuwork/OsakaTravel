@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>住宿版面檢查</title></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import StayPage from '/src/pages/stay/StayPage.jsx';
+import ModalRoot from '/src/components/modal/ModalRoot.jsx';
+import { useTripStore } from '/src/stores/tripStore.js';
+import '/src/styles/style.css';
+const stays = useTripStore.getState().stays.map(stay => ({ ...stay, checkInTime: '15:00', checkOutTime: '11:00', roomType: '三人房', bedType: '3 張單人床', confirmationNo: 'TEST-BOOKING', email: 'test@example.com', paymentNote: '於入住時確認稅金與款項。' }));
+useTripStore.setState({ stays });
+createRoot(document.getElementById('root')).render(React.createElement(React.Fragment, null, React.createElement('div', {className: 'app'}, React.createElement('div', {className: 'view'}, React.createElement(StayPage))), React.createElement(ModalRoot)));
+</script></body></html>
