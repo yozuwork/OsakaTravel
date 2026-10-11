@@ -56,6 +56,10 @@ function saveLocal() {
 /* ---------- Firebase 雲端同步 ---------- */
 let settingsRef = null;   // 登入後才有：osakaTravelSettings/{uid}
 let stopCloudListener;
+let pendingPatch = {};
+let activeUid = null;
+let awaitingSnapshot = false;
+export const useSettingsSyncStore = create(() => ({ ready: false }));
 
 /** 寫到雲端：給 patch 時只更新那幾個欄位（圖片很大，切換開關時不要整包重傳） */
 function saveToCloud(patch) {
@@ -70,28 +74,49 @@ function saveToCloud(patch) {
 export function setSettings(patch) {
   useSettingsStore.setState(patch);
   saveLocal();
+  if (activeUid && awaitingSnapshot) {
+    pendingPatch = { ...pendingPatch, ...patch };
+    return;
+  }
   saveToCloud(patch);
 }
 
 /** 登入後開始同步：雲端有資料以雲端為準；沒有就用本機設定建立 */
 export function startSettingsSync(uid) {
-  if (stopCloudListener) return;
+  if (activeUid === uid) return;
+  stopSettingsSync();
+  activeUid = uid;
   const cloudRef = ref(database, `${databasePath}Settings/${uid}`);
+  settingsRef = cloudRef;
+  awaitingSnapshot = true;
   let firstSnapshot = true;
 
   stopCloudListener = onValue(
     cloudRef,
     (snapshot) => {
+      if (activeUid !== uid) return;
+      awaitingSnapshot = false;
       settingsRef = cloudRef;
+      const queued = pendingPatch;
+      pendingPatch = {};
       if (snapshot.exists()) {
-        useSettingsStore.setState(pick(snapshot.val()));
+        useSettingsStore.setState({ ...pick(snapshot.val()), ...queued });
         saveLocal();
+        if (Object.keys(queued).length) saveToCloud(queued);
       } else if (firstSnapshot) {
         saveToCloud();
       }
       firstSnapshot = false;
+      useSettingsSyncStore.setState({ ready: true });
     },
     () => {
+      if (activeUid !== uid) return;
+      awaitingSnapshot = false;
+      if (Object.keys(pendingPatch).length) {
+        const queued = pendingPatch;
+        pendingPatch = {};
+        saveToCloud(queued);
+      }
       toast('設定無法從雲端讀取，已改用此裝置的設定');
     }
   );
@@ -102,4 +127,8 @@ export function stopSettingsSync() {
   stopCloudListener?.();
   stopCloudListener = undefined;
   settingsRef = null;
+  activeUid = null;
+  awaitingSnapshot = false;
+  pendingPatch = {};
+  useSettingsSyncStore.setState({ ready: false });
 }

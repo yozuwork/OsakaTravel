@@ -9,12 +9,13 @@ import { PageTransitionProvider } from '../transition/PageTransition';
 import CharacterDialogue from '../dialogue/CharacterDialogue';
 import { openDialogue } from '../../stores/dialogueStore';
 import { splashGone } from '../../utils/splash';
-import { getSettings } from '../../stores/settingsStore';
+import { getSettings, useSettingsSyncStore } from '../../stores/settingsStore';
 import { resolveScript } from '../../utils/dialogueText';
 
 export default function AppLayout() {
   const tripName = useTripStore((s) => s.trip.name);
   const dialogue = useTripStore((s) => s.dialogue);
+  const settingsReady = useSettingsSyncStore((s) => s.ready);
   const script = useMemo(() => resolveScript(dialogue), [dialogue]);
   const { pathname } = useLocation();
   const matches = useMatches();
@@ -28,11 +29,18 @@ export default function AppLayout() {
 
   // 開啟畫面消失約 0.5 秒後自動播放角色對話（可在「設定」關閉；之後可從頭像選單重新開啟）
   useEffect(() => {
+    if (!settingsReady) return;
     let t;
     let cancelled = false;
-    splashGone.then(() => { if (!cancelled && getSettings().dialogueAutoplay) t = setTimeout(openDialogue, 500); });
+    splashGone.then(() => {
+      if (!cancelled && getSettings().dialogueAutoplay) {
+        t = setTimeout(() => {
+          if (getSettings().dialogueAutoplay) openDialogue();
+        }, 500);
+      }
+    });
     return () => { cancelled = true; clearTimeout(t); };
-  }, []);
+  }, [settingsReady]);
 
   return (
     <PageTransitionProvider>
