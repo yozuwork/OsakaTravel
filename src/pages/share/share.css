@@ -1,0 +1,55 @@
+.share-settings { display: flex; flex-direction: column; gap: 16px; }
+.share-eyebrow { color: var(--red-dark); letter-spacing: .2em; font-size: 11px; font-weight: 800; }
+.share-settings h3 { font-size: 25px; margin: 0; letter-spacing: -.03em; }
+.share-settings p { font-size: 14px; line-height: 1.8; margin: 0; }
+.share-settings small, .share-version { color: var(--muted); line-height: 1.8; }
+.share-scope { padding: 18px; border-radius: 12px; background: #f8f1eb; }
+.share-scope strong { font-size: 13px; }
+.share-scope p { margin: 8px 0; }
+.share-error { color: #a72c25; background: #fdeee9; border-radius: 8px; padding: 12px; }
+.public-journey { background: #faf8f5; color: var(--navy); min-height: 100dvh; width: 100%; }
+.public-hero { padding: 64px max(24px, calc((100vw - 1120px) / 2)); background: #f2eae1; position: relative; overflow: hidden; }
+.public-hero > :not(.public-hero-mark) { position: relative; z-index: 1; }
+.public-hero h1 { font-size: clamp(36px, 6vw, 76px); line-height: 1.2; margin: 24px 0; letter-spacing: -.045em; max-width: 900px; overflow-wrap: anywhere; }
+.public-hero p { display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; }
+.public-hero p span { color: var(--muted); }
+.public-readonly { display: inline-flex; align-items: center; gap: 6px; float: right; font-size: 12px; color: var(--muted); }
+.public-hero-mark { position: absolute; right: 3%; bottom: -80px; font-size: 340px; font-weight: 900; color: #c5433210; pointer-events: none; transform: rotate(-9deg); }
+.public-days { display: flex; gap: 8px; overflow-x: auto; padding: 18px max(24px, calc((100vw - 1120px) / 2)); position: sticky; top: 0; z-index: 5; background: #faf8f5f5; backdrop-filter: blur(12px); border-bottom: 1px solid #1e2a4515; }
+.public-days button { display: flex; flex-direction: column; gap: 6px; padding: 12px 18px; min-width: 120px; border: 1px solid #1e2a4520; border-radius: 10px; background: transparent; color: var(--navy); cursor: pointer; transition: background .18s, color .18s; }
+.public-days button span { font-size: 10px; letter-spacing: .12em; }
+.public-days button strong { font-size: 13px; white-space: nowrap; }
+.public-days button[aria-pressed=true] { background: var(--navy); color: #fff; border-color: var(--navy); }
+.public-day { max-width: 1120px; padding: 40px 24px 60px; margin: auto; }
+.public-day h2 { margin: 14px 0 32px; display: flex; justify-content: space-between; gap: 16px; align-items: baseline; font-size: 28px; }
+.public-day h2 small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.public-stops { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.public-stops li { display: flex; min-width: 0; gap: 16px; padding: 24px; background: #fff; border: 1px solid #1e2a4518; border-radius: 14px; }
+.public-time { display: flex; flex-direction: column; gap: 8px; width: 65px; flex-shrink: 0; border-right: 1px solid #1e2a4518; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.public-time small { color: var(--red-dark); font-size: 10px; }
+.public-stops article { min-width: 0; flex: 1; }
+.public-category { color: var(--red-dark); display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.public-category .i { width: 15px; height: 15px; }
+.public-stops h3 { margin: 10px 0; font-size: 19px; line-height: 1.5; overflow-wrap: anywhere; }
+.public-stops p { color: var(--muted); font-size: 13px; line-height: 1.8; margin: 0 0 16px; overflow-wrap: anywhere; }
+.public-stops p .i { width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; }
+.public-stops a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 12px; text-decoration: none; color: var(--navy); border-bottom: 1px solid #1e2a4530; }
+.public-stops a .i { width: 16px; height: 16px; }
+.public-empty { padding: 48px 0; text-align: center; color: var(--muted); }
+.public-footer { max-width: 1120px; margin: auto; padding: 24px; border-top: 1px solid #1e2a4518; display: flex; justify-content: space-between; gap: 16px; font-size: 12px; color: var(--muted); }
+.public-message { padding: 80px 24px; min-height: 100dvh; background: #faf8f5; color: var(--navy); text-align: center; }
+.public-message h1 { font-size: 28px; }
+.public-journey :is(button, a):focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+@media (max-width: 700px) {
+  .public-hero { padding: 36px 20px; }
+  .public-readonly { float: none; display: flex; margin-top: 18px; }
+  .public-hero-mark { font-size: 250px; bottom: -50px; }
+  .public-days { padding: 12px; }
+  .public-days button { min-width: 104px; padding: 10px 14px; }
+  .public-day { padding: 30px 12px 40px; }
+  .public-stops { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .public-stops li { padding: 18px 12px; gap: 12px; }
+  .public-stops h3 { font-size: 18px; }
+  .public-footer { padding: 20px 12px; flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) { .public-days button { transition: none; } }

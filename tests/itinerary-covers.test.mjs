@@ -7,7 +7,7 @@ import { day1EveningItems } from '../src/data/day1Evening.js';
 test('all new DAY1 stops receive relevant covers, with sources, while custom photos remain intact', () => {
   const read = (file) => JSON.parse(readFileSync(new URL(`../src/data/${file}`, import.meta.url), 'utf8'));
   const context = vm.createContext({ baseCovers: read('itineraryCoverLinks.json'), day1Covers: read('day1CoverLinks.json') });
-  const source = readFileSync(new URL('../src/data/itineraryCovers.js', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export function', 'function');
+  const source = readFileSync(new URL('../src/data/itineraryCovers.js', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replaceAll('export function', 'function');
   vm.runInContext(source, context);
   const items = day1EveningItems();
   const patched = context.withOnlineCovers(items);
@@ -16,7 +16,18 @@ test('all new DAY1 stops receive relevant covers, with sources, while custom pho
   assert.match(patched[1].image, /animate/);
   assert.match(patched[2].image, /mandarake/);
   assert.match(patched[4].coverCredit.license, /示意/);
-  assert.match(patched[6].image, /hearton/);
+  assert.match(patched[6].image, /hotel\.webp$/);
+  assert.match(patched[6].coverCredit.source, /hearton/);
   const custom = { ...items[1], image: 'my-own-cover', images: ['my-own-cover', 'my-photo'] };
   assert.equal(context.withOnlineCovers([custom])[0], custom);
+  const old = { ...items[1], image: context.day1Covers.animate.image, images: [context.day1Covers.animate.image, 'my-photo'], coverCredit: context.day1Covers.animate };
+  const migrated = context.withStableCovers([old, custom]);
+  assert.equal(migrated[0].image, 'covers/stable/animate.webp');
+  assert.deepEqual(Array.from(migrated[0].images), ['covers/stable/animate.webp', 'my-photo']);
+  assert.equal(migrated[0].coverCredit.image, migrated[0].image);
+  assert.equal(migrated[1], custom);
+  assert.equal(context.withStableCovers([migrated[0]])[0], migrated[0]);
+  assert.equal(context.withStableCovers([{ image: '/OsakaTravel/covers/d1-tpe-checkin.jpg' }])[0].image, 'covers/d1-tpe-checkin.jpg');
+  assert.equal(context.withStableCovers([{ image: '/covers/d1-tpe-checkin.jpg' }])[0].image, 'covers/d1-tpe-checkin.jpg');
+  for (const item of patched) assert.ok(readFileSync(new URL(`../public/${item.image}`, import.meta.url)).length > 0);
 });

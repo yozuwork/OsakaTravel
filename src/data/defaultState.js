@@ -5,7 +5,7 @@ import { withOnlineCovers } from './itineraryCovers';
 import { day1EveningItems } from './day1Evening';
 
 /** 範例資料版本：更新預設行程時 +1，並在 tripStore 的 upgradeSample 補上對應判斷 */
-export const SAMPLE_SEED = 9;
+export const SAMPLE_SEED = 10;
 
 /** DAY4：中之島藝術與建築散步、梅田夜景。時間區間放在備註供詳情查看。 */
 export function day4Items() {
@@ -31,12 +31,6 @@ export const HOTEL = {
   address: '〒550-0013 大阪府大阪市西區新町 1-5-11'
 };
 
-/* 樂桃航空：去程 MM024、回程 MM027（樂桃在關西機場使用第二航廈、桃園使用第一航廈） */
-export const FLIGHTS = {
-  out: { leg: '去程', airline: '樂桃航空', flightNo: 'MM024', from: 'TPE', fromName: '桃園 第一航廈', to: 'KIX', toName: '關西 第二航廈', dep: '09:40', arr: '13:10', seat: 'TSUI YUNGCHING 21A、LEE YUJUNG 21B、CHEN BOYOU 21C' },
-  back: { leg: '回程', airline: '樂桃航空', flightNo: 'MM027', from: 'KIX', fromName: '關西 第二航廈', to: 'TPE', toName: '桃園 第一航廈', dep: '15:25', arr: '17:55', seat: 'TSUI YUNGCHING 22A、LEE YUJUNG 22B、CHEN BOYOU 22C' }
-};
-
 export const PEACH_BAGGAGE_TODO = '確認樂桃行李額度（託運行李需另外加購）';
 
 /** seed 4 範例行程（不含 id）；tripStore 的升級也用這份 */
@@ -45,7 +39,7 @@ export function seed4Items() {
   return [
     /* D1：去程 樂桃 MM024 TPE 09:40 → KIX 13:10 */
     { day: 0, time: '07:30', category: '交通', title: '抵達桃園機場第一航廈辦理報到', place: '桃園國際機場 第一航廈', note: '樂桃航空櫃檯；廉航櫃檯約起飛前 50 分鐘關閉，請提早到' },
-    { day: 0, time: '09:40', category: '交通', title: '樂桃 MM024 TPE → KIX 起飛', place: '桃園國際機場 第一航廈', note: '座位 21A／21B／21C；13:10 抵達關西機場第二航廈' },
+    { day: 0, time: '', category: '交通', title: '去程航班（待匯入機票）', place: '', note: '' },
     { day: 0, time: '13:10', category: '交通', title: '抵達關西機場第二航廈', place: '關西國際機場 第二航廈', note: '樂桃使用第二航廈；入境審查出示 Visit Japan Web QR Code\n13:10–15:45｜入境、交通、前往飯店沿用原本安排；入境或班機延誤時順延' },
     { day: 0, time: '14:00', category: '交通', title: '搭免費接駁巴士到關西空港駅', place: '關西國際機場 第二航廈', note: '第二航廈沒有車站，接駁巴士約 10 分鐘到第一航廈／關西空港駅' },
     { day: 0, time: '14:15', category: '交通', title: '南海電鐵售票處兌換 rapi:t 車票', place: '關西空港駅 南海電鐵售票處', note: '回程也從關西機場出發，可一併規劃回程車票' },
@@ -64,13 +58,13 @@ export function seed4Items() {
     { day: 4, time: '10:00', category: '住宿', title: '飯店退房', place: hotel, note: '確認行李、退稅商品' },
     { day: 4, time: '11:15', category: '交通', title: '搭乘南海 rapi:t 前往關西機場', place: 'なんば駅（南海）', note: '約 35 分鐘到關西空港駅，再搭免費接駁巴士到第二航廈（約 10 分鐘）' },
     { day: 4, time: '12:30', category: '交通', title: '抵達關西機場第二航廈辦理報到', place: '關西國際機場 第二航廈', note: '廉航櫃檯約起飛前 50 分鐘關閉；退稅商品放隨身行李' },
-    { day: 4, time: '15:25', category: '交通', title: '樂桃 MM027 KIX → TPE 起飛', place: '關西國際機場 第二航廈', note: '座位 22A／22B／22C；17:55 抵達桃園機場第一航廈' }
+    { day: 4, time: '', category: '交通', title: '回程航班（待匯入機票）', place: '', note: '' }
   ];
 }
 
 /* D1 行程的封面圖（public/covers，來源與授權見 public/covers/CREDITS.md）
    用關鍵字比對（先比標題、再比地點），使用者改過字也對得到；依序比對，先對到的優先 */
-const cover = (name) => `${import.meta.env.BASE_URL}covers/${name}.jpg`;
+const cover = (name) => `covers/${name}.jpg`;
 const D1_COVERS = [
   [/售票|兌換|車票/, 'd1-kix-station'],
   [/rapi:?t|南海/i, 'd1-rapit'],
@@ -112,10 +106,7 @@ export function defaultState() {
       { id: uid(), text: '預訂南海 rapi:t 車票', done: true },
       { id: uid(), text: '確認住宿訂單', done: true }
     ],
-    flights: [
-      { id: uid(), ...FLIGHTS.out, date: start, pnr: '', baggage: '', ticket: '' },
-      { id: uid(), ...FLIGHTS.back, date: addDays(start, 4), pnr: '', baggage: '', ticket: '' }
-    ],
+    flights: [],
     entry: { steps: [false, false, false, false, false], qr: '' },
     stays: [
       { id: uid(), name: HOTEL.name, address: HOTEL.address, checkIn: start, checkInTime: '', checkOut: addDays(start, 4), checkOutTime: '', orderNo: '', roomType: '', phone: '', platform: '', photo: '' }

@@ -5,14 +5,14 @@ import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
 import KV from '../../components/common/KV';
 import { mdw, parseDate } from '../../utils/date';
-import { safeUrl } from '../../utils/helpers';
+import { safeUrl, uid } from '../../utils/helpers';
 
 function editFlight(f) {
   openForm({
     title: `編輯${f.leg}班機`,
     fields: [
       { name: 'date', label: '日期', type: 'date', value: f.date },
-      { name: 'airline', label: '航空公司', value: f.airline, placeholder: '例如：星宇航空' },
+      { name: 'airline', label: '航空公司', value: f.airline, placeholder: '航空公司名稱' },
       { name: 'from', label: '出發機場代碼', value: f.from, placeholder: 'TPE' },
       { name: 'to', label: '抵達機場代碼', value: f.to, placeholder: 'KIX' },
       { name: 'fromName', label: '出發機場', value: f.fromName },
@@ -27,7 +27,7 @@ function editFlight(f) {
     ],
     onSave: (v) => {
       v.from = v.from.toUpperCase(); v.to = v.to.toUpperCase();
-      updateTrip((s) => { Object.assign(s.flights.find((x) => x.id === f.id), v); });
+      updateTrip((s) => { const existing = s.flights.find((x) => x.id === f.id); if (existing) Object.assign(existing, v); else s.flights.push({ ...f, ...v }); });
       toast('已更新班機');
     }
   });
@@ -35,6 +35,7 @@ function editFlight(f) {
 
 export default function FlightTab() {
   const flights = useTripStore((s) => s.flights);
+  if (!flights.length) return <article className="card card--pad"><h3>尚未匯入機票</h3><p className="small muted">班機資料會在登入後從 Firebase 讀取。請先匯入或新增機票資料。</p><Button onClick={() => editFlight({ id: uid(), leg: '去程' })}><Icon name="plus" />新增機票</Button></article>;
   return flights.map((f) => (
     <article key={f.id} className="card card--pad" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="row-between">
@@ -50,7 +51,8 @@ export default function FlightTab() {
         <div className="route__end route__end--r"><span className="route__code">{f.to}</span><span className="route__name">{f.toName}</span><span className="route__time">{f.arr || '--:--'}</span></div>
       </div>
       <div className="divider" />
-      <div className="kv"><KV k="航班" v={f.flightNo} /><KV k="訂位代號" v={f.pnr} /><KV k="座位" v={f.seat} /><KV k="託運行李" v={f.baggage} /></div>
+      <div className="kv"><KV k="航班" v={f.flightNo} /><KV k="艙等" v={f.cabin} /><KV k="機型" v={f.aircraft} /><KV k="飛行時間" v={f.duration} /><KV k="訂位代號" v={f.pnr} /><KV k="座位" v={f.seat} /><KV k="託運行李" v={f.baggage} /></div>
+      {f.timeZoneNote && <p className="small muted">{f.timeZoneNote}</p>}
       <div className="btn-row">
         {safeUrl(f.ticket)
           ? <a className="btn btn--sm" href={safeUrl(f.ticket)} target="_blank" rel="noopener"><Icon name="ticket" />電子機票</a>

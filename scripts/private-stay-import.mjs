@@ -14,13 +14,15 @@ export function privateStayImport() {
         catch { response.writeHead(400).end(); return; }
         const page = '/__private/stay-import';
         const endpoint = '/__private/stay-booking';
+        const flightPage = '/__private/flight-import';
+        const flightEndpoint = '/__private/flight-booking';
         if (path.toLowerCase().includes('/private-imports/')) { response.writeHead(404).end(); return; }
-        if (path !== page && path !== endpoint) return next();
+        if (![page, endpoint, flightPage, flightEndpoint].includes(path)) return next();
         response.setHeader('Cache-Control', 'no-store');
         if (request.method !== 'GET') { response.writeHead(405).end(); return; }
-        if (path === page) {
+        if (path === page || path === flightPage) {
           response.setHeader('Content-Type', 'text/html; charset=utf-8');
-          response.end(await readFile(resolve(server.config.root, 'private-imports/upload-stay.html'), 'utf8'));
+          response.end(await readFile(resolve(server.config.root, path === flightPage ? 'private-imports/upload-flight.html' : 'private-imports/upload-stay.html'), 'utf8'));
           return;
         }
         try {
@@ -35,7 +37,7 @@ export function privateStayImport() {
           const allowed = user && (user.localId === env.VITE_ALLOWED_FIREBASE_UID?.trim() || (user.emailVerified && emails.includes((user.email || '').toLowerCase())));
           if (!allowed) { response.writeHead(403).end(); return; }
           response.setHeader('Content-Type', 'application/json; charset=utf-8');
-          response.end(await readFile(resolve(server.config.root, 'private-imports/住宿資訊.json'), 'utf8'));
+          response.end(await readFile(resolve(server.config.root, path === flightEndpoint ? 'private-imports/flight-booking.json' : 'private-imports/住宿資訊.json'), 'utf8'));
         } catch { response.writeHead(500).end('Private import unavailable'); }
       });
     }

@@ -1,0 +1,3 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module">
+import React from 'react';import {createRoot} from 'react-dom/client';import {PublicJourney} from '/src/pages/share/PublicSharePage.jsx';import {publicSnapshot} from '/src/pages/share/publicSnapshot.js';import {defaultState} from '/src/data/defaultState.js';import '/src/styles/style.css';import '/node_modules/bootstrap-icons/font/bootstrap-icons.css';createRoot(document.getElementById('root')).render(React.createElement(PublicJourney,{data:publicSnapshot(defaultState())}));
+</script></body></html>

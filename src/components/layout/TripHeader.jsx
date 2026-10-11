@@ -7,6 +7,7 @@ import { openDialogueEditor } from '../dialogue/DialogueEditor';
 import { useAuth } from '../../auth/AuthContext';
 import Icon from '../common/Icon';
 import { openTripForm } from '../../pages/itinerary/tripForm';
+import { openShare } from '../../pages/share/ShareModal';
 import { addDays, diffDays, md, parseDate, toISO } from '../../utils/date';
 
 /** 出發倒數：出發前「倒數 N 天」、旅程中「旅程第 N 天」、結束後不顯示 */
@@ -78,7 +79,7 @@ export default function TripHeader() {
           </div>
         </div>
         <div className="avatar-wrap" ref={wrapRef}>
-          <button className="avatar" onClick={() => setMenuOpen((v) => !v)} aria-label={`${name}的選單：和角色對話、編輯對話、設定、登出`}
+          <button className="avatar" onClick={() => setMenuOpen((v) => !v)} aria-label={`${name}的選單：和角色對話、編輯對話、分享公開、設定、登出`}
             aria-haspopup="menu" aria-expanded={menuOpen} title={name}>
             {user?.photoURL ? <img src={user.photoURL} alt="" referrerPolicy="no-referrer" /> : <Icon bi="person-fill" />}
           </button>
@@ -86,6 +87,7 @@ export default function TripHeader() {
             <div className="avatar-menu" role="menu" aria-label={`${name}的選單`}>
               <button type="button" role="menuitem" className="avatar-menu__item" onClick={talk}><Icon bi="chat-quote-fill" />和角色對話</button>
               <button type="button" role="menuitem" className="avatar-menu__item" onClick={editDialogue}><Icon bi="pencil-square" />編輯對話</button>
+              <button type="button" role="menuitem" className="avatar-menu__item" onClick={() => { setMenuOpen(false); openShare(); }}><Icon bi="globe2" />分享公開</button>
               <button type="button" role="menuitem" className="avatar-menu__item" onClick={settings}><Icon bi="gear-fill" />設定</button>
               <button type="button" role="menuitem" className="avatar-menu__item" onClick={confirmLogout}><Icon bi="box-arrow-right" />登出</button>
             </div>

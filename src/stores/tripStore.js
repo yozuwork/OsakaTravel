@@ -6,14 +6,14 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
 import { STORAGE_KEY } from '../data/constants';
-import { defaultState, day4Items, FLIGHTS, HOTEL, PEACH_BAGGAGE_TODO, SAMPLE_SEED, seed4Items, withCovers } from '../data/defaultState';
+import { defaultState, day4Items, HOTEL, PEACH_BAGGAGE_TODO, SAMPLE_SEED, seed4Items, withCovers } from '../data/defaultState';
 import { placeItem, timeIndex } from '../utils/itinerary';
 import { uid } from '../utils/helpers';
 import { DEFAULT_CHARACTERS } from '../data/dialogueScript';
 import { databasePath } from '../services/firebase';
 import { createCloudSync } from '../services/cloudSync';
 import { readCloudCache, writeCloudCache } from '../services/cloudCache';
-import { withOnlineCovers } from '../data/itineraryCovers';
+import { withOnlineCovers, withStableCovers } from '../data/itineraryCovers';
 import { addDay1Evening } from '../data/day1Evening';
 
 /* 舊版（seed 1）範例行程的標題，用來判斷使用者是否還沒改過範例 */
@@ -30,6 +30,7 @@ function upgradeSample(saved, base) {
   if ((next.seed || 1) < 7) next = { ...next, seed: 7, items: withCovers(withOnlineCovers(next.items || [])) };
   if ((next.seed || 1) < 8) next = { ...addDay1Evening(next), seed: 8 };
   if ((next.seed || 1) < 9) next = { ...next, seed: 9, items: withOnlineCovers(next.items || []) };
+  if ((next.seed || 1) < 10) next = { ...next, seed: 10, items: withStableCovers(next.items || []) };
   return next;
 }
 
@@ -76,7 +77,7 @@ function upgradeToSeed3(saved) {
 /* seed 3 → 4：換成實際訂到的樂桃航班與飯店。key 是 seed 3 範例的標題，value 是 seed 4 範例的標題 */
 const SEED4_TITLES = {
   '抵達桃園機場辦理報到': '抵達桃園機場第一航廈辦理報到',
-  '星宇航空 TPE → KIX 起飛': '樂桃 MM024 TPE → KIX 起飛',
+  '星宇航空 TPE → KIX 起飛': '去程航班（待匯入機票）',
   '抵達關西機場第一航廈': '抵達關西機場第二航廈',
   '南海電鐵售票處兌換 rapi:t 車票': '南海電鐵售票處兌換 rapi:t 車票',
   '搭乘南海 rapi:t 前往難波': '搭乘南海 rapi:t 前往難波',
@@ -86,7 +87,7 @@ const SEED4_TITLES = {
   '飯店退房': '飯店退房',
   '搭乘南海 rapi:t 前往關西機場': '搭乘南海 rapi:t 前往關西機場',
   '抵達關西機場第一航廈辦理報到': '抵達關西機場第二航廈辦理報到',
-  '星宇航空 KIX → TPE 起飛': '樂桃 MM027 KIX → TPE 起飛'
+  '星宇航空 KIX → TPE 起飛': '回程航班（待匯入機票）'
 };
 /* seed 4 新增、seed 3 沒有的項目（D1 有改到範例時才補） */
 const SEED4_NEW_TITLES = ['搭免費接駁巴士到關西空港駅', `${HOTEL.name} 入住`];
@@ -114,11 +115,7 @@ function upgradeToSeed4(saved) {
     return rest;
   });
 
-  const flights = (saved.flights || []).map((f) => {
-    if (f.airline !== '星宇航空' || f.flightNo) return f;
-    const real = f.leg === '去程' ? FLIGHTS.out : f.leg === '回程' ? FLIGHTS.back : null;
-    return real ? { ...f, ...real } : f;
-  });
+  const flights = saved.flights || [];
 
   const stays = (saved.stays || []).map((s, i) => (i === 0 && !s.name && !s.address ? { ...s, name: HOTEL.name, address: HOTEL.address } : s));
 
