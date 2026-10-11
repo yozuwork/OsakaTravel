@@ -15,6 +15,7 @@ import LabOverlay from '../../components/checkin/LabOverlay';
 import PostcardViewer, { DEFAULT_STYLE, drawCard, knownStyle, toRecord } from '../../components/checkin/PostcardViewer';
 import PostcardAlbum from '../../components/checkin/PostcardAlbum';
 import PdfPreview from '../../components/checkin/PdfPreview';
+import JourneyHeader from '../../components/common/JourneyHeader';
 
 /* =========================================================
    打卡：每站蓋章、拍照，照片沖洗成明信片，可匯出當天的 A4 PDF
@@ -51,6 +52,8 @@ export default function CheckinPage() {
   const [draft, setDraft] = useState(null);     // 預覽中的明信片
   const [pdf, setPdf] = useState(null);         // { pages: dataURL[], blob }
   const [justStamped, setJustStamped] = useState(null);
+  const [filter, setFilter] = useState('all');
+  const visibleStops = stops.filter((stop) => filter === 'all' || (filter === 'stamped' ? Boolean(stop.stamp) : !stop.stamp));
   const last = useRef({ style: DEFAULT_STYLE, orient: 'port' }); // 沿用上次選的版型與方向（預設直式）
 
   const stopOf = (itemId) => stops.find((s) => s.item.id === itemId);
@@ -131,20 +134,9 @@ export default function CheckinPage() {
   if (!cloudReady) return <div className="empty" role="status">正在讀取雲端明信片與打卡紀錄…</div>;
 
   return (
-    <>
-      <header className="page-head" style={{ paddingTop: 28 }}>
-        <h1 className="page-title">打卡</h1>
-        <div className="page-sub">拍照、蓋章、寫幾句話，每站留一張明信片</div>
-      </header>
-
-      <div className="day-tabs" role="group" aria-label="選擇日期">
-        {Array.from({ length: trip.days }, (_, i) => (
-          <button key={i} type="button" className="day-tab" aria-pressed={i === day} onClick={() => setDay(i)}>
-            <span className="day-tab__date">DAY</span>
-            <span className="day-tab__label">{i + 1}</span>
-          </button>
-        ))}
-      </div>
+    <div className="journey-view journey-view--checkin">
+      <JourneyHeader kind="checkin" trip={trip} day={day} onDay={setDay} count={stops.length} stamped={stampedCount} photos={totalCards} image={stops.find((s) => s.item.image)?.item.image} />
+      <div className="journey-toolbar"><div><span className="journey-eyebrow">YOUR TRAVEL JOURNAL</span><h2>走過的地方，都是收藏。</h2><p>先蓋章記錄抵達，再拍一張屬於你的明信片。</p></div></div>
 
       <div className="ck-page">
         <div className="ck-day">
@@ -158,16 +150,20 @@ export default function CheckinPage() {
             <button type="button" className="ck-day__clear" onClick={clearStamps}><Icon bi="eraser" />清除蓋章</button>
           )}
         </div>
+        <div className="journey-progress" role="progressbar" aria-label="今天的打卡進度" aria-valuemin={0} aria-valuemax={stops.length || 1} aria-valuenow={stampedCount}><span style={{ width: `${stops.length ? stampedCount / stops.length * 100 : 0}%` }} /></div>
+        <div className="journey-filters" role="group" aria-label="篩選打卡行程">{[['all', '全部', stops.length], ['pending', '待打卡', stops.length - stampedCount], ['stamped', '已打卡', stampedCount]].map(([value, label, count]) => <button type="button" key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}<span>{count}</span></button>)}</div>
 
         {stops.length ? (
           <>
             <ul className="ck-list">
-              {stops.map((s) => (
+              {visibleStops.map((s) => (
                 <StopRow key={s.item.id} stop={s.stop} cards={s.cards} stamp={s.stamp} isNew={justStamped === s.item.id}
+                  cover={s.item.images?.[0] || s.item.image}
                   onStamp={() => onStamp(s)} onUnstamp={() => onUnstamp(s)} onShoot={() => setCamFor(s.item.id)}
                   onOpenCard={(r) => openCard(r, s)} />
               ))}
             </ul>
+            {!visibleStops.length && <div className="journey-filter-empty"><Icon name="check" /><strong>{filter === 'stamped' ? '這天還沒有打卡紀錄' : '今天的行程都蓋好章了'}</strong><span>{filter === 'stamped' ? '選一站，留下旅程的第一個印記。' : '接下來，拍張照片留作紀念吧。'}</span></div>}
             <PostcardAlbum groups={stops.filter((s) => s.cards.length)} onOpenCard={(r) => openCard(r, stopOf(r.itemId))} />
           </>
         ) : (
@@ -191,6 +187,6 @@ export default function CheckinPage() {
           onClose={closeDraft} />
       )}
       {pdf && <PdfPreview pdf={pdf} filename={`${trip.name}-DAY${day + 1}-打卡紀錄.pdf`} onClose={closePdf} />}
-    </>
+    </div>
   );
 }

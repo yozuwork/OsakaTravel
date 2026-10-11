@@ -1236,6 +1236,7 @@ a.chip-link:hover { border-color: var(--red); color: var(--red); }
 
 /* ---------- 頭像選單（TripHeader.jsx） ---------- */
 .avatar-wrap { position: relative; flex-shrink: 0; }
+.trip-head.trip-head--menu-open { z-index: 40; overflow: visible; }
 .avatar-menu {
   position: absolute; right: 0; top: calc(100% + 10px); z-index: 30; min-width: 184px; padding: 6px;
   display: flex; flex-direction: column; gap: 2px;

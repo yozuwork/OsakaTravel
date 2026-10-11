@@ -15,6 +15,7 @@ import { cx, mapsUrl, uid } from '../../utils/helpers';
 import { autoStageLine, dayChar } from '../../utils/dialogueText';
 import { Avatar } from '../../components/dialogue/DialogueEditor';
 import { dayItems, placeItem, timeIndex } from '../../utils/itinerary';
+import './item-editor.css';
 
 /* =========================================================
    行程編輯器：新增、複製、從收集箱加入、查看／編輯都用同一個畫面
@@ -39,7 +40,7 @@ export function addItem(data, index) {
 
 /** 查看／編輯既有行程 */
 export function openItemDetail(id) {
-  modal.open({ title: '行程詳情', content: <ItemEditor id={id} clipboard={readClipboard()} /> });
+  modal.open({ title: '行程詳情', variant: 'fullscreen', content: <ItemEditor id={id} clipboard={readClipboard()} /> });
 }
 
 /**
@@ -51,7 +52,7 @@ export function openItemDetail(id) {
 export function openItemForm(id, preset, { copy = false } = {}) {
   if (id) { openItemDetail(id); return; }
   const title = copy ? '複製行程' : preset ? '加入行程' : '新增行程';
-  modal.open({ title, content: <ItemEditor preset={preset} copy={copy} clipboard={readClipboard()} /> });
+  modal.open({ title, variant: 'fullscreen', content: <ItemEditor preset={preset} copy={copy} clipboard={readClipboard()} /> });
 }
 
 function initialDraft(existing, preset) {
@@ -169,16 +170,26 @@ function ItemEditor({ id, preset, copy = false, clipboard }) {
   }
 
   return (
-    <form className="form" noValidate onSubmit={save}>
-      <div className="form__grid">
-        <div className="field field--full">
-          <span className="field__label">圖片</span>
+    <form className="item-workspace" noValidate onSubmit={save}>
+      <header className="item-intro">
+        <span className="item-eyebrow">JOURNEY / PLANNER</span>
+        <h3>{isNew ? '下一站，想去哪裡？' : '把這一站，安排得更好。'}</h3>
+        <p>從一個目的地開始，收藏沿途的風景與期待。</p>
+      </header>
+      <div className="item-editor-columns">
+        <aside className="item-media">
+          <h4 className="item-section-title"><span>01</span>這一站的風景</h4>
+          <p className="item-section-hint">第一張照片會成為行程與打卡的封面。</p>
           <ImageGallery value={draft.images} onChange={setImages}
             placeholder={<span className="tl-thumb--icon gallery__placeholder"><Icon name={catIcon(draft.category)} /><span className="tl-thumb__label">{draft.category || '其他'}</span></span>} />
           {draft.coverCredit && draft.images.includes(draft.coverCredit.image) && (
             <span className="small muted">圖片：{draft.coverCredit.author} · <a href={draft.coverCredit.source} target="_blank" rel="noopener noreferrer">來源</a> · <a href={draft.coverCredit.licenseUrl} target="_blank" rel="noopener noreferrer">{draft.coverCredit.license}</a>（縮圖與封面裁切）</span>
           )}
-        </div>
+          <div className="item-day-summary"><span>DAY {draftDay + 1}</span><strong>{mdw(addDays(trip.startDate, draftDay))}</strong><p>{draft.time || '時間自由安排'} · {draft.category}</p></div>
+        </aside>
+        <section className="item-details">
+        <h4 className="item-section-title"><span>02</span>安排這一站</h4>
+        <div className="form__grid">
         <label className="field field--full">
           <span className="field__label">標題</span>
           <input className="field__input" name="title" value={draft.title} onChange={change} placeholder="例如：大阪城天守閣" required />
@@ -226,16 +237,21 @@ function ItemEditor({ id, preset, copy = false, clipboard }) {
           <textarea className="field__input" name="note" value={draft.note} onChange={change} placeholder="換票、轉乘、訂位資訊…" />
         </label>
         <StageDialogueField draft={draft} setDraft={setDraft} index={pos} />
+        </div>
+        {q.trim() && <a className="btn btn--block item-map-link" href={mapsUrl(q)} target="_blank" rel="noopener noreferrer"><Icon name="map" />在 Google 地圖查看</a>}
+        </section>
       </div>
-      {q.trim() && <a className="btn btn--primary btn--block" href={mapsUrl(q)} target="_blank" rel="noopener"><Icon name="map" />在 Google 地圖查看</a>}
+      <footer className="item-editor-toolbar">
+        <Button onClick={close}>取消</Button>
       {isNew ? (
-        <Button type="submit" variant="primary" block><Icon name="check" />{preset && !copy ? '加入行程' : '儲存'}</Button>
+        <Button type="submit" variant="primary"><Icon name="check" />{preset && !copy ? '加入行程' : copy ? '儲存複製行程' : '儲存行程'}</Button>
       ) : (
         <div className="btn-row">
           <Button onClick={copyItem}><Icon name="plus" />複製行程</Button>
           <Button type="submit" variant="primary"><Icon name="check" />確定</Button>
         </div>
       )}
+      </footer>
     </form>
   );
 }

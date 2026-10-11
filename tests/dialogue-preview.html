@@ -1,0 +1,4 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module">
+import React from 'react';import {createRoot} from 'react-dom/client';import ModalRoot from '/src/components/modal/ModalRoot.jsx';import {openDialogueEditor} from '/src/components/dialogue/DialogueEditor.jsx';import '/src/styles/style.css';import '/node_modules/bootstrap-icons/font/bootstrap-icons.css';
+createRoot(document.getElementById('root')).render(React.createElement(ModalRoot));setTimeout(openDialogueEditor,100);
+</script></body></html>

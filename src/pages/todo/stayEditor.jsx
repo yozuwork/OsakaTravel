@@ -30,6 +30,7 @@ function initialDraft(existing) {
 const TEXT_FIELDS = [
   { name: 'orderNo', label: '訂單編號' },
   { name: 'confirmationNo', label: '飯店確認號碼' },
+  { name: 'bookingStatus', label: '預訂狀態' },
   { name: 'englishName', label: '英文名稱' },
   { name: 'roomType', label: '房型' },
   { name: 'bedType', label: '床型' },

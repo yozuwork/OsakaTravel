@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { auth } from '../../services/firebase';
+import { useCloudStatus } from '../../services/cloudSync';
 import { useTripStore, updateTrip } from '../../stores/tripStore';
 import { toast } from '../../stores/uiStore';
 import { uid } from '../../utils/helpers';
@@ -40,6 +42,34 @@ export default function StayPage() {
   const trip = useTripStore((s) => s.trip);
   const stays = useTripStore((s) => s.stays);
   const hasNagahori = stays.some(isNagahoriHotel);
+  const cloudReady = useCloudStatus((state) => state.readyDocuments.trip);
+  const [privateImportError, setPrivateImportError] = useState('');
+  useEffect(() => {
+    if (!import.meta.env.DEV || !cloudReady || !auth.currentUser) return;
+    let cancelled = false;
+    const user = auth.currentUser;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const response = await fetch('/__private/stay-booking', { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' });
+        if (response.status === 404) return;
+        if (!response.ok) throw new Error('無法取得本機住宿資料，請確認此帳號已獲授權。');
+        const payload = await response.json();
+        if (cancelled || auth.currentUser?.uid !== user.uid) return;
+        if (payload.type !== 'osaka-stay-booking' || !payload.stay?.orderNo) throw new Error('本機住宿資料格式不正確。');
+        const booking = payload.stay;
+        const existing = useTripStore.getState().stays.find((stay) => stay.orderNo === booking.orderNo);
+        if (existing?.bookingImportVersion === 1) return;
+        updateTrip((state) => {
+          const stay = state.stays.find((stay) => stay.orderNo === booking.orderNo || (stay.name === booking.name && stay.checkIn === booking.checkIn));
+          if (stay) Object.assign(stay, booking, { bookingImportVersion: 1 });
+          else state.stays.push({ ...booking, bookingImportVersion: 1, id: uid(), images: [], photo: '', platform: '' });
+        });
+        toast('已補入訂房資訊，雲端寫入結果請看上方儲存狀態');
+      } catch (error) { if (!cancelled) setPrivateImportError(error.message); }
+    })();
+    return () => { cancelled = true; };
+  }, [cloudReady]);
   const primary = stays[0];
   const heroPhoto = primary?.images?.[0] || primary?.photo || (primary && isNagahoriHotel(primary) ? HOTEL_PHOTO : '');
   const [heroFailed, setHeroFailed] = useState('');
@@ -51,7 +81,7 @@ export default function StayPage() {
     try {
       const data = JSON.parse(await file.text());
       if (data.type !== 'osaka-stay-booking' || !data.stay?.name) throw new Error('format');
-      const fields = ['name', 'englishName', 'address', 'checkIn', 'checkInTime', 'checkOut', 'checkOutTime', 'orderNo', 'confirmationNo', 'roomType', 'bedType', 'rooms', 'capacity', 'checkInWindow', 'phone', 'email', 'specialRequest', 'arrivalNote', 'paymentNote'];
+      const fields = ['name', 'englishName', 'address', 'checkIn', 'checkInTime', 'checkOut', 'checkOutTime', 'orderNo', 'confirmationNo', 'bookingStatus', 'roomType', 'bedType', 'rooms', 'capacity', 'checkInWindow', 'phone', 'email', 'specialRequest', 'arrivalNote', 'paymentNote'];
       const booking = Object.fromEntries(fields.filter((key) => typeof data.stay[key] === 'string').map((key) => [key, data.stay[key]]));
       updateTrip((state) => {
         const existing = state.stays.find((stay) => stay.orderNo === booking.orderNo && booking.orderNo) || state.stays.find((stay) => stay.name === booking.name && stay.checkIn === booking.checkIn);
@@ -73,6 +103,7 @@ export default function StayPage() {
         <section aria-labelledby="stay-booking-title">
           <div className="stay-section-head"><div><span className="stay-eyebrow">01 / THE RESERVATION</span><h2 id="stay-booking-title">我們的住宿</h2></div><label className="stay-import"><Icon name="inbox" />匯入訂房資料<input className="sr-only" type="file" accept="application/json,.json" onChange={importBooking} /></label></div>
           <div className="stay-page__bookings"><StayTab /></div>
+          {privateImportError && <p role="alert">{privateImportError}</p>}
         </section>
         {hasNagahori && <>
           <aside className="stay-area__guide">

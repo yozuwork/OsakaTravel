@@ -4,11 +4,13 @@ import Icon from '../../components/common/Icon';
 import PixelBuilding from '../../components/map/PixelBuilding';
 import { cx, mapsUrl } from '../../utils/helpers';
 import { catIcon } from '../../data/constants';
-import { addDays, mdw, parseDate } from '../../utils/date';
+import { addDays, mdw } from '../../utils/date';
 import { dayItems } from '../../utils/itinerary';
 import { charImgSrc, stageChar, stageLine } from '../../utils/dialogueText';
 import { prefersReducedMotion } from '../../components/transition/PageTransition';
 import { openItemDetail, openStageSay } from '../itinerary/itemEditor';
+import JourneyHeader from '../../components/common/JourneyHeader';
+import { useCheckinStore } from '../../features/checkin/checkinStore';
 
 /* =========================================================
    地圖：遊戲「關卡選擇」風格
@@ -26,14 +28,6 @@ const BOARD_MAX = 620;    // 桌機版路線區最寬
 
 /** 台詞片段 → 文字，【】的部分紅底 */
 const Say = ({ line }) => line.map(([t, hi], i) => (hi ? <em key={i}>{t}</em> : <span key={i}>{t}</span>));
-
-/** 行程開始的時間點（沒填時間就當作當天結束） */
-function itemTime(startDate, it) {
-  const d = parseDate(addDays(startDate, it.day));
-  const [h, m] = (it.time || '23:59').split(':').map(Number);
-  d.setHours(h, m || 0, 0, 0);
-  return d;
-}
 
 /** Catmull-Rom 轉成每一段的三次貝茲曲線，讓路線平滑 */
 function roadSegments(pts) {
@@ -63,14 +57,15 @@ export default function MapPage() {
   const allItems = useTripStore((s) => s.items);
   const characters = useTripStore((s) => s.dialogue.characters);
   const uiDay = useTripStore((s) => s.ui.day);
+  const stamps = useCheckinStore((s) => s.stamps);
+  const [view, setView] = useState('route');
   const day = Math.min(uiDay, trip.days - 1);
   const items = useMemo(() => dayItems(allItems, day), [allItems, day]);
   // 手機版的關卡資訊預設收起，點了關卡才顯示（桌機版一直顯示在右側）
   const [sheetOpen, setSheetOpen] = useState(false);
   const setDay = (i) => { setSheetOpen(false); updateTrip((s) => { s.ui.day = i; }); }; // 和行程頁共用選到的日期
 
-  const now = Date.now();
-  const cleared = items.map((it) => itemTime(trip.startDate, it).getTime() < now);
+  const cleared = items.map((it) => Boolean(stamps[it.id]));
   const firstOpen = cleared.indexOf(false);
   const defaultSel = firstOpen === -1 ? Math.max(items.length - 1, 0) : firstOpen;
 
@@ -81,26 +76,16 @@ export default function MapPage() {
   const select = (i) => setSelByDay((m) => ({ ...m, [day]: (i + items.length) % items.length }));
 
   const curChar = cur && stageChar(characters, cur, day);
+  useEffect(() => {
+    const onKey = (event) => { if (event.key === 'Escape') setSheetOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
 
   return (
-    <>
-      <header className="page-head" style={{ paddingTop: 28 }}>
-        <div className="page-head__row" style={{ alignItems: 'flex-end' }}>
-          <div>
-            <h1 className="page-title">地圖</h1>
-            <div className="page-sub">每天一個世界 · 行程就是關卡，點關卡讓角色走過去</div>
-          </div>
-        </div>
-      </header>
-
-      <div className="day-tabs" role="group" aria-label="選擇日期">
-        {Array.from({ length: trip.days }, (_, i) => (
-          <button key={i} type="button" className="day-tab" aria-pressed={i === day} onClick={() => setDay(i)}>
-            <span className="day-tab__date">WORLD</span>
-            <span className="day-tab__label">{i + 1}</span>
-          </button>
-        ))}
-      </div>
+    <div className="journey-view journey-view--map">
+      <JourneyHeader kind="map" trip={trip} day={day} onDay={setDay} count={items.length} stamped={cleared.filter(Boolean).length} />
+      <div className="journey-toolbar"><div><span className="journey-eyebrow">THE DAILY ROUTE</span><h2>今天，從這裡出發。</h2><p>關卡圖依行程順序排列；實際位置請開啟導航。</p></div><div className="journey-switch" role="group" aria-label="路線顯示方式"><button type="button" aria-pressed={view === 'route'} onClick={() => setView('route')}><Icon name="map" />關卡圖</button><button type="button" aria-pressed={view === 'list'} onClick={() => setView('list')}><Icon name="checklist" />清單</button></div></div>
 
       <div className="map-page">
         <div className="qm-wrap">
@@ -108,11 +93,11 @@ export default function MapPage() {
             <span className="qm-head__world">WORLD {day + 1}</span>
             <span className="qm-head__date">{mdw(addDays(trip.startDate, day))}</span>
             {items.length > 0 && (
-              <span className="qm-head__stars"><Icon bi="star-fill" />{cleared.filter(Boolean).length}/{items.length} CLEAR</span>
+              <span className="qm-head__stars"><Icon bi="star-fill" />{cleared.filter(Boolean).length}/{items.length} 已打卡</span>
             )}
           </div>
           {items.length
-            ? <QuestBoard key={day} day={day} items={items} cleared={cleared} sel={sel} onSelect={(i) => { select(i); setSheetOpen(true); }} characters={characters} />
+            ? view === 'route' ? <QuestBoard key={day} day={day} items={items} cleared={cleared} sel={sel} onSelect={(i) => { select(i); setSheetOpen(true); }} characters={characters} /> : <ol className="journey-route-list">{items.map((item, index) => <li key={item.id}><button type="button" aria-pressed={index === sel} onClick={() => { select(index); setSheetOpen(true); }}><span className="journey-route-list__no">{String(index + 1).padStart(2, '0')}</span><span><small>{item.time || '時間未定'} · {item.category}</small><strong>{item.title}</strong><span>{item.place}</span></span><Icon name={cleared[index] ? 'check' : 'chevronRight'} /></button></li>)}</ol>
             : (
               <div className="empty">
                 <Icon name="map" />
@@ -125,6 +110,7 @@ export default function MapPage() {
         {cur && (
           <section className={cx('map-sheet qm-sheet', sheetOpen && 'is-open')} aria-label="關卡資訊" aria-live="polite">
             <div className="map-sheet__handle" />
+            {(cur.images?.[0] || cur.image) && <img className="journey-place-photo" src={cur.images?.[0] || cur.image} alt={cur.title} loading="lazy" />}
             <div className="qm-sheet__top">
               <span className={cx('qm-sheet__stage', cleared[sel] && 'is-clear')}>
                 STAGE {sel + 1}{cleared[sel] && <><Icon bi="star-fill" />CLEAR</>}
@@ -158,7 +144,7 @@ export default function MapPage() {
           </section>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

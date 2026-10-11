@@ -14,6 +14,7 @@ import { databasePath } from '../services/firebase';
 import { createCloudSync } from '../services/cloudSync';
 import { readCloudCache, writeCloudCache } from '../services/cloudCache';
 import { withOnlineCovers } from '../data/itineraryCovers';
+import { addDay1Evening } from '../data/day1Evening';
 
 /* 舊版（seed 1）範例行程的標題，用來判斷使用者是否還沒改過範例 */
 const SEED1_TITLES = ['抵達關西機場第一航廈', '南海電鐵售票處兌換 rapi:t 車票', '搭乘南海 rapi:t 前往難波', '難波站步行至飯店入住'];
@@ -27,6 +28,8 @@ function upgradeSample(saved, base) {
   if ((next.seed || 1) < 5) next = upgradeToSeed5(next);
   if ((next.seed || 1) < 6) next = upgradeToSeed6(next);
   if ((next.seed || 1) < 7) next = { ...next, seed: 7, items: withCovers(withOnlineCovers(next.items || [])) };
+  if ((next.seed || 1) < 8) next = { ...addDay1Evening(next), seed: 8 };
+  if ((next.seed || 1) < 9) next = { ...next, seed: 9, items: withOnlineCovers(next.items || []) };
   return next;
 }
 

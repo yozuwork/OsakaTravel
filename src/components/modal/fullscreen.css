@@ -1,0 +1,8 @@
+.sheet.sheet--fullscreen { box-shadow: none; inset: 0; width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: none; transform: none; border: 0; border-radius: 0; padding: 0; background: #faf8f5; animation: dialogue-enter .2s ease-out; }
+.sheet--fullscreen .sheet__handle { display: none; }
+.sheet--fullscreen .sheet__head { flex-shrink: 0; padding: calc(14px + env(safe-area-inset-top)) clamp(20px, 5vw, 80px) 14px; border-bottom: 1px solid #1e2a4518; background: #faf8f5; }
+.sheet--fullscreen .sheet__title { font-size: 17px; letter-spacing: .06em; }
+.sheet--fullscreen .sheet__head .icon-btn { width: 44px; height: 44px; border: 1px solid #1e2a4530; border-radius: 50%; box-shadow: none; background: transparent; }
+.sheet--fullscreen .sheet__body { padding: 0; gap: 0; flex: 1; min-height: 0; overscroll-behavior: contain; scroll-padding-bottom: 100px; }
+@keyframes dialogue-enter { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sheet.sheet--fullscreen { animation: none; } }

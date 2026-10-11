@@ -1,0 +1,37 @@
+{
+    "animate":  {
+                    "image":  "https://www.animate.co.jp/assets/uploads/2024/08/1765503310-1ccef6f64a2f65372d25265cac2ee681.jpg",
+                    "source":  "https://www.animate.co.jp/shop/nipponbashi/",
+                    "author":  "animate",
+                    "license":  "官方網站圖片",
+                    "licenseUrl":  "https://www.animate.co.jp/shop/nipponbashi/"
+                },
+    "mandarake":  {
+                      "image":  "https://www.mandarake.co.jp/dir/gcs/img/shop/gcs-nihonbashi1.jpg",
+                      "source":  "https://www.mandarake.co.jp/dir/gcs/",
+                      "author":  "Mandarake",
+                      "license":  "官方網站圖片",
+                      "licenseUrl":  "https://www.mandarake.co.jp/dir/gcs/"
+                  },
+    "nipponbashi":  {
+                        "image":  "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/69/Nipponbashi_Osaka_Japan01-r.jpg/960px-Nipponbashi_Osaka_Japan01-r.jpg?utm_source=commons.wikimedia.org\u0026utm_campaign=imageinfo\u0026utm_content=thumbnail",
+                        "source":  "https://commons.wikimedia.org/wiki/File:Nipponbashi_Osaka_Japan01-r.jpg",
+                        "author":  "Oilstreet",
+                        "license":  "CC BY 2.5",
+                        "licenseUrl":  "https://creativecommons.org/licenses/by/2.5"
+                    },
+    "dotonbori":  {
+                      "image":  "https://cdn.osaka-info.jp/page_translation/content/8dee10d4-04bf-11e8-9a51-06326e701dd4.jpeg",
+                      "source":  "https://www.osaka-info.jp/spot/dotonbori/",
+                      "author":  "大阪觀光局 OSAKA INFO",
+                      "license":  "官方網站圖片",
+                      "licenseUrl":  "https://www.osaka-info.jp/spot/dotonbori/"
+                  },
+    "nambaDinner":  {
+                        "image":  "https://www.osaka-info.jp/common/img/gnav/gnav_osaka_food@2x.jpg",
+                        "source":  "https://www.osaka-info.jp/",
+                        "author":  "大阪觀光局 OSAKA INFO",
+                        "license":  "官方網站圖片（大阪美食示意，餐廳待選）",
+                        "licenseUrl":  "https://www.osaka-info.jp/"
+                    }
+}

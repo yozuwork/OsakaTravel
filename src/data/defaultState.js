@@ -2,9 +2,10 @@ import { uid } from '../utils/helpers';
 import { addDays } from '../utils/date';
 import { defaultDialogue } from './dialogueScript';
 import { withOnlineCovers } from './itineraryCovers';
+import { day1EveningItems } from './day1Evening';
 
 /** 範例資料版本：更新預設行程時 +1，並在 tripStore 的 upgradeSample 補上對應判斷 */
-export const SAMPLE_SEED = 7;
+export const SAMPLE_SEED = 9;
 
 /** DAY4：中之島藝術與建築散步、梅田夜景。時間區間放在備註供詳情查看。 */
 export function day4Items() {
@@ -45,12 +46,12 @@ export function seed4Items() {
     /* D1：去程 樂桃 MM024 TPE 09:40 → KIX 13:10 */
     { day: 0, time: '07:30', category: '交通', title: '抵達桃園機場第一航廈辦理報到', place: '桃園國際機場 第一航廈', note: '樂桃航空櫃檯；廉航櫃檯約起飛前 50 分鐘關閉，請提早到' },
     { day: 0, time: '09:40', category: '交通', title: '樂桃 MM024 TPE → KIX 起飛', place: '桃園國際機場 第一航廈', note: '座位 21A／21B／21C；13:10 抵達關西機場第二航廈' },
-    { day: 0, time: '13:10', category: '交通', title: '抵達關西機場第二航廈', place: '關西國際機場 第二航廈', note: '樂桃使用第二航廈；入境審查出示 Visit Japan Web QR Code' },
+    { day: 0, time: '13:10', category: '交通', title: '抵達關西機場第二航廈', place: '關西國際機場 第二航廈', note: '樂桃使用第二航廈；入境審查出示 Visit Japan Web QR Code\n13:10–15:45｜入境、交通、前往飯店沿用原本安排；入境或班機延誤時順延' },
     { day: 0, time: '14:00', category: '交通', title: '搭免費接駁巴士到關西空港駅', place: '關西國際機場 第二航廈', note: '第二航廈沒有車站，接駁巴士約 10 分鐘到第一航廈／關西空港駅' },
     { day: 0, time: '14:15', category: '交通', title: '南海電鐵售票處兌換 rapi:t 車票', place: '關西空港駅 南海電鐵售票處', note: '回程也從關西機場出發，可一併規劃回程車票' },
     { day: 0, time: '14:30', category: '交通', title: '搭乘南海 rapi:t 前往難波', place: '關西空港駅', note: '約 35 分鐘抵達難波' },
     { day: 0, time: '15:15', category: '交通', title: '從難波前往飯店', place: 'なんば駅', note: '地鐵四つ橋線難波 → 四ツ橋 1 站後步行，或從難波步行約 20 分鐘（以 Google 地圖為準）' },
-    { day: 0, time: '15:45', category: '住宿', title: `${HOTEL.name} 入住`, place: hotel, note: `${HOTEL.address}；辦理入住、放行李` },
+    { day: 0, time: '15:45', category: '住宿', title: `${HOTEL.name} 入住`, place: hotel, note: `${HOTEL.address}\n15:45–16:20｜飯店入住、放行李、休息；留時間整理，不帶大行李逛街` },
 
     /* D2：環球影城 */
     { day: 1, time: '07:30', category: '交通', title: '從飯店出發前往環球影城', place: '西大橋駅', note: '長堀鶴見綠地線西大橋 → 大正，轉 JR 環狀線到西九條，再轉 JR 夢咲線到環球城站，約 35–40 分鐘（以 Google 地圖為準）' },
@@ -99,7 +100,7 @@ export function defaultState() {
     v: 1,
     seed: SAMPLE_SEED,
     trip: { name: '大阪冬旅', en: 'Osaka', from: '台北', to: '大阪', startDate: start, days: 5 },
-    items: withCovers(withOnlineCovers([...seed4Items().map((it) => ({ id: uid(), ...it })), ...day4Items()])),
+    items: withCovers(withOnlineCovers([...seed4Items().map((it) => ({ id: uid(), ...it })), ...day1EveningItems(), ...day4Items()])),
     todos: [
       { id: uid(), text: '填寫 Visit Japan Web 入境資料', done: false },
       { id: uid(), text: '購買 eSIM／網卡', done: false },

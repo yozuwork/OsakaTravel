@@ -4,6 +4,7 @@ import { modal, useModalStore } from '../../stores/modalStore';
 import { ModalContext } from './ModalContext';
 import Icon from '../common/Icon';
 import Button from '../common/Button';
+import './fullscreen.css';
 
 /* 彈出視窗的 z-index 起點：要高於所有全螢幕層（打卡相機／明信片 55、角色對話 85、轉場 90），
    低於全局 Loading（160）、Toast（170）、開啟畫面（200）；堆疊時每層 +2 */
@@ -56,7 +57,7 @@ function Modal({ entry, z }) {
   return (
     <ModalContext.Provider value={ctx}>
       <div className="sheet-backdrop" style={{ zIndex: z }} onClick={dismissible ? close : undefined} />
-      <section ref={ref} className={'sheet' + (isConfirm ? ' sheet--dialog' : '')} style={{ zIndex: z + 1 }}
+      <section ref={ref} className={'sheet' + (isConfirm ? ' sheet--dialog' : variant === 'fullscreen' ? ' sheet--fullscreen' : '')} style={{ zIndex: z + 1 }}
         role={isConfirm ? 'alertdialog' : 'dialog'} aria-modal="true" aria-labelledby={titleId}>
         {!isConfirm && <div className="sheet__handle" />}
         <div className="sheet__head">

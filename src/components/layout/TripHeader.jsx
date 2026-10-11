@@ -61,7 +61,7 @@ export default function TripHeader() {
   const countdown = countdownText(trip.startDate, trip.days);
 
   return (
-    <header className="page-head page-head--flush trip-head">
+    <header className={`page-head page-head--flush trip-head${menuOpen ? ' trip-head--menu-open' : ''}`}>
       {trip.en && <span className="trip-head__mark" aria-hidden="true">{trip.en.toUpperCase()}</span>}
       <div className="page-head__row page-head__row--center">
         <div className="trip-head__main">

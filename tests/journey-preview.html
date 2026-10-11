@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>地圖與打卡版面檢查</title></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import MapPage from '/src/pages/map/MapPage.jsx';
+import CheckinPage from '/src/pages/checkin/CheckinPage.jsx';
+import ModalRoot from '/src/components/modal/ModalRoot.jsx';
+import { useTripStore } from '/src/stores/tripStore.js';
+import { useCheckinStore } from '/src/features/checkin/checkinStore.js';
+import '/src/styles/style.css';
+useTripStore.setState({ ui: { ...useTripStore.getState().ui, day: 3 } });
+const item = useTripStore.getState().items.find(item => item.day === 3);
+useCheckinStore.setState({ ready: true, stamps: { [item.id]: { at: Date.now(), rot: 0 } }, cards: {} });
+const Page = new URLSearchParams(location.search).get('page') === 'checkin' ? CheckinPage : MapPage;
+createRoot(document.getElementById('root')).render(React.createElement(React.Fragment, null, React.createElement('div', {className: 'app'}, React.createElement('div', {className: 'view'}, React.createElement(Page))), React.createElement(ModalRoot)));
+</script></body></html>

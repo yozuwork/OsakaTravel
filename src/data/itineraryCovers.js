@@ -1,6 +1,13 @@
-import covers from './itineraryCoverLinks.json';
+import baseCovers from './itineraryCoverLinks.json';
+import day1Covers from './day1CoverLinks.json';
+const covers = { ...baseCovers, ...day1Covers };
 
 const matches = [
+  [/Animate|アニメイト/i, 'animate'],
+  [/Mandarake|Grand Chaos|まんだらけ|グランドカオス/i, 'mandarake'],
+  [/難波.*晚餐|なんば.*夕食|Namba.*Dinner/i, 'nambaDinner'],
+  [/道頓堀|Dotonbori/i, 'dotonbori'],
+  [/日本橋動漫|動漫街|大阪日本橋|でんでんタウン|Nipponbashi/i, 'nipponbashi'],
   [/國立國際美術館|国立国際美術館|National Museum of Art/i, 'nmao'],
   [/中之島美術館|中之岛美术馆|Nakanoshima Museum of Art/i, 'nakka'],
   [/兒童書之森|こども本の森|Children.?s Book Forest/i, 'books'],

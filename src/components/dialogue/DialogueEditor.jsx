@@ -12,6 +12,7 @@ import { compressImage } from '../../utils/file';
 import { cx, uid } from '../../utils/helpers';
 import Button from '../common/Button';
 import Icon from '../common/Icon';
+import './dialogue-editor.css';
 
 /* =========================================================
    對話編輯器：台詞新增／編輯／刪除／拖曳排序／隱藏、換角色；角色可自行新增（上傳去背立繪）
@@ -22,7 +23,7 @@ const LIFT_OPTIONS = [['-2%', '不抬高（預設）'], ['6%', '抬高一點'], 
 const SIDE_LABEL = { left: '左側切入', right: '右側切入' };
 
 export function openDialogueEditor() {
-  modal.open({ title: '編輯對話', content: <DialogueEditor /> });
+  modal.open({ title: '編輯對話', variant: 'fullscreen', content: <DialogueEditor /> });
 }
 
 /** 角色頭像（圓形，取上方臉的位置） */
@@ -89,11 +90,18 @@ function DialogueEditor() {
   }
 
   return (
-    <div className="form">
-      <section className="setting-group">
+    <div className="dialogue-workspace">
+      <header className="dialogue-intro">
+        <span className="dialogue-eyebrow">DIALOGUE / STUDIO</span>
+        <h3>讓旅程，<br />有你們的聲音。</h3>
+        <p>點選台詞編輯，拖曳左側握把調整播放順序。</p>
+        <div className="dialogue-stats" aria-live="polite"><span><strong>{script.length - hiddenCount}</strong> 句播放</span><span><strong>{hiddenCount}</strong> 句隱藏</span><span><strong>{characters.length}</strong> 位角色</span></div>
+      </header>
+      <div className="dialogue-columns">
+      <section className="dialogue-script">
         <div className="row-between">
-          <h3 className="setting-group__title"><Icon bi="chat-quote-fill" />對話（依序播放）</h3>
-          <span className="small muted">{script.length} 句{hiddenCount > 0 && `（${hiddenCount} 句隱藏）`}</span>
+          <h3 className="setting-group__title"><span className="dialogue-section-no">01</span>台詞與順序</h3>
+          <button type="button" className="dialogue-add" onClick={() => openLineEditor(null)}><Icon name="plus" />新增台詞</button>
         </div>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={dragEnd}>
           <SortableContext items={script.map((l) => l.id)} strategy={verticalListSortingStrategy}>
@@ -108,8 +116,9 @@ function DialogueEditor() {
         <button type="button" className="btn btn--sm btn--dashed" onClick={() => openLineEditor(null)}><Icon name="plus" />新增一句</button>
       </section>
 
-      <section className="setting-group">
-        <h3 className="setting-group__title"><Icon bi="people-fill" />角色（頭像）</h3>
+      <aside className="dialogue-cast">
+        <h3 className="setting-group__title"><span className="dialogue-section-no">02</span>旅途角色</h3>
+        <p className="dialogue-cast-hint">選擇角色，編輯名字、頭像與登場方向。</p>
         <div className="dlg-chars">
           {characters.map((c) => (
             <button type="button" key={c.id} className="dlg-char" onClick={() => openCharEditor(c.id)} aria-label={`編輯角色：${c.name}`}>
@@ -123,12 +132,14 @@ function DialogueEditor() {
             <span>新增角色</span>
           </button>
         </div>
-      </section>
-
-      <div className="btn-row">
-        <Button onClick={resetAll}><Icon bi="arrow-counterclockwise" />恢復預設</Button>
-        <Button variant="primary" onClick={preview}><Icon bi="play-fill" />預覽播放</Button>
+      </aside>
       </div>
+
+      <footer className="dialogue-toolbar">
+        <Button onClick={resetAll}><Icon bi="arrow-counterclockwise" />恢復預設</Button>
+        <Button onClick={close}><Icon name="check" />完成</Button>
+        <Button variant="primary" onClick={preview}><Icon bi="play-fill" />預覽播放</Button>
+      </footer>
     </div>
   );
 }
@@ -142,6 +153,7 @@ function LineRow({ l, i, char, onToggle, onRemove }) {
   return (
     <li ref={setNodeRef} style={style} className={cx('dlg-line', l.hidden && 'is-hidden', isDragging && 'is-dragging')}>
       <button type="button" ref={setActivatorNodeRef} className="dlg-line__grip" {...attributes} {...listeners} aria-label={`拖曳排序第 ${i + 1} 句`}>
+        <span className="dialogue-line-no">{String(i + 1).padStart(2, '0')}</span>
         <Icon bi="grip-vertical" />
       </button>
       <button type="button" className="dlg-line__main" onClick={() => openLineEditor(l.id)} aria-label={`編輯第 ${i + 1} 句`}>

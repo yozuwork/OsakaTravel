@@ -19,13 +19,14 @@ export const StampIcon = () => (
  * @param {object} [p.stamp] 行程蓋章紀錄
  * @param {boolean} p.isNew 剛蓋的章（播放蓋下去的動畫）
  */
-export default function StopRow({ stop, cards, stamp, isNew, onStamp, onUnstamp, onShoot, onOpenCard }) {
+export default function StopRow({ stop, cards, stamp, isNew, cover, onStamp, onUnstamp, onShoot, onOpenCard }) {
   const stampSrc = useMemo(() => stamp && stampCanvas('post', { at: stamp.at, title: stop.title, no: stop.no }, 180).toDataURL(), [stamp, stop.title, stop.no]);
   const meta = [stop.category, cards.length && `${cards.length} 張`, stamp && `${fmtTime(stamp.at)} 打卡`].filter(Boolean).join(' · ');
 
   return (
     <li className={cx('ck-stop', (cards.length || stamp) && 'is-done')}>
       <div className="ck-stop__row">
+        {cover && <div className="ck-stop__cover"><img src={cover} alt="" loading="lazy" /><span>{String(stop.no).padStart(2, '0')}</span></div>}
         <span className="ck-stop__no">{stop.no}</span>
         <div className="ck-stop__body">
           <div className="ck-stop__time">{stop.time}</div>

@@ -1,0 +1,8 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>頭像選單檢查</title></head><body><div id="root"></div><script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { AuthProvider } from '/src/auth/AuthContext.jsx';
+import TripHeader from '/src/components/layout/TripHeader.jsx';
+import '/src/styles/style.css';
+createRoot(document.getElementById('root')).render(React.createElement(AuthProvider,null,React.createElement('div',{className:'app'},React.createElement('div',{className:'view'},React.createElement(TripHeader),React.createElement('div',{className:'it-days-wrap',style:{height:100}},'DAY 1 · 日期列'),React.createElement('div',{style:{position:'relative',zIndex:1,height:400,background:'white'}},'行程卡片')))));
+</script></body></html>
