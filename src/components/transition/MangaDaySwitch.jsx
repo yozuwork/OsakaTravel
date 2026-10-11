@@ -2,14 +2,17 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { prefersReducedMotion, usePageTransition } from './PageTransition';
 import {
-  BURST_POINTS, EASE_CUT, EASE_IN, EASE_OUT, EASE_POP, HOLD_MS, SPEED_LINES,
+  BURST_POINTS, EASE_CUT, EASE_IN, EASE_OUT, EASE_POP, HOLD_MS, SPEED_LINES, SPLIT_LEFT, SPLIT_RIGHT,
   layoutPanels, toClipPath, toPoints
 } from './mangaShapes';
 
 /**
- * 切換日期：黑白漫畫斜切轉場（約 0.85 秒）
+ * 切換日期：黑白漫畫斜切轉場（約 0.7 秒）
  * 白紙斜切蓋上 → 黑線劃過 → 上下兩格沿斜線滑入（集中線＋爆炸框／日期大字）
  * → 停留 HOLD_MS 後才切換資料 → 兩格錯開滑出，新的列依序斜滑進來
+ * - 往前一天時整組方向鏡像（斜切、滑動方向、文字位置）
+ * - 動畫中再點別天：還沒換資料就直接改目標；已換完就接著再播一次
+ * - 只有畫面內看得到的列會播進場動畫
  *
  * @param {object} o
  * @param {number} o.current 目前選取的日期
@@ -24,34 +27,45 @@ export function useMangaDaySwitch({ current, onSwitch, getInfo, anchorRef, bound
   const { runLocked } = usePageTransition();
   const [pending, setPending] = useState(null);
   const [info, setInfo] = useState({ d: '', tag: '', date: '', caption: '' });
-  const enterNext = useRef(false);
+  const enterDir = useRef(0);
+  // 播放狀態：target＝最新要去的日期、swapped＝這一輪已換過資料、queued＝換完後又點了別天
+  const play = useRef({ active: false, target: 0, swapped: false, queued: false });
+  // 動畫跨好幾個 render，用 ref 讀最新的值
+  const latest = useRef({});
+  latest.current = { current, onSwitch, getInfo };
   const r = {
     root: useRef(null), paper: useRef(null), top: useRef(null), bottom: useRef(null),
     topEdge: useRef(null), bottomEdge: useRef(null), burst: useRef(null), lineSvg: useRef(null), line: useRef(null)
   };
 
-  // 資料切換後（DOM 已更新、尚未繪製），新的列依序斜滑進來
+  // 資料切換後（DOM 已更新、尚未繪製），畫面內的列依序斜滑進來
   useLayoutEffect(() => {
-    if (!enterNext.current) return;
-    enterNext.current = false;
-    (listRef.current?.querySelectorAll(rowSelector) || []).forEach((el, k) => {
+    const dir = enterDir.current;
+    if (!dir) return;
+    enterDir.current = 0;
+    const vh = window.innerHeight;
+    let k = 0;
+    (listRef.current?.querySelectorAll(rowSelector) || []).forEach((el) => {
+      if (el.getBoundingClientRect().top > vh) return;
       el.animate(
-        [{ opacity: 0, transform: 'translateX(24px) skewX(-6deg)' }, { opacity: 1, transform: 'none' }],
-        { duration: 200, delay: 110 + k * 35, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' }
+        [{ opacity: 0, transform: `translateX(${24 * dir}px) skewX(${-6 * dir}deg)` }, { opacity: 1, transform: 'none' }],
+        { duration: 220, delay: 80 + k++ * 32, easing: 'cubic-bezier(.2,.9,.3,1)', fill: 'backwards' }
       ).finished.then((a) => a.cancel(), () => {});
     });
   }, [current, listRef, rowSelector]);
 
-  /** 量出列表區的位置，並依實際寬高重新計算分格座標 */
-  function measure() {
+  /** 量出列表區的位置，並依實際寬高與方向重新計算分格座標（dir：1 往後、-1 往前） */
+  function measure(dir) {
     const root = r.root.current;
     const anchor = anchorRef.current.getBoundingClientRect();
     const bounds = boundsRef.current.getBoundingClientRect();
     const top = Math.max(0, anchor.bottom);
     const W = bounds.width, H = window.innerHeight - top;
     Object.assign(root.style, { top: `${top}px`, left: `${bounds.left}px`, width: `${W}px`, height: `${H}px` });
+    root.classList.toggle('is-back', dir < 0);
 
-    const { top: tp, bottom: bp, line, dy } = layoutPanels(W, H);
+    const split = dir > 0 ? {} : { left: SPLIT_RIGHT, right: SPLIT_LEFT };
+    const { top: tp, bottom: bp, line, dy } = layoutPanels(W, H, split);
     r.top.current.style.clipPath = toClipPath(tp);
     r.bottom.current.style.clipPath = toClipPath(bp);
     r.topEdge.current.setAttribute('points', toPoints(tp));
@@ -63,62 +77,91 @@ export function useMangaDaySwitch({ current, onSwitch, getInfo, anchorRef, bound
     return { W, dy, len: line.len };
   }
 
+  /** 播一輪：蓋上 → 換成 play.target 的資料 → 打開 */
+  async function playOnce() {
+    const p = play.current;
+    const from = latest.current.current;
+    const dir = p.target > from ? 1 : -1;
+    flushSync(() => { setPending(p.target); setInfo(latest.current.getInfo(p.target)); });
+    const { W, dy, len } = measure(dir);
+    const along = (f) => `translate(${W * f * dir}px, ${-dy * f * dir}px)`;   // 沿斜線方向移動
+    const all = [];
+    const run = (ref, keyframes, opts) => { const a = ref.current.animate(keyframes, { fill: 'both', ...opts }); all.push(a); return a; };
+    p.swapped = false;
+
+    r.root.current.classList.add('is-on');
+    try {
+      // 1. 白紙從右側（往前一天時從左側）斜切蓋上，一道黑線沿斜切線劃過
+      run(r.paper, dir > 0
+        ? [{ clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 130% 100%)' }, { clipPath: 'polygon(-30% 0, 100% 0, 100% 100%, 0% 100%)' }]
+        : [{ clipPath: 'polygon(0 0, 0 0, -30% 100%, 0 100%)' }, { clipPath: 'polygon(0 0, 130% 0, 100% 100%, 0 100%)' }],
+      { duration: 140, easing: EASE_CUT });
+      run(r.line, [{ strokeDashoffset: len * dir }, { strokeDashoffset: 0 }], { duration: 140, delay: 20, easing: EASE_CUT });
+      run(r.lineSvg, [{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }], { duration: 240, delay: 20 });
+
+      // 2. 兩格沿斜線反方向滑進來，爆炸框彈出
+      run(r.top, [{ transform: along(1.1) }, { transform: 'none' }], { duration: 170, delay: 70, easing: EASE_IN });
+      run(r.bottom, [{ transform: along(-1.1) }, { transform: 'none' }], { duration: 170, delay: 100, easing: EASE_IN });
+      run(r.burst, [
+        { transform: 'translate(-50%,-50%) scale(0) rotate(-20deg)' },
+        { transform: 'translate(-50%,-50%) scale(1.1) rotate(3deg)', offset: 0.7 },
+        { transform: 'translate(-50%,-50%) scale(1) rotate(0)' }
+      ], { duration: 190, delay: 160, easing: EASE_POP });
+
+      // 3. 停留到 HOLD_MS 才切換行程資料（用最新的目標日），列表捲回頂部
+      await run(r.root, [{ opacity: 1 }, { opacity: 1 }], { duration: HOLD_MS, fill: 'none' }).finished;
+      const to = p.target;
+      enterDir.current = to >= from ? 1 : -1;
+      latest.current.onSwitch(to);
+      p.swapped = true;
+      const listTop = listRef.current?.getBoundingClientRect().top ?? 0;
+      const anchorBottom = anchorRef.current?.getBoundingClientRect().bottom ?? 0;
+      if (listTop < anchorBottom) window.scrollBy(0, listTop - anchorBottom);
+
+      // 4. 兩格沿斜線錯開滑出，白紙淡出
+      const outs = [
+        run(r.top, [{ transform: 'none' }, { transform: along(-1.15) }], { duration: 210, easing: EASE_OUT }),
+        run(r.bottom, [{ transform: 'none' }, { transform: along(1.15) }], { duration: 210, delay: 30, easing: EASE_OUT }),
+        run(r.paper, [{ opacity: 1 }, { opacity: 0 }], { duration: 110, delay: 50 })
+      ];
+      await Promise.all(outs.map((a) => a.finished));
+    } catch {
+      if (!p.swapped) { latest.current.onSwitch(p.target); p.swapped = true; }
+    } finally {
+      r.root.current?.classList.remove('is-on');
+      all.forEach((a) => a.cancel());
+    }
+  }
+
   const switchDay = useCallback((next) => {
-    if (next === current) return;
+    const p = play.current;
+    if (p.active) {
+      if (next === p.target) return;
+      p.target = next;
+      if (!p.swapped) flushSync(() => { setPending(next); setInfo(latest.current.getInfo(next)); });
+      else { setPending(next); p.queued = true; }
+      return;
+    }
+    if (next === latest.current.current) return;
     runLocked(async () => {
-      if (prefersReducedMotion() || !r.root.current || !anchorRef.current || !boundsRef.current) { onSwitch(next); return; }
-
-      // 按下就更新按鈕狀態與分格文字
-      flushSync(() => { setPending(next); setInfo(getInfo(next)); });
-      const { W, dy, len } = measure();
-      const along = (f) => `translate(${W * f}px, ${-dy * f}px)`;   // 沿斜線方向移動
-      const all = [];
-      const run = (ref, keyframes, opts) => { const a = ref.current.animate(keyframes, { fill: 'both', ...opts }); all.push(a); return a; };
-      let switched = false;
-
-      r.root.current.classList.add('is-on');
+      if (prefersReducedMotion() || !r.root.current || !anchorRef.current || !boundsRef.current) { latest.current.onSwitch(next); return; }
+      p.active = true;
+      p.target = next;
       try {
-        // 1. 白紙從右側斜切蓋上，一道黑線沿斜切線劃過
-        run(r.paper, [
-          { clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 130% 100%)' },
-          { clipPath: 'polygon(-30% 0, 100% 0, 100% 100%, 0% 100%)' }
-        ], { duration: 150, easing: EASE_CUT });
-        run(r.line, [{ strokeDashoffset: len }, { strokeDashoffset: 0 }], { duration: 150, delay: 30, easing: EASE_CUT });
-        run(r.lineSvg, [{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }], { duration: 260, delay: 30 });
-
-        // 2. 兩格沿斜線反方向滑進來，爆炸框彈出
-        run(r.top, [{ transform: along(1.1) }, { transform: 'none' }], { duration: 190, delay: 90, easing: EASE_IN });
-        run(r.bottom, [{ transform: along(-1.1) }, { transform: 'none' }], { duration: 190, delay: 130, easing: EASE_IN });
-        run(r.burst, [
-          { transform: 'translate(-50%,-50%) scale(0) rotate(-20deg)' },
-          { transform: 'translate(-50%,-50%) scale(1.1) rotate(3deg)', offset: 0.7 },
-          { transform: 'translate(-50%,-50%) scale(1) rotate(0)' }
-        ], { duration: 200, delay: 200, easing: EASE_POP });
-
-        // 3. 停留到 HOLD_MS 才切換行程資料（用一段靜止動畫計時），列表捲回頂部
-        await run(r.root, [{ opacity: 1 }, { opacity: 1 }], { duration: HOLD_MS, fill: 'none' }).finished;
-        enterNext.current = true;
-        onSwitch(next);
-        switched = true;
-        const listTop = listRef.current?.getBoundingClientRect().top ?? 0;
-        if (listTop < 0) window.scrollBy(0, listTop);
-
-        // 4. 兩格沿斜線錯開滑出，白紙淡出
-        const outs = [
-          run(r.top, [{ transform: 'none' }, { transform: along(-1.15) }], { duration: 230, easing: EASE_OUT }),
-          run(r.bottom, [{ transform: 'none' }, { transform: along(1.15) }], { duration: 230, delay: 30, easing: EASE_OUT }),
-          run(r.paper, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, delay: 60 })
-        ];
-        await Promise.all(outs.map((a) => a.finished));
-      } catch {
-        if (!switched) onSwitch(next);
+        do {
+          p.queued = false;
+          await playOnce();
+          // 讓換完資料的 render 跑完，latest.current 才是新的日期
+          await new Promise((res) => requestAnimationFrame(res));
+        } while (p.queued && p.target !== latest.current.current);
       } finally {
-        r.root.current?.classList.remove('is-on');
-        all.forEach((a) => a.cancel());
+        p.active = false;
+        p.swapped = false;
         setPending(null);
       }
     });
-  }, [current, onSwitch, getInfo, runLocked, anchorRef, boundsRef, listRef]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runLocked, anchorRef, boundsRef, listRef]);
 
   const overlay = (
     <div className="manga" ref={r.root} aria-hidden="true">

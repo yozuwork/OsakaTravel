@@ -18,7 +18,7 @@ const styleLabel = (k) => SHORT[k] || STYLE_NAME[k];
 const ORIENTS = [['port', '直式'], ['land', '橫式']];
 const MSG_MAX = 40;
 
-/** 明信片紀錄（存進 IndexedDB 的欄位） */
+/** 明信片紀錄（照片 Blob 會轉成壓縮圖片存到 Firebase） */
 export const toRecord = (d) => ({
   id: d.id, itemId: d.itemId, style: d.style, orient: d.orient, msg: d.msg, stamps: d.stamps, photo: d.photo, card: d.card, at: d.at
 });

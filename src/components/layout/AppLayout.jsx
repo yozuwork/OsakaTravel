@@ -4,6 +4,7 @@ import { useTripStore } from '../../stores/tripStore';
 import TabBar from './TabBar';
 import ModalRoot from '../modal/ModalRoot';
 import Toast from '../common/Toast';
+import CloudSyncStatus from '../common/CloudSyncStatus';
 import GlobalLoading, { PageLoader } from '../common/GlobalLoading';
 import { PageTransitionProvider } from '../transition/PageTransition';
 import CharacterDialogue from '../dialogue/CharacterDialogue';
@@ -45,6 +46,7 @@ export default function AppLayout() {
   return (
     <PageTransitionProvider>
       <div className="app">
+        <CloudSyncStatus />
         <div className="view">
           <Suspense fallback={<PageLoader />}>
             <Outlet />

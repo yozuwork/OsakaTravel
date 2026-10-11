@@ -175,6 +175,9 @@ function ItemEditor({ id, preset, copy = false, clipboard }) {
           <span className="field__label">圖片</span>
           <ImageGallery value={draft.images} onChange={setImages}
             placeholder={<span className="tl-thumb--icon gallery__placeholder"><Icon name={catIcon(draft.category)} /><span className="tl-thumb__label">{draft.category || '其他'}</span></span>} />
+          {draft.coverCredit && draft.images.includes(draft.coverCredit.image) && (
+            <span className="small muted">圖片：{draft.coverCredit.author} · <a href={draft.coverCredit.source} target="_blank" rel="noopener noreferrer">來源</a> · <a href={draft.coverCredit.licenseUrl} target="_blank" rel="noopener noreferrer">{draft.coverCredit.license}</a>（縮圖與封面裁切）</span>
+          )}
         </div>
         <label className="field field--full">
           <span className="field__label">標題</span>

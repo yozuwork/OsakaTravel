@@ -92,7 +92,7 @@ function IdeaEditor({ id, clipboard }) {
       <div className="form__grid">
         <div className="field field--full">
           <span className="field__label">圖片</span>
-          <ImageGallery value={draft.images} onChange={setImages} max={700}
+          <ImageGallery value={draft.images} onChange={setImages} max={1920}
             placeholder={<span className="tl-thumb--icon gallery__placeholder"><Icon name={catIcon(draft.category)} /><span className="tl-thumb__label">{draft.category || '其他'}</span></span>} />
         </div>
         <label className="field field--full">

@@ -30,7 +30,7 @@ function SplashImagePicker({ item, value }) {
 
   async function pick(file) {
     try {
-      const url = await compressImage(file, SPLASH_MAX, 0.8);
+      const url = await compressImage(file, SPLASH_MAX, 0.9);
       setSettings({ [item.key]: url });
       toast(`已更換${item.label}開啟畫面，下次打開 App 時生效`);
     } catch {

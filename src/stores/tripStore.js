@@ -1,17 +1,19 @@
 /* =========================================================
-   旅程資料（共用狀態），自動同步到 localStorage
+   旅程資料（共用狀態），自動同步到 Firebase
    - 讀取：const trip = useTripStore((s) => s.trip)
    - 修改：updateTrip((s) => { s.trip.name = 'xxx'; })  ← Immer，可直接改
    ========================================================= */
 import { create } from 'zustand';
 import { produce } from 'immer';
-import { onValue, ref, set } from 'firebase/database';
 import { STORAGE_KEY } from '../data/constants';
-import { defaultState, FLIGHTS, HOTEL, PEACH_BAGGAGE_TODO, SAMPLE_SEED, seed4Items, withCovers } from '../data/defaultState';
+import { defaultState, day4Items, FLIGHTS, HOTEL, PEACH_BAGGAGE_TODO, SAMPLE_SEED, seed4Items, withCovers } from '../data/defaultState';
+import { placeItem, timeIndex } from '../utils/itinerary';
 import { uid } from '../utils/helpers';
 import { DEFAULT_CHARACTERS } from '../data/dialogueScript';
-import { database, databasePath } from '../services/firebase';
-import { toast } from './uiStore';
+import { databasePath } from '../services/firebase';
+import { createCloudSync } from '../services/cloudSync';
+import { readCloudCache, writeCloudCache } from '../services/cloudCache';
+import { withOnlineCovers } from '../data/itineraryCovers';
 
 /* 舊版（seed 1）範例行程的標題，用來判斷使用者是否還沒改過範例 */
 const SEED1_TITLES = ['抵達關西機場第一航廈', '南海電鐵售票處兌換 rapi:t 車票', '搭乘南海 rapi:t 前往難波', '難波站步行至飯店入住'];
@@ -23,6 +25,8 @@ function upgradeSample(saved, base) {
   if ((next.seed || 1) < 3) next = upgradeToSeed3(next, base);
   if ((next.seed || 1) < 4) next = upgradeToSeed4(next);
   if ((next.seed || 1) < 5) next = upgradeToSeed5(next);
+  if ((next.seed || 1) < 6) next = upgradeToSeed6(next);
+  if ((next.seed || 1) < 7) next = { ...next, seed: 7, items: withCovers(withOnlineCovers(next.items || [])) };
   return next;
 }
 
@@ -126,15 +130,28 @@ function upgradeToSeed5(saved) {
   return { ...saved, seed: 5, items: withCovers(saved.items || []) };
 }
 
+/** seed 5 → 6：追加 DAY4，保留現有行程，已加入的同名項目不重複建立。 */
+function upgradeToSeed6(saved) {
+  const next = { ...saved, seed: 6, items: (saved.items || []).map((item) => ({ ...item })) };
+  for (const item of day4Items()) {
+    if (next.items.some((existing) => existing.id === item.id || (existing.day === 3 && existing.title === item.title))) continue;
+    const index = timeIndex(next.items, item.day, item.time);
+    next.items.push(item);
+    placeItem(next, item.id, index);
+  }
+  return next;
+}
+
 /** 角色對話：沒有資料就用預設；內建角色一定存在（圖片檔名、builtin 以程式內建為準） */
 function normalizeDialogue(saved, base) {
-  if (!saved?.script || !saved?.characters) return base;
-  const custom = saved.characters.filter((c) => !DEFAULT_CHARACTERS.some((d) => d.id === c.id));
+  if (!saved) return base;
+  const characters = saved.characters || [];
+  const custom = characters.filter((c) => !DEFAULT_CHARACTERS.some((d) => d.id === c.id));
   const builtins = DEFAULT_CHARACTERS.map((d) => {
-    const s = saved.characters.find((c) => c.id === d.id);
+    const s = characters.find((c) => c.id === d.id);
     return s ? { ...s, img: d.img, builtin: true } : { ...d };
   });
-  return { characters: [...builtins, ...custom], script: saved.script };
+  return { characters: [...builtins, ...custom], script: saved.script || [] };
 }
 
 function normalize(saved) {
@@ -147,7 +164,8 @@ function normalize(saved) {
     ui: { ...base.ui, ...saved.ui },
     entry: { ...base.entry, ...saved.entry },
     usj: { ...base.usj, ...saved.usj },
-    dialogue: normalizeDialogue(saved.dialogue, base.dialogue)
+    dialogue: normalizeDialogue(saved.dialogue, base.dialogue),
+    ...Object.fromEntries(['items', 'todos', 'flights', 'stays', 'bag', 'ideas', 'favDeals', 'spots', 'usjList'].map((key) => [key, saved[key] || []]))
   };
 }
 
@@ -178,83 +196,19 @@ export function resetTrip() {
   useTripStore.setState(defaultState(), true);
 }
 
-/* ---------- 儲存（資料有變動就寫入） ---------- */
-function save(state) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    toast('儲存失敗：瀏覽器空間可能不足（圖片太多？）');
-  }
-}
-useTripStore.subscribe(save);
-save(useTripStore.getState()); // 載入時若有升級範例資料，立即寫回
-
-/* ---------- Firebase Realtime Database 雲端同步 ---------- */
-let cloudReady = false;
-let applyingCloudState = false;
-let cloudSaveTimer;
-let stopCloudListener;
-
-function saveToCloud(state) {
-  if (!cloudReady || applyingCloudState) return;
-
-  clearTimeout(cloudSaveTimer);
-  cloudSaveTimer = setTimeout(() => {
-    set(ref(database, databasePath), state).catch(() => {
-      toast('雲端儲存失敗，資料仍已保存在此裝置');
-    });
-  }, 400);
-}
-
-useTripStore.subscribe(saveToCloud);
-
-/**
- * 啟動 Realtime Database 同步。
- * 雲端已有資料時以雲端為準；若節點不存在，會用目前本機資料建立節點。
- */
-export function startTripSync() {
-  if (stopCloudListener) return stopCloudListener;
-
-  const tripRef = ref(database, databasePath);
-  let firstSnapshot = true;
-
-  stopCloudListener = onValue(
-    tripRef,
-    (snapshot) => {
-      if (snapshot.exists()) {
-        const cloud = snapshot.val();
-        const next = normalize(cloud);
-        applyingCloudState = true;
-        useTripStore.setState(next, true);
-        applyingCloudState = false;
-        cloudReady = true;
-        // 雲端還是舊版範例：升級後寫回，其他裝置才會拿到同一份（新增項目的 id 也才固定）
-        if ((cloud.seed || 1) < SAMPLE_SEED) {
-          set(tripRef, next).catch(() => toast('雲端儲存失敗，資料仍已保存在此裝置'));
-        }
-      } else if (firstSnapshot) {
-        cloudReady = true;
-        set(tripRef, useTripStore.getState()).catch(() => {
-          toast('無法建立雲端旅程，資料仍已保存在此裝置');
-        });
-      }
-
-      firstSnapshot = false;
-    },
-    () => {
-      toast('Firebase 連線失敗，已改用此裝置的資料');
-    }
-  );
-
-  return stopCloudListener;
-}
-
-/** 登出時停止監聽與寫入，避免未授權狀態存取雲端。 */
-export function stopTripSync() {
-  clearTimeout(cloudSaveTimer);
-  cloudSaveTimer = undefined;
-  cloudReady = false;
-  applyingCloudState = false;
-  stopCloudListener?.();
-  stopCloudListener = undefined;
-}
+/** Firebase is the source of truth; IndexedDB holds only cache and pending changes. */
+const tripSync = createCloudSync({
+  name: 'trip', store: useTripStore, normalize,
+  apply: (state) => useTripStore.setState(state, true),
+  async migrate() {
+    if (await readCloudCache('legacy-trip-migrated')) return null;
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      if (!saved) return null;
+      return Object.fromEntries(['items', 'todos', 'flights', 'stays', 'bag', 'ideas', 'favDeals'].filter((key) => Array.isArray(saved[key])).map((key) => [key, saved[key]]));
+    } catch { return null; }
+  },
+  onMigrated: () => writeCloudCache('legacy-trip-migrated', true)
+});
+export const startTripSync = () => tripSync.start(databasePath);
+export const stopTripSync = () => tripSync.stop();

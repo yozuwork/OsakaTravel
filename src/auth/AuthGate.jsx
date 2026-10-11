@@ -1,12 +1,27 @@
 import { useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import { hideSplash } from '../utils/splash';
+import { useCloudStatus } from '../services/cloudSync';
+import { useSettingsStore } from '../stores/settingsStore';
 
 export default function AuthGate({ children }) {
   const { user, checking, error, login, isConfigured } = useAuth();
+  const tripReady = useCloudStatus((s) => s.readyDocuments.trip);
+  const tripStatus = useCloudStatus((s) => s.documents.trip);
+  const settingsReady = useCloudStatus((s) => s.readyDocuments.settings);
+  const settingsStatus = useCloudStatus((s) => s.documents.settings);
+  const splashMobile = useSettingsStore((s) => s.splashMobile);
+  const splashDesktop = useSettingsStore((s) => s.splashDesktop);
 
   // 確認完登入狀態（不論已登入或要顯示登入畫面）就淡出開啟畫面
-  useEffect(() => { if (!checking) hideSplash(); }, [checking]);
+  useEffect(() => {
+    const picture = document.querySelector('#splash picture');
+    if (picture && settingsReady) {
+      if (splashMobile) picture.querySelector('img').src = splashMobile;
+      if (splashDesktop) picture.querySelector('source').srcset = splashDesktop;
+    }
+    if (!checking && (!user || settingsReady || settingsStatus === 'error')) hideSplash();
+  }, [checking, user, settingsReady, settingsStatus, splashMobile, splashDesktop]);
 
   if (checking) {
     return (
@@ -19,6 +34,13 @@ export default function AuthGate({ children }) {
     );
   }
 
+  if (user && !tripReady) return (
+    <main className="auth-screen" aria-busy={tripStatus !== 'error'}>
+      <div className="auth-card">
+        {tripStatus === 'error' ? <p role="alert">無法讀取雲端行程，正在重試。請確認網路連線及資料庫存取權限。</p> : <><span className="spinner spinner--lg" aria-hidden="true" /><p>讀取雲端行程中…</p></>}
+      </div>
+    </main>
+  );
   if (user) return children;
 
   return (

@@ -1,5 +1,5 @@
 /* =========================================================
-   打卡資料的 IndexedDB 存取（照片只存在這台裝置，不上傳 Firebase）
+   舊版打卡資料的 IndexedDB 存取，供首次升級時移轉照片到 Firebase
    一個 object store「records」，兩種資料：
    - 明信片：{ id, itemId, style, orient, msg, stamps[], photo: Blob, card: Blob, at }
    - 行程蓋章：{ id: 'stamp:' + itemId, kind: 'stopstamp', itemId, at, rot }

@@ -28,6 +28,23 @@ export default function TabBar() {
   useEffect(() => { setMoreOpen(false); }, [pathname]);
   useEffect(() => () => setMoreOpen(false), []);
 
+  // 手機：往下捲時收起底部選單（+ 按鈕跟著往下縮小），往上捲就回來；換頁、打開「更多」時一律顯示
+  useEffect(() => {
+    const body = document.body;
+    const mobile = window.matchMedia('(max-width: 899px)');
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (Math.abs(y - lastY) < 6) return;
+      body.classList.toggle('is-reading', mobile.matches && y > lastY && y > 160);
+      lastY = y;
+    };
+    body.classList.remove('is-reading');
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => { window.removeEventListener('scroll', onScroll); body.classList.remove('is-reading'); };
+  }, [pathname]);
+  useEffect(() => { if (open) document.body.classList.remove('is-reading'); }, [open]);
+
   // 面板打開：Esc 關閉、焦點移到第一個項目
   useEffect(() => {
     if (!open) return;

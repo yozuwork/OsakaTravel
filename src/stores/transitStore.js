@@ -1,8 +1,11 @@
 /* =========================================================
    交通頁狀態：出發／抵達站、偏好、最近查詢
-   最近查詢只存在這台裝置的 localStorage（不同步 Firebase）
+   站點、偏好與最近查詢存到 Firebase（每個帳號一份）
    ========================================================= */
 import { create } from 'zustand';
+import { createCloudSync } from '../services/cloudSync';
+import { databasePath } from '../services/firebase';
+import { readCloudCache, writeCloudCache } from '../services/cloudCache';
 
 const RECENT_KEY = 'travel-planner:transit-recent';
 const RECENT_MAX = 5;
@@ -14,10 +17,6 @@ function loadRecent() {
   } catch {
     return [];
   }
-}
-
-function saveRecent(list) {
-  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list)); } catch { /* 無痕模式等情況存不了，不影響查詢 */ }
 }
 
 export const useTransitStore = create(() => ({
@@ -37,7 +36,6 @@ function remember() {
   if (!from || !to || from === to) return;
   const next = [{ from, to }, ...recent.filter((x) => !(x.from === from && x.to === to))].slice(0, RECENT_MAX);
   set({ recent: next });
-  saveRecent(next);
 }
 
 export const transit = {
@@ -59,3 +57,20 @@ export const transit = {
   startFrom(station) { set({ from: station, to: null, pendingPick: 'to' }); },
   clearPendingPick() { set({ pendingPick: null }); }
 };
+
+const transitSync = createCloudSync({
+  name: 'transit', store: useTransitStore,
+  select: ({ from, to, fewTransfers, recent }) => ({ from, to, fewTransfers, recent }),
+  normalize: (data) => ({ from: data.from ?? '関西空港', to: data.to ?? '心斎橋', fewTransfers: Boolean(data.fewTransfers), recent: data.recent || [] }),
+  apply: (data) => set(data),
+  async migrate(path) {
+    if (await readCloudCache(`legacy-transit-migrated:${path}`)) return null;
+    return { recent: loadRecent() };
+  },
+  onMigrated: (path) => writeCloudCache(`legacy-transit-migrated:${path}`, true)
+});
+export const startTransitSync = (uid) => transitSync.start(`${databasePath}Transit/${uid}`);
+export function stopTransitSync() {
+  transitSync.stop();
+  set({ from: '関西空港', to: '心斎橋', fewTransfers: false, recent: [], pendingPick: null });
+}

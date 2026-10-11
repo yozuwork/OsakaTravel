@@ -60,27 +60,30 @@ export function PageTransitionProvider({ children }) {
         [{ transform: `translateX(130%) ${SKEW}` }, { transform: `translateX(0) ${SKEW}` }],
         { duration: 280, delay: i * 55, easing: FX_EASE, fill: 'forwards' }
       )));
-      // 2. 標題字塊彈出
-      const pop = track(titleEl.animate([
-        { opacity: 0, transform: `${TITLE_Y} scale(1.7) rotate(6deg)` },
-        { opacity: 1, transform: `${TITLE_Y} scale(.94) rotate(-2deg)`, offset: 0.7 },
-        { opacity: 1, transform: `${TITLE_Y} scale(1) rotate(0)` }
-      ], { duration: 260, delay: 200, easing: POP_EASE, fill: 'forwards' }));
+      // 2. 標題字母一個個彈出（單數歪左、雙數歪右），中文標題最後落下
+      const letters = [...titleEl.querySelectorAll('.xtitle__en i')];
+      const zhEl = titleEl.querySelector('.xtitle__zh');
+      const rest = (i) => (i % 2 === 0 ? 'translateY(2px) rotate(-4deg)' : 'translateY(-3px) rotate(5deg)');
+      const pops = letters.map((el, i) => track(el.animate([
+        { opacity: 0, transform: `translateY(-40px) rotate(${i % 2 ? 20 : -16}deg) scale(1.6)` },
+        { opacity: 1, transform: rest(i) }
+      ], { duration: 220, delay: 180 + i * 16, easing: POP_EASE, fill: 'forwards' })));
+      if (zhEl) pops.push(track(zhEl.animate([
+        { opacity: 0, transform: 'rotate(-8deg) translateY(12px)' },
+        { opacity: 1, transform: 'rotate(-8deg)' }
+      ], { duration: 200, delay: 240 + letters.length * 16, easing: POP_EASE, fill: 'forwards' })));
       // 3. 畫面輕震
       track(stage.animate([
         { transform: 'translate(0, 0)' }, { transform: 'translate(-4px, 2px)' },
         { transform: 'translate(3px, -2px)' }, { transform: 'translate(0, 0)' }
       ], { duration: 180, delay: 300 }));
 
-      await Promise.all([...ins, pop].map((a) => a.finished));
+      await Promise.all([...ins, ...pops].map((a) => a.finished));
 
-      // 4. 碎片全部到位才換頁，停留 220ms（用一段靜止動畫計時）
+      // 4. 碎片全部到位才換頁，停留 160ms（用一段靜止動畫計時）
       navigate(to);
       navigated = true;
-      await track(titleEl.animate(
-        [{ opacity: 1, transform: TITLE_Y }, { opacity: 1, transform: TITLE_Y }],
-        { duration: 220 }
-      )).finished;
+      await track(stage.animate([{ opacity: 1 }, { opacity: 1 }], { duration: 160 })).finished;
 
       // 5. 碎片反向依序往左退場，標題往左斜滑淡出
       const outs = [...shards].reverse().map((el, i) => track(el.animate(
@@ -91,6 +94,8 @@ export function PageTransitionProvider({ children }) {
         { opacity: 1, transform: `${TITLE_Y} translateX(0)` },
         { opacity: 0, transform: `${TITLE_Y} translateX(-60%) skewX(-20deg)` }
       ], { duration: 200, easing: FX_EASE, fill: 'forwards' }));
+      // 字母的 fill: forwards 會蓋過標題整體淡出，一併淡出
+      [...letters, zhEl].filter(Boolean).forEach((el) => track(el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, easing: FX_EASE, fill: 'forwards' })));
 
       await Promise.all([...outs, fade].map((a) => a.finished));
     } catch {

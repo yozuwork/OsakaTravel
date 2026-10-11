@@ -40,7 +40,7 @@ export function mergeImages(current, incoming, mode) {
  * @param {(update: (images: string[]) => string[]) => void} onChange 以「更新函式」回傳，避免非同步時蓋掉較新的值
  * @param {React.ReactNode} [placeholder] 沒有封面時顯示（例如類別圖示）
  */
-export default function ImageGallery({ value, onChange, placeholder, max = 600, quality = 0.75 }) {
+export default function ImageGallery({ value, onChange, placeholder, max = 1920, quality = 0.9 }) {
   const images = value || [];
   const inputRef = useRef(null);
   const countRef = useRef(images.length);

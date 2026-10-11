@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>設定面板｜UI 範例</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* =========================================================
+   設定面板 重新設計範例（獨立檔案，不影響本站）
+   沿用本站雙色系統：紅 × 深藏青，硬陰影、粗描邊
+   ========================================================= */
+:root {
+  --red: #D9453C;
+  --red-dark: #B8352D;
+  --red-line: #F2B8B3;
+  --red-soft: #FDEDEB;
+  --red-bg: #FBF6F5;
+  --navy: #1E2A45;
+  --navy-muted: #4A5470;
+  --navy-light: #7A8196;
+  --navy-line: #E4E3E8;
+  --white: #FFFFFF;
+
+  --font: 'Lexend', 'Noto Sans TC', system-ui, -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --pad: clamp(18px, 4vw, 32px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  font-family: var(--font);
+  color: var(--navy);
+  background: var(--red-bg);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 10px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+svg.i { width: 1em; height: 1em; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- 假的 App 背景（只為了看起來像在 App 裡打開） ---------- */
+.stage {
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(circle, rgba(30, 42, 69, .07) 1.4px, transparent 1.6px) 0 0 / 14px 14px,
+    var(--red-bg);
+}
+.stage__app { max-width: 720px; margin: 0 auto; padding: 28px 20px; display: grid; gap: 14px; filter: saturate(.8); }
+.stage__bar { height: 54px; border: 2px solid var(--navy); border-radius: 14px; background: var(--white); }
+.stage__card { height: 120px; border: 2px solid var(--navy); border-radius: 14px; background: var(--white); box-shadow: 4px 4px 0 var(--red); }
+.stage__card:nth-child(3) { height: 180px; }
+.stage__open {
+  position: fixed; left: 50%; top: 50%; translate: -50% -50%;
+  padding: 14px 22px; border: 2px solid var(--navy); border-radius: 14px; background: var(--white);
+  font-weight: 800; box-shadow: 4px 4px 0 var(--red); display: inline-flex; gap: 8px; align-items: center;
+}
+
+/* ---------- 遮罩與面板 ---------- */
+.scrim {
+  position: fixed; inset: 0; z-index: 10;
+  background: rgba(30, 42, 69, .46);
+  backdrop-filter: blur(6px) saturate(.9);
+  -webkit-backdrop-filter: blur(6px) saturate(.9);
+  display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  animation: fade .35s var(--ease-out) both;
+}
+.scrim.is-closing { animation: fade .25s ease-in reverse both; }
+@keyframes fade { from { opacity: 0; } }
+
+.sheet {
+  position: relative;
+  width: min(640px, 100%);
+  max-height: min(860px, calc(100dvh - 32px));
+  display: flex; flex-direction: column;
+  background: var(--white);
+  border: 2px solid var(--navy);
+  border-radius: 24px;
+  box-shadow: 8px 8px 0 var(--red);
+  overflow: hidden;
+  animation: rise .55s var(--ease-spring) both;
+}
+.scrim.is-closing .sheet { animation: sink .25s ease-in both; }
+@keyframes rise { from { opacity: 0; transform: translateY(28px) scale(.97); } }
+@keyframes sink { to { opacity: 0; transform: translateY(16px) scale(.98); } }
+
+/* ---------- 標頭 ---------- */
+.head {
+  position: relative; z-index: 2;
+  padding: var(--pad) var(--pad) 0;
+  background: var(--white);
+}
+.head__top { display: flex; align-items: flex-start; gap: 12px; }
+.head__titles { flex: 1; min-width: 0; }
+.eyebrow {
+  margin: 0 0 4px; font-size: 11px; font-weight: 700; letter-spacing: .28em; color: var(--red);
+}
+.head h1 { margin: 0; font-size: clamp(26px, 5vw, 32px); font-weight: 900; letter-spacing: .02em; line-height: 1.1; }
+
+.sync {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 34px; padding: 0 12px 0 10px; margin-top: 4px;
+  border-radius: 999px; background: var(--red-bg);
+  font-size: 12px; font-weight: 600; color: var(--navy-muted); white-space: nowrap;
+  transition: background .3s, color .3s;
+}
+.sync__dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: #3BA272; }
+.sync__dot::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid #3BA272; opacity: 0; }
+.sync[data-state="saved"] .sync__dot::after { animation: ping .9s var(--ease-out); }
+.sync[data-state="saving"] .sync__dot { background: transparent; border: 2px solid var(--navy-light); border-top-color: var(--red); animation: spin .7s linear infinite; }
+@keyframes ping { 0% { opacity: .8; transform: scale(.6); } 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.icon-btn {
+  flex: none; width: 44px; height: 44px; display: grid; place-items: center;
+  border: 2px solid var(--navy); border-radius: 14px; background: var(--white); font-size: 20px;
+  box-shadow: 3px 3px 0 var(--navy);
+  transition: transform .15s var(--ease-out), box-shadow .15s var(--ease-out), background .2s;
+}
+.icon-btn:hover { background: var(--red-soft); }
+.icon-btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--navy); }
+
+/* 分頁：點了會捲到對應區塊；捲動時自動跟著切換 */
+.tabs {
+  position: relative; display: flex; gap: 4px; margin-top: 20px;
+  border-bottom: 2px solid var(--navy-line);
+}
+.tab {
+  position: relative; padding: 10px 4px 12px; margin-right: 20px;
+  border: 0; background: none; font-size: 14px; font-weight: 700; color: var(--navy-light);
+  display: inline-flex; align-items: center; gap: 8px; transition: color .25s;
+}
+.tab__num { font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.tab[aria-selected="true"] { color: var(--navy); }
+.tab:hover { color: var(--navy); }
+.tabs__ink {
+  position: absolute; bottom: -2px; height: 3px; border-radius: 3px; background: var(--red);
+  transition: left .45s var(--ease-out), width .45s var(--ease-out);
+}
+
+/* ---------- 內容 ---------- */
+.body {
+  flex: 1; overflow-y: auto; overscroll-behavior: contain;
+  padding: 8px var(--pad) 28px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin; scrollbar-color: var(--navy-line) transparent;
+}
+.section { padding-top: 26px; scroll-margin-top: 4px; }
+.section + .section { margin-top: 10px; }
+.section__head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.section__num {
+  font-size: 13px; font-weight: 800; color: var(--red); letter-spacing: .06em;
+  font-feature-settings: 'tnum';
+}
+.section__title { margin: 0; font-size: 19px; font-weight: 900; letter-spacing: .02em; }
+.section__rule { flex: 1; height: 2px; align-self: center; background: repeating-linear-gradient(90deg, var(--navy-line) 0 6px, transparent 6px 10px); }
+
+/* 一組設定 = 淡底卡，裡面每一列用細線分隔；只有可操作的元件用粗描邊 */
+.group { border-radius: 18px; background: var(--red-bg); padding: 4px 18px; }
+.row { padding: 18px 0; }
+.row + .row { border-top: 1px solid var(--navy-line); }
+.row__label { display: block; font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+.row__desc { margin: 0; font-size: 13px; line-height: 1.6; color: var(--navy-muted); }
+.row--switch { display: flex; align-items: center; gap: 16px; }
+.row--switch > div { flex: 1; min-width: 0; }
+
+/* 停留時間：分段選擇 */
+.chips {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-top: 14px;
+}
+.chip {
+  position: relative; height: 52px; padding: 0 4px;
+  border: 2px solid var(--navy); border-radius: 12px; background: var(--white);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  font-weight: 700; font-size: 15px; line-height: 1.1;
+  transition: background .2s, color .2s, transform .2s var(--ease-spring), box-shadow .2s var(--ease-out);
+}
+.chip small { font-size: 10px; font-weight: 600; color: var(--navy-light); transition: color .2s; }
+.chip:hover { transform: translateY(-2px); box-shadow: 0 3px 0 var(--navy); }
+.chip[aria-checked="true"] {
+  background: var(--red); color: var(--white); border-color: var(--navy);
+  box-shadow: 3px 3px 0 var(--navy); transform: translate(-1px, -1px);
+}
+.chip[aria-checked="true"] small { color: rgba(255, 255, 255, .85); }
+
+/* 停留時間預覽條 */
+.timeline { margin-top: 16px; }
+.timeline__track {
+  position: relative; height: 10px; border-radius: 99px; background: var(--white);
+  border: 1.5px solid var(--navy-line); overflow: hidden;
+}
+.timeline__fill {
+  position: absolute; inset: 0 auto 0 0; width: 0; border-radius: 99px;
+  background: linear-gradient(90deg, var(--red-line), var(--red));
+  transition: width .8s var(--ease-out);
+}
+.timeline__fill::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(-45deg, rgba(255,255,255,.28) 0 6px, transparent 6px 12px);
+  animation: march 1s linear infinite;
+}
+@keyframes march { to { background-position: 17px 0; } }
+.timeline__legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--navy-light); font-weight: 600; }
+.timeline__note { margin: 10px 0 0; font-size: 13px; color: var(--navy-muted); line-height: 1.6; }
+.timeline__note b { color: var(--red-dark); font-weight: 700; }
+
+/* 開關 */
+.switch {
+  flex: none; position: relative; width: 58px; height: 34px; padding: 0;
+  border: 2px solid var(--navy); border-radius: 99px; background: var(--white);
+  transition: background .3s var(--ease-out), box-shadow .2s;
+}
+.switch:hover { box-shadow: 0 0 0 4px var(--red-soft); }
+.switch__knob {
+  position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--white); border: 2px solid var(--navy);
+  display: grid; place-items: center; font-size: 12px; color: var(--red);
+  transition: transform .45s var(--ease-spring), width .2s var(--ease-out);
+}
+.switch__knob svg { opacity: 0; transform: scale(.4); transition: opacity .2s, transform .3s var(--ease-spring); stroke-width: 3.2; }
+.switch:active .switch__knob { width: 30px; }
+.switch[aria-checked="true"] { background: var(--red); }
+.switch[aria-checked="true"] .switch__knob { transform: translateX(24px); }
+.switch[aria-checked="true"]:active .switch__knob { transform: translateX(18px); }
+.switch[aria-checked="true"] .switch__knob svg { opacity: 1; transform: none; }
+
+/* 開啟畫面圖片：用裝置外框直接呈現實際比例 */
+.devices {
+  display: grid; grid-template-columns: minmax(92px, 128px) minmax(0, 1fr);
+  gap: clamp(14px, 4vw, 28px); align-items: end; margin-top: 16px;
+}
+.device { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.device__frame {
+  position: relative; display: block; width: 100%; padding: 0; overflow: hidden;
+  border: 2px solid var(--navy); background: var(--navy); cursor: pointer;
+  transition: transform .35s var(--ease-out), box-shadow .35s var(--ease-out);
+}
+.device--phone .device__frame { aspect-ratio: 9 / 17; border-radius: 22px; border-width: 5px; box-shadow: 4px 4px 0 var(--red); }
+.device--phone .device__frame::before {
+  content: ''; position: absolute; z-index: 2; top: 6px; left: 50%; translate: -50% 0;
+  width: 34%; height: 9px; border-radius: 9px; background: var(--navy);
+}
+.device--laptop .device__screen { position: relative; padding: 0 5%; filter: drop-shadow(4px 4px 0 var(--red)); }
+.device--laptop .device__frame { aspect-ratio: 16 / 10; border-radius: 12px 12px 0 0; border-width: 6px; border-bottom-width: 8px; }
+.device--laptop .device__base {
+  height: 12px; border: 2px solid var(--navy); border-top: 0;
+  border-radius: 0 0 14px 14px; background: var(--white);
+  position: relative;
+}
+.device--laptop .device__base::after { content: ''; position: absolute; top: 0; left: 50%; translate: -50% 0; width: 18%; height: 4px; border-radius: 0 0 6px 6px; background: var(--navy-line); }
+.device__frame img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease-out), filter .3s; }
+.device__overlay {
+  position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; justify-items: center; gap: 6px;
+  background: rgba(30, 42, 69, .62); color: var(--white); font-size: 12px; font-weight: 700;
+  opacity: 0; transition: opacity .3s var(--ease-out);
+}
+.device__overlay svg { font-size: 24px; transform: translateY(6px); transition: transform .35s var(--ease-spring); }
+.device__frame:hover img, .device__frame:focus-visible img { transform: scale(1.05); }
+.device__frame:hover .device__overlay, .device__frame:focus-visible .device__overlay, .device.is-drag .device__overlay { opacity: 1; }
+.device__frame:hover .device__overlay svg, .device.is-drag .device__overlay svg { transform: none; }
+.device.is-drag .device__frame { transform: scale(1.03); outline: 4px solid var(--red-line); outline-offset: 2px; }
+.badge {
+  position: absolute; z-index: 2; left: 8px; bottom: 8px;
+  padding: 3px 8px; border-radius: 6px; background: var(--white); color: var(--navy);
+  font-size: 10px; font-weight: 800; letter-spacing: .06em; border: 1.5px solid var(--navy);
+}
+.badge--custom { background: var(--red); color: var(--white); }
+.device--phone .badge { bottom: 10px; }
+.device__meta { display: flex; flex-direction: column; gap: 2px; }
+.device__meta strong { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+.device__meta span { font-size: 12px; color: var(--navy-light); font-weight: 600; padding-left: 20px; }
+.device__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* 按鈕 */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 44px; padding: 0 18px; border: 2px solid var(--navy); border-radius: 12px;
+  background: var(--white); font-weight: 700; font-size: 14px; white-space: nowrap;
+  box-shadow: 3px 3px 0 var(--navy);
+  transition: transform .15s var(--ease-out), box-shadow .15s var(--ease-out), background .2s, color .2s;
+}
+.btn svg { font-size: 17px; }
+.btn:hover { background: var(--red-soft); }
+.btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--navy); }
+.btn--sm { height: 36px; padding: 0 12px; font-size: 13px; border-radius: 10px; box-shadow: 2px 2px 0 var(--navy); }
+.btn--sm:active { transform: translate(2px, 2px); }
+.btn--ghost { border-color: transparent; box-shadow: none; background: transparent; color: var(--navy-muted); }
+.btn--ghost:hover { background: var(--white); color: var(--red-dark); }
+.btn--primary { background: var(--red); color: var(--white); }
+.btn--primary:hover { background: var(--red-dark); }
+.btn--warn { background: var(--navy); color: var(--white); }
+.btn--warn:hover { background: var(--navy); }
+
+/* 角色對話預覽 */
+.talk {
+  position: relative; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: end;
+  margin: 4px 0 0; padding: 20px 18px 18px; border-radius: 18px; overflow: hidden;
+  background:
+    repeating-linear-gradient(-45deg, rgba(216, 67, 58, .16) 0 10px, transparent 10px 22px),
+    var(--navy);
+  color: var(--white);
+  transition: filter .5s var(--ease-out), opacity .5s;
+}
+.talk__avatar {
+  width: 76px; height: 76px; border-radius: 50%; overflow: hidden;
+  border: 3px solid var(--white); background: var(--red-soft); box-shadow: 3px 3px 0 var(--red);
+}
+.talk__avatar img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.talk__bubble {
+  position: relative; min-height: 76px; padding: 12px 14px; border-radius: 14px 14px 14px 4px;
+  background: var(--white); color: var(--navy); border: 2px solid var(--navy);
+  box-shadow: 3px 3px 0 var(--red);
+}
+.talk__name { display: block; font-size: 11px; font-weight: 800; letter-spacing: .1em; color: var(--red); margin-bottom: 4px; }
+.talk__text { font-size: 14px; font-weight: 500; line-height: 1.6; }
+.talk__caret { display: inline-block; width: 2px; height: 1em; vertical-align: -2px; margin-left: 2px; background: var(--red); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.talk__off {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 6px; text-align: center;
+  background: rgba(30, 42, 69, .78); font-size: 13px; font-weight: 600; padding: 16px;
+  opacity: 0; pointer-events: none; transition: opacity .4s var(--ease-out);
+}
+.talk__off svg { font-size: 22px; color: var(--red-line); }
+.talk.is-off .talk__off { opacity: 1; }
+.talk.is-off .talk__avatar, .talk.is-off .talk__bubble { filter: grayscale(1); }
+.talk-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 16px 0 18px; }
+.talk-actions p { margin: 0; font-size: 12px; color: var(--navy-light); }
+
+/* ---------- 頁尾 ---------- */
+.foot {
+  position: relative; z-index: 2;
+  padding: 14px var(--pad) var(--pad);
+  background: var(--white);
+  border-top: 2px solid var(--navy-line);
+}
+.foot__note { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 12px; color: var(--navy-muted); }
+.foot__note svg { font-size: 16px; color: var(--red); }
+.foot__btns { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+.foot__btns .btn { height: 52px; font-size: 15px; }
+.body.has-shadow + .foot { box-shadow: 0 -10px 24px -16px rgba(30, 42, 69, .35); }
+.head.has-shadow { box-shadow: 0 10px 24px -18px rgba(30, 42, 69, .4); }
+
+/* Toast */
+.toast {
+  position: fixed; z-index: 30; left: 50%; bottom: max(24px, env(safe-area-inset-bottom));
+  translate: -50% 0; max-width: calc(100vw - 32px);
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; border-radius: 14px; background: var(--navy); color: var(--white);
+  font-size: 13px; font-weight: 600; box-shadow: 4px 4px 0 var(--red);
+  opacity: 0; transform: translateY(16px) scale(.96); pointer-events: none;
+  transition: opacity .3s var(--ease-out), transform .45s var(--ease-spring);
+}
+.toast.is-on { opacity: 1; transform: none; }
+.toast svg { color: var(--red-line); font-size: 16px; }
+
+/* 進場：每個區塊依序浮現 */
+.reveal { animation: up .6s var(--ease-out) both; animation-delay: calc(var(--i, 0) * 70ms + 180ms); }
+@keyframes up { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- 手機：改成底部抽屜 ---------- */
+@media (max-width: 600px) {
+  .scrim { place-items: end center; padding: 0; }
+  .sheet {
+    width: 100%; max-height: calc(100dvh - 28px);
+    border-radius: 26px 26px 0 0; border-bottom: 0; box-shadow: 0 -6px 0 var(--red);
+    animation-name: slide;
+  }
+  .scrim.is-closing .sheet { animation: slideOut .28s ease-in both; }
+  @keyframes slide { from { transform: translateY(100%); } }
+  @keyframes slideOut { to { transform: translateY(100%); } }
+  .head { padding-top: 26px; }
+  .head::before {
+    content: ''; position: absolute; top: 9px; left: 50%; translate: -50% 0;
+    width: 44px; height: 5px; border-radius: 5px; background: var(--navy-line);
+  }
+  .sync { height: 30px; padding: 0 10px 0 9px; font-size: 11px; }
+  .chips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .group { padding: 2px 14px; margin: 0 -4px; }
+  .foot { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+  .foot__btns { grid-template-columns: 1fr 1.4fr; }
+}
+@media (max-width: 380px) {
+  .devices { grid-template-columns: 96px minmax(0, 1fr); }
+  .talk { grid-template-columns: 1fr; }
+  .talk__avatar { width: 58px; height: 58px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- 圖示 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M4 4v6h6"/><path d="M4.5 10A8 8 0 1112 20"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" fill="currentColor"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 00.6-7.95A6 6 0 006.1 9.1 4.5 4.5 0 007 18z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="4.5" width="16" height="11" rx="1.5"/><path d="M2 19.5h20"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 01-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1121 12z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></symbol>
+</svg>
+
+<!-- 背景：假裝 App 在後面 -->
+<div class="stage" aria-hidden="true">
+  <div class="stage__app">
+    <div class="stage__bar"></div>
+    <div class="stage__card"></div>
+    <div class="stage__card"></div>
+    <div class="stage__card"></div>
+  </div>
+</div>
+<button class="stage__open" id="reopen" hidden><svg class="i"><use href="#i-gear"/></svg>打開設定</button>
+
+<div class="scrim" id="scrim">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="title">
+
+    <header class="head" id="head">
+      <div class="head__top">
+        <div class="head__titles">
+          <p class="eyebrow">SETTINGS</p>
+          <h1 id="title">設定</h1>
+        </div>
+        <div class="sync" id="sync" data-state="idle" role="status" aria-live="polite">
+          <span class="sync__dot"></span><span class="sync__label">已同步到雲端</span>
+        </div>
+        <button class="icon-btn" id="close" aria-label="關閉"><svg class="i"><use href="#i-x"/></svg></button>
+      </div>
+      <nav class="tabs" role="tablist" aria-label="設定分類">
+        <button class="tab" role="tab" data-target="sec-splash" aria-selected="true"><span class="tab__num">01</span>開啟畫面</button>
+        <button class="tab" role="tab" data-target="sec-talk" aria-selected="false"><span class="tab__num">02</span>角色對話</button>
+        <span class="tabs__ink" id="ink"></span>
+      </nav>
+    </header>
+
+    <div class="body" id="body">
+
+      <!-- 01 開啟畫面 -->
+      <section class="section" id="sec-splash" aria-labelledby="sec-splash-title">
+        <div class="section__head reveal" style="--i:0">
+          <span class="section__num">01</span>
+          <h2 class="section__title" id="sec-splash-title">開啟畫面</h2>
+          <span class="section__rule"></span>
+        </div>
+
+        <div class="group reveal" style="--i:1">
+          <div class="row">
+            <span class="row__label" id="dur-label">停留時間</span>
+            <p class="row__desc">從打開網頁開始算；載入比較久時會等載入完成</p>
+            <div class="chips" role="radiogroup" aria-labelledby="dur-label" id="chips"></div>
+            <div class="timeline" aria-hidden="true">
+              <div class="timeline__track"><div class="timeline__fill" id="fill"></div></div>
+              <div class="timeline__legend"><span>打開</span><span>1s</span><span>2s</span><span>3s</span><span>4s</span><span>5s</span></div>
+            </div>
+            <p class="timeline__note" id="dur-note"></p>
+          </div>
+
+          <div class="row row--switch">
+            <div>
+              <span class="row__label" id="first-label">只有第一次打開時停留</span>
+              <p class="row__desc">之後打開改回 1.2 秒；「第一次」依每台裝置、每個瀏覽器分開計算</p>
+            </div>
+            <button class="switch" role="switch" aria-checked="false" aria-labelledby="first-label" data-key="splashFirstOnly">
+              <span class="switch__knob"><svg class="i"><use href="#i-check"/></svg></span>
+            </button>
+          </div>
+
+          <div class="row">
+            <span class="row__label">開啟畫面圖片</span>
+            <p class="row__desc">手機直拿時顯示手機版，電腦或手機橫放時顯示電腦版。點圖片或直接拖曳檔案進來更換。</p>
+            <div class="devices" id="devices"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 02 角色對話 -->
+      <section class="section" id="sec-talk" aria-labelledby="sec-talk-title">
+        <div class="section__head reveal" style="--i:2">
+          <span class="section__num">02</span>
+          <h2 class="section__title" id="sec-talk-title">角色對話</h2>
+          <span class="section__rule"></span>
+        </div>
+
+        <div class="group reveal" style="--i:3">
+          <div class="row row--switch">
+            <div>
+              <span class="row__label" id="talk-label">打開 App 時自動播放</span>
+              <p class="row__desc">關閉後仍可從頭像選單的「和角色對話」開啟</p>
+            </div>
+            <button class="switch" role="switch" aria-checked="true" aria-labelledby="talk-label" data-key="dialogueAutoplay">
+              <span class="switch__knob"><svg class="i"><use href="#i-check"/></svg></span>
+            </button>
+          </div>
+
+          <div class="talk" id="talk">
+            <div class="talk__avatar"><img src="../../public/characters/char-yuzu-v1.webp" alt=""></div>
+            <div class="talk__bubble">
+              <span class="talk__name">YUZU</span>
+              <span class="talk__text" id="talk-text"></span><span class="talk__caret"></span>
+            </div>
+            <div class="talk__off"><svg class="i"><use href="#i-chat"/></svg>打開 App 時不會自動播放<br>需要時從頭像選單開啟</div>
+          </div>
+          <div class="talk-actions">
+            <button class="btn btn--sm" id="play"><svg class="i"><use href="#i-play"/></svg>現在播放一次</button>
+            <p>預覽只是示意，實際台詞依行程設定</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="foot">
+      <p class="foot__note"><svg class="i"><use href="#i-cloud"/></svg>設定會跟著帳號存到雲端，換裝置登入也會套用。</p>
+      <div class="foot__btns">
+        <button class="btn" id="reset"><svg class="i"><use href="#i-undo"/></svg><span>恢復預設</span></button>
+        <button class="btn btn--primary" id="done"><svg class="i"><use href="#i-check"/></svg>完成</button>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><svg class="i"><use href="#i-check"/></svg><span id="toast-text"></span></div>
+
+<script>
+const DEFAULTS = { splashMs: 1200, splashFirstOnly: false, dialogueAutoplay: true, splashMobile: '', splashDesktop: '' };
+const OPTIONS = [0, 1200, 2000, 3000, 4000, 5000];
+const DEVICES = [
+  { key: 'splashMobile', kind: 'phone', label: '手機版', hint: '直式 9:16', icon: 'i-phone', builtin: '../../public/splash/splash-mobile.webp' },
+  { key: 'splashDesktop', kind: 'laptop', label: '電腦版', hint: '橫式 16:9', icon: 'i-laptop', builtin: '../../public/splash/splash-desktop.webp' }
+];
+const LINES = ['歡迎回來！今天也要好好 chill 一下～', '要不要先看看今天的行程？我幫你整理好了。'];
+let s = { ...DEFAULTS };
+
+const $ = (q, el = document) => el.querySelector(q);
+const body = $('#body');
+
+/* ---------- 雲端同步狀態（示意） ---------- */
+let syncTimer;
+function save(patch, msg) {
+  s = { ...s, ...patch };
+  const sync = $('#sync');
+  sync.dataset.state = 'saving';
+  $('.sync__label', sync).textContent = '儲存中';
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    sync.dataset.state = 'saved';
+    $('.sync__label', sync).textContent = innerWidth <= 600 ? '已同步' : '已同步到雲端';
+    sync.setAttribute('aria-label', '已同步到雲端');
+  }, 650);
+  if (msg) toast(msg);
+}
+
+let toastTimer;
+function toast(text) {
+  const t = $('#toast');
+  $('#toast-text').textContent = text;
+  t.classList.add('is-on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('is-on'), 2200);
+}
+
+/* ---------- 停留時間 ---------- */
+const secText = (ms) => (ms === 0 ? '不停留' : `${ms / 1000}s`);
+function renderChips() {
+  const box = $('#chips');
+  box.innerHTML = OPTIONS.map((ms) => `
+    <button class="chip" role="radio" aria-checked="${ms === s.splashMs}" tabindex="${ms === s.splashMs ? 0 : -1}" data-ms="${ms}">
+      ${secText(ms)}${ms === DEFAULTS.splashMs ? '<small>預設</small>' : ms === 0 ? '<small>載入完就關</small>' : ''}
+    </button>`).join('');
+  renderTimeline();
+}
+function renderTimeline() {
+  $('#fill').style.width = `${(s.splashMs / 5000) * 100}%`;
+  const sec = s.splashMs / 1000;
+  $('#dur-note').innerHTML = s.splashMs === 0
+    ? '載入完成就直接進入 App。'
+    : s.splashFirstOnly
+      ? `第一次打開停留 <b>${sec} 秒</b>，之後每次 <b>1.2 秒</b>。`
+      : `每次打開都會停留 <b>${sec} 秒</b>，再進入 App。`;
+}
+$('#chips').addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  const ms = Number(chip.dataset.ms);
+  if (ms === s.splashMs) return;
+  save({ splashMs: ms }, '下次打開 App 時生效');
+  renderChips();
+  $(`.chip[data-ms="${ms}"]`).focus();
+});
+// 方向鍵切換（radiogroup 標準操作）
+$('#chips').addEventListener('keydown', (e) => {
+  const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+  if (!dir) return;
+  e.preventDefault();
+  const i = (OPTIONS.indexOf(s.splashMs) + dir + OPTIONS.length) % OPTIONS.length;
+  $(`.chip[data-ms="${OPTIONS[i]}"]`).click();
+});
+
+/* ---------- 開關 ---------- */
+function renderSwitches() {
+  document.querySelectorAll('.switch').forEach((sw) => sw.setAttribute('aria-checked', String(s[sw.dataset.key])));
+  $('#talk').classList.toggle('is-off', !s.dialogueAutoplay);
+}
+document.querySelectorAll('.switch').forEach((sw) => sw.addEventListener('click', () => {
+  const key = sw.dataset.key;
+  const v = !s[key];
+  const msg = key === 'dialogueAutoplay' ? (v ? '打開 App 時會自動播放對話' : '已關閉自動播放') : (v ? '只有第一次打開時停留' : '每次打開都會停留');
+  save({ [key]: v }, msg);
+  renderSwitches();
+  renderTimeline();
+  if (key === 'dialogueAutoplay' && v) playTalk();
+}));
+
+/* ---------- 開啟畫面圖片 ---------- */
+function renderDevices() {
+  $('#devices').innerHTML = DEVICES.map((d) => {
+    const custom = !!s[d.key];
+    const frame = `
+      <button type="button" class="device__frame" data-pick="${d.key}" aria-label="更換${d.label}開啟畫面">
+        <img src="${s[d.key] || d.builtin}" alt="" draggable="false">
+        <span class="badge ${custom ? 'badge--custom' : ''}">${custom ? '自訂' : '內建'}</span>
+        <span class="device__overlay"><svg class="i"><use href="#i-upload"/></svg>點擊或拖曳更換</span>
+      </button>`;
+    return `
+      <div class="device device--${d.kind}" data-key="${d.key}">
+        ${d.kind === 'laptop' ? `<div class="device__screen">${frame}<div class="device__base"></div></div>` : frame}
+        <div class="device__meta">
+          <strong><svg class="i"><use href="#${d.icon}"/></svg>${d.label}</strong>
+          <span>${d.hint}</span>
+        </div>
+        <div class="device__actions">
+          <button class="btn btn--sm" data-pick="${d.key}"><svg class="i"><use href="#i-upload"/></svg>更換</button>
+          ${custom ? `<button class="btn btn--sm btn--ghost" data-restore="${d.key}"><svg class="i"><use href="#i-undo"/></svg>內建</button>` : ''}
+        </div>
+        <input type="file" accept="image/*" hidden data-input="${d.key}">
+      </div>`;
+  }).join('');
+}
+function useFile(key, file) {
+  if (!file || !file.type.startsWith('image/')) return toast('請選擇圖片檔');
+  const label = DEVICES.find((d) => d.key === key).label;
+  const reader = new FileReader();
+  reader.onload = () => { save({ [key]: reader.result }, `已更換${label}開啟畫面，下次打開時生效`); renderDevices(); };
+  reader.readAsDataURL(file);
+}
+const devices = $('#devices');
+devices.addEventListener('click', (e) => {
+  const pick = e.target.closest('[data-pick]');
+  const restore = e.target.closest('[data-restore]');
+  if (pick) $(`[data-input="${pick.dataset.pick}"]`).click();
+  if (restore) {
+    const label = DEVICES.find((d) => d.key === restore.dataset.restore).label;
+    save({ [restore.dataset.restore]: '' }, `${label}改回內建圖片`);
+    renderDevices();
+  }
+});
+devices.addEventListener('change', (e) => {
+  const input = e.target.closest('[data-input]');
+  if (input) { useFile(input.dataset.input, input.files[0]); input.value = ''; }
+});
+['dragenter', 'dragover'].forEach((type) => devices.addEventListener(type, (e) => {
+  const d = e.target.closest('.device');
+  if (!d) return;
+  e.preventDefault();
+  devices.querySelectorAll('.device').forEach((x) => x.classList.toggle('is-drag', x === d));
+}));
+devices.addEventListener('dragleave', (e) => {
+  const d = e.target.closest('.device');
+  if (d && !d.contains(e.relatedTarget)) d.classList.remove('is-drag');
+});
+devices.addEventListener('drop', (e) => {
+  const d = e.target.closest('.device');
+  if (!d) return;
+  e.preventDefault();
+  d.classList.remove('is-drag');
+  useFile(d.dataset.key, e.dataTransfer.files[0]);
+});
+
+/* ---------- 角色對話預覽（打字效果） ---------- */
+let typing, lineIndex = 0;
+function playTalk() {
+  clearInterval(typing);
+  const text = LINES[lineIndex++ % LINES.length];
+  const out = $('#talk-text');
+  let i = 0;
+  out.textContent = '';
+  typing = setInterval(() => {
+    out.textContent = text.slice(0, ++i);
+    if (i >= text.length) clearInterval(typing);
+  }, 55);
+}
+$('#play').addEventListener('click', () => {
+  if (!s.dialogueAutoplay) $('#talk').classList.remove('is-off');
+  playTalk();
+  if (!s.dialogueAutoplay) setTimeout(() => $('#talk').classList.toggle('is-off', !s.dialogueAutoplay), 3600);
+});
+
+/* ---------- 分頁 ↔ 捲動同步 ---------- */
+const tabs = [...document.querySelectorAll('.tab')];
+function setTab(id) {
+  tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.target === id)));
+  const active = tabs.find((t) => t.dataset.target === id);
+  const ink = $('#ink');
+  ink.style.left = active.offsetLeft + 'px';
+  ink.style.width = active.offsetWidth + 'px';
+}
+tabs.forEach((t) => t.addEventListener('click', () => {
+  $('#' + t.dataset.target).scrollIntoView({ block: 'start' });
+  setTab(t.dataset.target);
+}));
+function onScroll() {
+  const atBottom = body.scrollTop + body.clientHeight >= body.scrollHeight - 4;
+  const talkTop = $('#sec-talk').offsetTop - body.offsetTop;
+  setTab(atBottom || body.scrollTop >= talkTop - body.clientHeight * .4 ? 'sec-talk' : 'sec-splash');
+  $('#head').classList.toggle('has-shadow', body.scrollTop > 4);
+  body.classList.toggle('has-shadow', !atBottom);
+}
+body.addEventListener('scroll', onScroll, { passive: true });
+window.addEventListener('resize', onScroll);
+
+/* ---------- 恢復預設：按兩次確認，避免誤觸 ---------- */
+let confirmTimer;
+$('#reset').addEventListener('click', (e) => {
+  const btn = e.currentTarget;
+  if (!btn.classList.contains('btn--warn')) {
+    btn.classList.add('btn--warn');
+    $('span', btn).textContent = '再按一次確認';
+    confirmTimer = setTimeout(() => { btn.classList.remove('btn--warn'); $('span', btn).textContent = '恢復預設'; }, 3000);
+    return;
+  }
+  clearTimeout(confirmTimer);
+  btn.classList.remove('btn--warn');
+  $('span', btn).textContent = '恢復預設';
+  save({ ...DEFAULTS }, '已恢復預設值');
+  renderAll();
+});
+
+/* ---------- 開關面板 ---------- */
+const scrim = $('#scrim');
+function closeSheet() {
+  scrim.classList.add('is-closing');
+  setTimeout(() => { scrim.hidden = true; scrim.classList.remove('is-closing'); $('#reopen').hidden = false; }, 280);
+}
+function openSheet() {
+  $('#reopen').hidden = true;
+  scrim.hidden = false;
+  body.scrollTop = 0;
+  requestAnimationFrame(onScroll);
+  if (s.dialogueAutoplay) setTimeout(playTalk, 700);
+}
+$('#close').addEventListener('click', closeSheet);
+$('#done').addEventListener('click', closeSheet);
+$('#reopen').addEventListener('click', openSheet);
+scrim.addEventListener('click', (e) => { if (e.target === scrim) closeSheet(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !scrim.hidden) closeSheet(); });
+
+function renderAll() { renderChips(); renderSwitches(); renderDevices(); }
+if (innerWidth <= 600) $('.sync__label').textContent = '已同步';
+renderAll();
+openSheet();
+document.fonts?.ready.then(onScroll);
+</script>
+</body>
+</html>

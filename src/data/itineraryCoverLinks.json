@@ -1,0 +1,100 @@
+{
+  "nakka": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/Nakanoshima_Museum_of_Art_Osaka.jpg/1280px-Nakanoshima_Museum_of_Art_Osaka.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Nakanoshima_Museum_of_Art_Osaka.jpg",
+    "author": "Прикли",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+  },
+  "nmao": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/80/National_Museum_of_Art_Osaka_in_201407.JPG/1280px-National_Museum_of_Art_Osaka_in_201407.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:National_Museum_of_Art_Osaka_in_201407.JPG",
+    "author": "Mc681",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "library": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/09/Facade_of_Osaka_Prefectural_Nakanoshima_Library.jpg/1280px-Facade_of_Osaka_Prefectural_Nakanoshima_Library.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Facade_of_Osaka_Prefectural_Nakanoshima_Library.jpg",
+    "author": "掬茶",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "hall": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a4/Osaka_City_Central_Public_Hall.jpg/1280px-Osaka_City_Central_Public_Hall.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Osaka_City_Central_Public_Hall.jpg",
+    "author": "DoctorAB",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "books": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/58/Nakanoshima_Children%60s_Book_Forest.jpg/1280px-Nakanoshima_Children%60s_Book_Forest.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Nakanoshima_Children%60s_Book_Forest.jpg",
+    "author": "KishujiRapid",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "park": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/1_Chome_Nakanoshima%2C_Kita-ku%2C_%C5%8Csaka-shi%2C_%C5%8Csaka-fu_530-0005%2C_Japan_-_panoramio_%281%29.jpg/1280px-1_Chome_Nakanoshima%2C_Kita-ku%2C_%C5%8Csaka-shi%2C_%C5%8Csaka-fu_530-0005%2C_Japan_-_panoramio_%281%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:1_Chome_Nakanoshima,_Kita-ku,_%C5%8Csaka-shi,_%C5%8Csaka-fu_530-0005,_Japan_-_panoramio_(1).jpg",
+    "author": "Nagono",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+  },
+  "sky": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e0/Umeda_Sky_Building_%285225809736%29.jpg/1280px-Umeda_Sky_Building_%285225809736%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Umeda_Sky_Building_(5225809736).jpg",
+    "author": "KimonBerlin",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+  },
+  "hep": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/HEP_at_Night_in_201408.JPG/1280px-HEP_at_Night_in_201408.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:HEP_at_Night_in_201408.JPG",
+    "author": "Mc681",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "usj": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Universal_Studios_Japan_entrance.jpg/1280px-Universal_Studios_Japan_entrance.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Universal_Studios_Japan_entrance.jpg",
+    "author": "Csiiiyu",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "peach": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/2017-01-25_MM231%2CAirbus_A320_of_Peach_Aviation_at_Kansai_International_Airport_DSCF9155.jpg/1280px-2017-01-25_MM231%2CAirbus_A320_of_Peach_Aviation_at_Kansai_International_Airport_DSCF9155.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:2017-01-25_MM231,Airbus_A320_of_Peach_Aviation_at_Kansai_International_Airport_DSCF9155.jpg",
+    "author": "松岡明芳",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "shuttle": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/38/Nankai_bus_Citaro_G_2019.jpg/1280px-Nankai_bus_Citaro_G_2019.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Nankai_bus_Citaro_G_2019.jpg",
+    "author": "切干大根",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "rapit": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Nankai_50000_Series_at_Kansai_Airport_Station_2018-07-27.jpg/1280px-Nankai_50000_Series_at_Kansai_Airport_Station_2018-07-27.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:Nankai_50000_Series_at_Kansai_Airport_Station_2018-07-27.jpg",
+    "author": "SH6188",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "airport": {
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/KIX_Level_1_Arrival_Lobby_Atrium_2025.JPG/1280px-KIX_Level_1_Arrival_Lobby_Atrium_2025.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "source": "https://commons.wikimedia.org/wiki/File:KIX_Level_1_Arrival_Lobby_Atrium_2025.JPG",
+    "author": "Fotointheworld",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+  },
+  "hotel": {
+    "image": "https://hearton.co.jp/en/assets/images/nagahori/top_img05.jpg",
+    "source": "https://hearton.co.jp/en/nagahori/",
+    "author": "Hearton Hotel",
+    "license": "官方網站圖片",
+    "licenseUrl": "https://hearton.co.jp/en/nagahori/"
+  }
+}

@@ -19,7 +19,7 @@ import PdfPreview from '../../components/checkin/PdfPreview';
 /* =========================================================
    打卡：每站蓋章、拍照，照片沖洗成明信片，可匯出當天的 A4 PDF
    - 影像、版型、印章、PDF：features/checkin/engine.js（checkin-module-v1 原檔）
-   - 明信片只存這台裝置的 IndexedDB；行程蓋章同步到 Firebase
+   - 明信片照片、版型與行程蓋章全部同步到 Firebase
    ========================================================= */
 
 const DEVELOP_MS = 900; // 沖洗畫面至少停留，看得到動畫
@@ -33,6 +33,7 @@ export default function CheckinPage() {
 
   const cards = useCheckinStore((s) => s.cards);
   const stamps = useCheckinStore((s) => s.stamps);
+  const cloudReady = useCheckinStore((s) => s.ready);
   useEffect(() => { loadCheckin(); loadFonts(); }, []);
 
   // engine 的版型、PDF 會印上旅程名稱與日期
@@ -126,6 +127,8 @@ export default function CheckinPage() {
   const closeDraft = useCallback(() => setDraft(null), []);
   const closePdf = useCallback(() => setPdf(null), []);
   const camStop = camFor && stopOf(camFor);
+
+  if (!cloudReady) return <div className="empty" role="status">正在讀取雲端明信片與打卡紀錄…</div>;
 
   return (
     <>

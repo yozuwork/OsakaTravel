@@ -18,7 +18,7 @@ export default function EntryTab() {
     e.target.value = '';
     if (!file) return;
     try {
-      const qr = await loading.run(compressImage(file, 900, 0.85), '圖片處理中…');
+      const qr = await loading.run(compressImage(file, 2400, 1, 'image/png'), '圖片處理中…');
       updateTrip((s) => { s.entry.qr = qr; });
       toast('已儲存 QR Code');
     } catch {

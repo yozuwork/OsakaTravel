@@ -1,9 +1,27 @@
 import { uid } from '../utils/helpers';
 import { addDays } from '../utils/date';
 import { defaultDialogue } from './dialogueScript';
+import { withOnlineCovers } from './itineraryCovers';
 
 /** 範例資料版本：更新預設行程時 +1，並在 tripStore 的 upgradeSample 補上對應判斷 */
-export const SAMPLE_SEED = 5;
+export const SAMPLE_SEED = 7;
+
+/** DAY4：中之島藝術與建築散步、梅田夜景。時間區間放在備註供詳情查看。 */
+export function day4Items() {
+  return [
+    { time: '12:00', category: '景點', title: '大阪中之島美術館', place: '大阪中之島美術館', note: '12:00–13:00｜中之島藝術與建築散步（12:00–16:30）\n參觀建築、簡單看展' },
+    { time: '13:05', category: '景點', title: '大阪國立國際美術館', place: '大阪國立國際美術館', note: '13:05–14:05｜中之島藝術與建築散步\n參觀地下美術館及展覽' },
+    { time: '14:05', category: '其他', title: '沿河岸散步、移動與休息', place: '中之島', note: '14:05–14:45｜中之島藝術與建築散步' },
+    { time: '14:45', category: '景點', title: '大阪府立中之島圖書館', place: '大阪府立中之島圖書館', note: '14:45–15:10｜中之島藝術與建築散步' },
+    { time: '15:10', category: '景點', title: '大阪市中央公會堂', place: '大阪市中央公會堂', note: '15:10–15:40｜中之島藝術與建築散步' },
+    { time: '15:40', category: '景點', title: '兒童書之森 中之島', place: 'こども本の森 中之島', note: '15:40–16:15｜中之島藝術與建築散步' },
+    { time: '16:15', category: '其他', title: '預留緩衝時間', place: '', note: '16:15–16:30｜中之島藝術與建築散步' },
+    { time: '16:30', category: '交通', title: '前往梅田藍天大廈', place: '梅田藍天大廈', note: '16:30–17:15｜梅田夜景（16:30–19:30）' },
+    { time: '17:15', category: '景點', title: '梅田藍天大廈空中庭園展望台', place: '梅田スカイビル 空中庭園展望台', note: '17:15–18:30｜梅田夜景' },
+    { time: '18:30', category: '交通', title: '前往 HEP FIVE', place: 'HEP FIVE', note: '18:30–19:00｜梅田夜景' },
+    { time: '19:00', category: '景點', title: 'HEP FIVE 摩天輪', place: 'HEP FIVE 観覧車', note: '19:00–19:30｜梅田夜景' }
+  ].map((item, index) => ({ id: `day4-nakanoshima-umeda-${index}`, day: 3, ...item }));
+}
 
 /* 住宿：心齋橋長堀通哈頓飯店（地圖搜尋用日文名稱比較準） */
 export const HOTEL = {
@@ -81,7 +99,7 @@ export function defaultState() {
     v: 1,
     seed: SAMPLE_SEED,
     trip: { name: '大阪冬旅', en: 'Osaka', from: '台北', to: '大阪', startDate: start, days: 5 },
-    items: withCovers(seed4Items().map((it) => ({ id: uid(), ...it }))),
+    items: withCovers(withOnlineCovers([...seed4Items().map((it) => ({ id: uid(), ...it })), ...day4Items()])),
     todos: [
       { id: uid(), text: '填寫 Visit Japan Web 入境資料', done: false },
       { id: uid(), text: '購買 eSIM／網卡', done: false },

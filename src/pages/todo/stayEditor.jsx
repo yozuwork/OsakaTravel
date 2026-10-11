@@ -81,7 +81,7 @@ function StayEditor({ id, clipboard }) {
       <div className="form__grid">
         <div className="field field--full">
           <span className="field__label">飯店照片</span>
-          <ImageGallery value={draft.images} onChange={setImages} max={900} quality={0.78}
+          <ImageGallery value={draft.images} onChange={setImages} max={1920} quality={0.9}
             placeholder={<span className="tl-thumb--icon gallery__placeholder"><Icon name="bed" /><span className="tl-thumb__label">住宿</span></span>} />
         </div>
         <label className="field field--full">

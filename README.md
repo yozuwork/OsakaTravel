@@ -25,5 +25,14 @@
 - 隨時把想法加入行程
 
 ## 資料與隱私
-- 所有資料只存在你自己的瀏覽器，不會上傳到任何伺服器
+- 行程、圖片、設定、明信片、打卡章與交通紀錄存到 Firebase，登入同一帳號可跨裝置使用
+- 上傳照片預設以 WebP、高品質與最長邊 1920 像素壓縮；QR Code 使用 PNG，角色圖片保留透明背景
+- IndexedDB 只保留快取與待同步變更；畫面顯示「已儲存到雲端」才代表資料庫已確認寫入
 - 可以匯出／匯入備份檔，換裝置時也能帶著走
+
+## Firebase 規則更新
+
+這次新增 `osakaTravelCheckin/$uid/cards`（明信片照片與資料）及 `osakaTravelTransit/$uid`（交通查詢）權限。
+發布新版網站前，請把 `firebase-database-rules.template.json` 套用到 Firebase Realtime Database 的規則頁並發布；權限仍限定原有授權帳號，而且個人資料只能由本人 UID 存取。
+如果 `VITE_FIREBASE_DATABASE_PATH` 使用自訂名稱，請一併調整規則節點名稱。
+首次更新時，應使用仍有舊版照片的瀏覽器登入，網站才可把那些本機紀錄上傳到資料庫；原始本機紀錄會保留。

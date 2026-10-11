@@ -9,7 +9,7 @@ export const SPLIT_RIGHT = 0.38;
 export const MARGIN = 12;
 export const GAP = 14;
 /** 從開始到切換行程資料的停留時間（ms） */
-export const HOLD_MS = 560;
+export const HOLD_MS = 460;
 
 export const EASE_IN = 'cubic-bezier(.2,.9,.25,1)';
 export const EASE_OUT = 'cubic-bezier(.7,0,.85,.4)';

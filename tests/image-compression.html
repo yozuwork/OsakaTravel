@@ -1,0 +1,39 @@
+<!doctype html><meta charset="utf-8"><pre id="result">RUNNING</pre>
+<script type="module">
+import { compressImage, encodeCloudImages, decodeCloudImages } from '../src/utils/file.js';
+import { readCloudCache, writeCloudCache } from '../src/services/cloudCache.js';
+const check = (value, message) => { if (!value) throw new Error(message); };
+const load = (url) => new Promise((resolve, reject) => {
+  const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = url;
+});
+try {
+  const canvas = document.createElement('canvas'); canvas.width = 3200; canvas.height = 1600;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#18314d'; ctx.fillRect(100, 100, 3000, 1400);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 100px sans-serif'; ctx.fillText('Osaka 2026 CLEAR PHOTO', 300, 800);
+  const original = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+  const compressed = await compressImage(original);
+  const image = await load(compressed);
+  check(image.width === 1920 && image.height === 960, 'Dimensions');
+  check(compressed.startsWith('data:image/webp'), 'WebP output');
+  const out = document.createElement('canvas'); out.width = image.width; out.height = image.height;
+  const output = out.getContext('2d'); output.drawImage(image, 0, 0);
+  check(output.getImageData(0, 0, 1, 1).data[3] === 0, 'Transparency must remain intact');
+  const qrCanvas = document.createElement('canvas'); qrCanvas.width = qrCanvas.height = 100;
+  const qrContext = qrCanvas.getContext('2d');
+  qrContext.fillStyle = '#fff'; qrContext.fillRect(0, 0, 100, 100);
+  qrContext.fillStyle = '#000'; qrContext.fillRect(10, 10, 70, 70);
+  const qr = await new Promise((resolve) => qrCanvas.toBlob(resolve, 'image/png'));
+  const qrURL = await compressImage(qr, 2400, 1, 'image/png');
+  check(qrURL === qrCanvas.toDataURL('image/png'), 'QR pixels must remain lossless');
+  const encoded = await encodeCloudImages({ photo: original, qr: qrURL });
+  const decoded = await decodeCloudImages(encoded);
+  check(decoded.photo instanceof Blob, 'Cloud photo Blob restoration');
+  check(decoded.qr === qrURL, 'Cloud QR preservation');
+  check(decoded.photo.size < original.size, 'Cloud Blob compression');
+  await writeCloudCache('test-roundtrip', { data: decoded, pending: { photo: decoded.photo } });
+  const cached = await readCloudCache('test-roundtrip');
+  check(cached.pending.photo instanceof Blob && cached.pending.photo.size === decoded.photo.size, 'IndexedDB pending photo persistence');
+  document.getElementById('result').textContent = `PASS: 1920px WebP, transparency, lossless QR, Blob cloud roundtrip, IndexedDB photo persistence. Source ${original.size} bytes; compressed ${Math.round(compressed.length * 0.75)} bytes.`;
+} catch (error) { document.getElementById('result').textContent = 'FAIL: ' + error.stack; }
+</script>
