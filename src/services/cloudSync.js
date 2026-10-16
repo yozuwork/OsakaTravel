@@ -87,14 +87,18 @@ export function createCloudSync({ name, store, select = (s) => s, normalize = (s
             if (session !== s || version !== s.snapshot) return;
             const raw = cloud || saved?.data || select(store.getState());
             const normalized = normalize(raw);
-            const prepared = !s.ready ? await encodeCloudImages(normalized) : null;
+            // A store can contain local-only UI state.  Only compare and seed the
+            // projection that this sync instance owns, otherwise a local view
+            // change is mistaken for a cloud-data change.
+            const projected = select(normalized);
+            const prepared = !s.ready ? await encodeCloudImages(projected) : null;
             if (session !== s || version !== s.snapshot) return;
             const existingPending = new Set(Object.keys(s.pending));
             // 資料升級與舊版僅存本機的紀錄也要寫回 Firebase。
             if (!s.ready && (!cloud || JSON.stringify(snapshot.val()) !== JSON.stringify(prepared))) {
-              for (const key of Object.keys(normalized)) {
+              for (const key of Object.keys(projected)) {
                 if (!cloud || JSON.stringify(snapshot.val()[key]) !== JSON.stringify(prepared[key])) {
-                  if (!(key in s.pending)) s.pending[key] = normalized[key];
+                  if (!(key in s.pending)) s.pending[key] = projected[key];
                 }
               }
             }

@@ -148,6 +148,20 @@ test('empty collections omitted by Firebase do not cause endless normalization w
   assert.equal(h.writes.length, count);
 });
 
+test('a local-only projection is not seeded or written during cloud startup', async () => {
+  const h = harness({ trip: { name: 'Osaka' }, ui: { day: 0 } }, undefined, {
+    select: ({ ui: _ui, ...data }) => data,
+    normalize: (data) => ({ trip: data.trip || { name: 'Osaka' }, ui: { day: 0 } })
+  });
+  await h.sync.start('test/user');
+  await h.snapshot({ trip: { name: 'Osaka' } });
+  await h.timer();
+  assert.equal(h.writes.length, 0);
+  h.store.setState({ ui: { day: 1 } });
+  await h.timer();
+  assert.equal(h.writes.length, 0);
+});
+
 test('legacy migration preserves cloud edits, recovers missing photos, and runs once', async () => {
   const h = harness({ items: [] }, undefined, {
     migrate: async () => ({ items: [{ id: 'a', title: 'Old title', images: ['saved-photo'] }, { id: 'b', title: 'Local only' }] })

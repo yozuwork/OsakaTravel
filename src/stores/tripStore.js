@@ -197,9 +197,16 @@ export function resetTrip() {
 }
 
 /** Firebase is the source of truth; IndexedDB holds only cache and pending changes. */
+// `ui` is navigation/display state (selected day, list filter, etc.), not trip
+// data. Keeping it local prevents merely changing views from triggering a
+// Firebase write and the accompanying sync indicator.
+function selectTripData({ ui: _ui, ...tripData }) {
+  return tripData;
+}
+
 const tripSync = createCloudSync({
-  name: 'trip', store: useTripStore, normalize,
-  apply: (state) => useTripStore.setState(state, true),
+  name: 'trip', store: useTripStore, select: selectTripData, normalize,
+  apply: (state) => useTripStore.setState({ ...state, ui: useTripStore.getState().ui }, true),
   async migrate() {
     if (await readCloudCache('legacy-trip-migrated')) return null;
     try {
